@@ -1,7 +1,7 @@
 // SimpleCRM — embed-code-dialog
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, Copy } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,16 @@ interface EmbedCodeDialogProps {
 }
 
 export function EmbedCodeDialog({ form, open, onClose }: EmbedCodeDialogProps) {
+  const [publicUrl, setPublicUrl] = useState("");
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
 
-  const publicUrl = `${window.location.origin}/form/${form.slug}`;
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPublicUrl(`${window.location.origin}/form/${form.slug}`);
+    }
+  }, [form.slug]);
+
   const embedCode = `<iframe 
   src="${publicUrl}" 
   width="100%" 

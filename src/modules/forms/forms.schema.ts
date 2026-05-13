@@ -1,6 +1,5 @@
 // SimpleCRM — forms.schema.ts
 import { z } from "zod";
-import { Source } from "@prisma/client";
 
 export const createFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -10,7 +9,12 @@ export const createFormSchema = z.object({
   fields: z.any(),
 });
 
-export const updateFormSchema = createFormSchema.partial().extend({
+export const updateFormSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().optional(),
+  submitButtonText: z.string().optional(),
+  sourceTag: z.string().optional(),
+  fields: z.any().optional(),
   isActive: z.boolean().optional(),
 });
 

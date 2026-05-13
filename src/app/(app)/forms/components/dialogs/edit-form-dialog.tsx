@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { X, Save } from "lucide-react";
+import { X, Save, ChevronDown } from "lucide-react";
 import { CaptureFormWithCount } from "@/modules/forms/forms.types";
 
 interface EditFormDialogProps {
@@ -100,15 +100,27 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
 
             <div className="space-y-2">
               <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Lead Source Tag</label>
-              <input
-                type="text"
-                value={formData.sourceTag}
-                onChange={(e) => setFormData({ ...formData, sourceTag: e.target.value })}
-                placeholder="e.g. Website"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-100 focus:border-purple-600 outline-none transition-all"
-              />
+              <div className="relative">
+                <select
+                  value={formData.sourceTag}
+                  onChange={(e) => setFormData({ ...formData, sourceTag: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-100 focus:border-purple-600 outline-none transition-all appearance-none cursor-pointer"
+                >
+                  <option value="WEBSITE">Website</option>
+                  <option value="FACEBOOK_AD">Facebook Ad</option>
+                  <option value="INSTAGRAM">Instagram</option>
+                  <option value="REFERRAL">Referral</option>
+                  <option value="COLD_OUTREACH">Cold Outreach</option>
+                  <option value="WALK_IN">Walk-in</option>
+                  <option value="OTHER">Other</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                  <ChevronDown size={14} />
+                </div>
+              </div>
               <p className="text-[10px] text-gray-400 italic">Leads from this form will be tagged with this value</p>
             </div>
+
           </div>
 
           <div className="p-6 border-t border-gray-100 bg-gray-50 flex gap-3">

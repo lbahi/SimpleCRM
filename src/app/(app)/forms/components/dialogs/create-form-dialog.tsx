@@ -153,7 +153,7 @@ export function CreateFormDialog({ open, onClose, onCreated }: CreateFormDialogP
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('Submit your information below');
   const [submitButtonText, setSubmitButtonText] = useState('Send Request');
-  const [sourceTag, setSourceTag] = useState('Website');
+  const [sourceTag, setSourceTag] = useState('WEBSITE');
   const [fields, setFields] = useState<FormField[]>([
     {
       id: '1',
@@ -377,7 +377,6 @@ export function CreateFormDialog({ open, onClose, onCreated }: CreateFormDialogP
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-black outline-none transition-all"
               />
             </div>
-
 
             <div className="mb-4">
               <div className="flex items-center justify-between mb-4">
