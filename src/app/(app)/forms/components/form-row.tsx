@@ -140,10 +140,13 @@ export function FormRow({ form, onRefresh }: FormRowProps) {
             <DropdownMenuTrigger className="h-8 w-8 text-neutral-400 hover:text-neutral-900 rounded-md hover:bg-neutral-100 flex items-center justify-center transition-colors outline-none">
               <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 rounded-xl">
-              <DropdownMenuItem onClick={() => setIsEditOpen(true)}>Edit settings</DropdownMenuItem>
+            <DropdownMenuContent align="end" className="w-52 rounded-xl">
+              <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+                <MoreHorizontal className="mr-2 h-4 w-4 text-purple-500" />
+                Edit settings
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsEmbedOpen(true)}>
-                <Code className="mr-2 h-3.5 w-3.5" />
+                <Code className="mr-2 h-4 w-4 text-purple-500" />
                 Get embed code
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -151,7 +154,12 @@ export function FormRow({ form, onRefresh }: FormRowProps) {
                 onClick={handleDelete}
                 className={cn(isDeleting ? "bg-red-50 text-red-600 font-semibold" : "text-red-600")}
               >
-                {isDeleting ? "Confirm delete?" : "Delete form"}
+                <div className="flex items-center gap-2">
+                  <div className={cn("w-4 h-4 flex items-center justify-center", isDeleting ? "text-red-600" : "text-red-400")}>
+                    {isDeleting ? "!" : "×"}
+                  </div>
+                  {isDeleting ? "Confirm delete?" : "Delete form"}
+                </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
