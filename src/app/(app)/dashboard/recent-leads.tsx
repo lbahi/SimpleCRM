@@ -1,5 +1,7 @@
 import { designTokens } from "@/lib/design-system/tokens";
 import { StatusBadge } from "@/components/ui/status-badge";
+import Link from "next/link";
+import { format } from "date-fns";
 
 interface RecentLeadsProps {
   leads: Array<{
@@ -15,7 +17,12 @@ export function RecentLeads({ leads }: RecentLeadsProps) {
     <div className={designTokens.card.base + " " + designTokens.card.padding}>
       <div className="flex items-center justify-between mb-6">
         <h3 className={designTokens.typography.sectionTitle}>Recent Leads</h3>
-        <button className="text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors">View All</button>
+        <Link 
+          href="/leads" 
+          className="text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+        >
+          View All
+        </Link>
       </div>
       {leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-neutral-400">
@@ -31,8 +38,8 @@ export function RecentLeads({ leads }: RecentLeadsProps) {
                 </div>
                 <div>
                   <p className={designTokens.typography.body + ' font-semibold text-neutral-900'}>{lead.name}</p>
-                  <p className={designTokens.typography.caption}>
-                    {new Date(lead.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  <p className="text-xs text-neutral-400 mt-0.5">
+                    {format(new Date(lead.createdAt), "MMM d, yyyy")}
                   </p>
                 </div>
               </div>

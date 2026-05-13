@@ -28,6 +28,25 @@ export function FormsWorkspace({ initialData }: WorkspaceProps) {
     }
   };
 
+  const handleCreateForm = async (formData: any) => {
+    const loadingToast = toast.loading("Creating form...");
+    try {
+      const res = await fetch("/api/forms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) throw new Error("Failed to create form");
+
+      toast.success("Form created successfully", { id: loadingToast });
+      setIsCreateOpen(false);
+      refetch();
+    } catch (err) {
+      toast.error("Error creating form", { id: loadingToast });
+    }
+  };
+
   return (
     <div className="flex-1 overflow-auto bg-gray-50 -m-6 h-[calc(100vh-64px)]">
       <div className="p-8">
@@ -73,7 +92,7 @@ export function FormsWorkspace({ initialData }: WorkspaceProps) {
         <CreateFormDialog
           open={isCreateOpen}
           onClose={() => setIsCreateOpen(false)}
-          onCreated={refetch}
+          onCreated={handleCreateForm}
         />
       </div>
     </div>

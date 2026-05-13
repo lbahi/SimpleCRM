@@ -4,11 +4,10 @@ import { Source } from "@prisma/client";
 
 export const createFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
-  sourceTag: z.nativeEnum(Source),
-  fields: z.object({
-    location: z.boolean(),
-    message: z.boolean(),
-  }),
+  description: z.string().optional().default("Submit your information below"),
+  submitButtonText: z.string().optional().default("Send Request"),
+  sourceTag: z.string().default("Website"),
+  fields: z.any(),
 });
 
 export const updateFormSchema = createFormSchema.partial().extend({

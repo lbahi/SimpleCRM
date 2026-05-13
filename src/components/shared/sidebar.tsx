@@ -85,7 +85,7 @@ export function Sidebar({ user }: SidebarProps) {
             isCollapsed ? "h-8 w-8" : "h-[180px] w-full max-w-[300px]"
           )}>
              <Image 
-              src={isCollapsed ? "/favicon.ico" : "/Logo.svg"} 
+              src={isCollapsed ? "/Favicon.svg" : "/Logo.svg"} 
               alt="Logo" 
               fill 
               className="object-contain"

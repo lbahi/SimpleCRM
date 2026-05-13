@@ -27,15 +27,6 @@ enum LeadStatus {
   LOST
 }
 
-enum Source {
-  FACEBOOK_AD
-  INSTAGRAM
-  WEBSITE
-  REFERRAL
-  COLD_OUTREACH
-  WALK_IN
-  OTHER
-}
 
 enum ReminderStatus {
   PENDING
@@ -123,7 +114,7 @@ model Lead {
 
 model LeadSource {
   id        String   @id @default(cuid())
-  source    Source
+  source    String
   createdAt DateTime @default(now())
 
   leadId    String
@@ -215,10 +206,11 @@ model CaptureForm {
   name        String  // internal label: "Facebook Landing Page Q2"
   description String? // optional description of the form's purpose
   slug        String  @unique  // public URL: /form/:slug
-  sourceTag Source  // auto-applied to leads from this form
+  sourceTag String  @default("Website") // auto-applied to leads from this form
 
   // Which optional fields are visible on this form
   // { location: true, message: false }
+  submitButtonText String  @default("Send Request")
   fields    Json
 
   isActive  Boolean  @default(true)

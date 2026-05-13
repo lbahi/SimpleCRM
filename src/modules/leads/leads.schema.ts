@@ -10,15 +10,6 @@ export const LeadStatus = z.enum([
   "LOST",
 ]);
 
-export const LeadSource = z.enum([
-  "FACEBOOK_AD",
-  "INSTAGRAM",
-  "WEBSITE",
-  "REFERRAL",
-  "COLD_OUTREACH",
-  "WALK_IN",
-  "OTHER",
-]);
 
 // ─── Create ──────────────────────────────────────────────────
 
@@ -29,7 +20,7 @@ export const createLeadSchema = z.object({
   location: z.string().optional(),
   rating: z.number().int().min(0).max(5).default(0),
   sources: z.array(z.string().max(50)).max(10).default([]),
-  source: LeadSource.default("WEBSITE"),
+  source: z.string().default("Website"),
   notes: z.string().max(2000).optional(),
   assignedToId: z.string().optional(),
   formId: z.string().optional(),
@@ -70,7 +61,7 @@ export const listLeadsSchema = z.object({
   search: z.string().optional(),
   status: LeadStatus.optional(),
   assignedToId: z.string().optional(),
-  source: LeadSource.optional(),
+  source: z.string().optional(),
   sortBy: z
     .enum(["createdAt", "name", "status", "updatedAt"])
     .default("createdAt"),

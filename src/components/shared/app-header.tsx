@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/popover";
 
 interface AppHeaderProps {
-  title: string;
   user: {
     name: string;
     role: "ADMIN" | "MEMBER";
@@ -20,7 +19,7 @@ interface AppHeaderProps {
   };
 }
 
-export function AppHeader({ title, user }: AppHeaderProps) {
+export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -32,9 +31,7 @@ export function AppHeader({ title, user }: AppHeaderProps) {
 
   return (
     <header className="flex h-20 items-center justify-between border-b border-gray-100 bg-white px-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-black">{title}</h1>
-      </div>
+      <div />
 
       <div className="flex items-center gap-6">
         {/* Simple Notification Button */}

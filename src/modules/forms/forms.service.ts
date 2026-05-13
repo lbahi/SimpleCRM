@@ -1,4 +1,3 @@
-// SimpleCRM — forms.service.ts
 import { prisma } from "@/lib/prisma";
 import { CaptureForm, LeadStatus, ActivityAction, Prisma } from "@prisma/client";
 import { CreateFormInput, UpdateFormInput, SubmitFormInput } from "./forms.schema";
@@ -26,7 +25,7 @@ export async function createForm(data: CreateFormInput): Promise<CaptureForm> {
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-");
+    .replace(/\s+/g, "-") || "form";
 
   let slug = baseSlug;
   let counter = 1;
@@ -34,16 +33,21 @@ export async function createForm(data: CreateFormInput): Promise<CaptureForm> {
   while (true) {
     const existing = await prisma.captureForm.findUnique({ where: { slug } });
     if (!existing) break;
-    counter++;
-    slug = `${baseSlug}-${counter}`;
+    slug = `${baseSlug}-${counter++}`;
   }
 
   return prisma.captureForm.create({
     data: {
-      ...data,
-      slug,
-      fields: data.fields as Prisma.InputJsonValue,
-    },
+      name: data.name,
+      description: data.description || "Submit your information below",
+      slug: slug,
+      sourceTag: data.sourceTag || "Website",
+      fields: {
+        items: data.fields,
+        submitButtonText: data.submitButtonText || "Send Request"
+      } as unknown as Prisma.InputJsonValue,
+      isActive: true
+    }
   });
 }
 
@@ -61,15 +65,30 @@ export async function deleteForm(id: string): Promise<void> {
   await prisma.captureForm.delete({ where: { id } });
 }
 
-export async function submitForm(slug: string, data: SubmitFormInput): Promise<SubmissionResponse> {
+export async function submitForm(slug: string, data: Record<string, any>): Promise<SubmissionResponse> {
   const form = await prisma.captureForm.findUnique({ where: { slug, isActive: true } });
   if (!form) throw new Error("Form not found or inactive");
 
-  const existingLead = await prisma.lead.findFirst({
-    where: { phone: data.phone },
+  // Identify core fields from the dynamic data
+  // We look for keys like 'name', 'phone', 'email' or the labels
+  const name = data.name || data.fullname || data.FullName || "Anonymous Lead";
+  const phone = data.phone || data.tel || data.PhoneNumber || "";
+  const email = data.email || data.Email || null;
+  const location = data.location || data.Location || null;
+
+  // Everything else goes to customData
+  const customData: Record<string, any> = {};
+  Object.entries(data).forEach(([key, value]) => {
+    if (!['name', 'phone', 'email', 'location'].includes(key.toLowerCase())) {
+      customData[key] = value;
+    }
   });
 
-  if (existingLead) {
+  const existingLead = await prisma.lead.findFirst({
+    where: { phone: phone as string },
+  });
+
+  if (existingLead && phone) {
     await prisma.leadSource.create({
       data: {
         leadId: existingLead.id,
@@ -81,14 +100,14 @@ export async function submitForm(slug: string, data: SubmitFormInput): Promise<S
   }
 
   return prisma.$transaction(async (tx) => {
-    // Find a system actor (first admin) for logging public submissions
     const systemUser = await tx.user.findFirst({ where: { role: "ADMIN" } });
 
     const lead = await tx.lead.create({
       data: {
-        name: data.name,
-        phone: data.phone,
-        location: data.location || null,
+        name: name as string,
+        phone: phone as string,
+        email: email as string,
+        location: location as string,
         status: LeadStatus.NEW,
         sources: {
           create: {
@@ -96,7 +115,7 @@ export async function submitForm(slug: string, data: SubmitFormInput): Promise<S
             formId: form.id,
           },
         },
-        customData: data.message ? { Message: data.message } : {},
+        customData: customData as Prisma.InputJsonValue,
       },
     });
 

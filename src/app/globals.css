@@ -144,7 +144,7 @@
   /* Touch targets minimum size for mobile */
   button,
   a,
-  input,
+  input:not([type="checkbox"]):not([type="radio"]),
   select,
   textarea {
     @apply min-h-[44px] min-w-[44px];

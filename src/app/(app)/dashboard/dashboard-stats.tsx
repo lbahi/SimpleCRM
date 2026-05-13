@@ -11,9 +11,9 @@ interface DashboardStatsProps {
 export function DashboardStats({ analytics, isLoading }: DashboardStatsProps) {
   if (isLoading) {
     return (
-      <div className={designTokens.grid.stats}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className={designTokens.statCard.base}>
+          <div key={i} className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
             <Skeleton className="h-4 w-24 mb-2" />
             <Skeleton className="h-8 w-16" />
           </div>
@@ -25,29 +25,25 @@ export function DashboardStats({ analytics, isLoading }: DashboardStatsProps) {
   if (!analytics) return null;
 
   return (
-    <div className={designTokens.grid.stats}>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
       <StatCard 
         label="Total Leads" 
         value={analytics.totalLeads.toLocaleString()} 
-        trend={{ value: 12, isUp: true }}
         description="vs last month"
       />
       <StatCard 
         label="Fresh Leads" 
         value={analytics.freshLeads.toLocaleString()} 
-        trend={{ value: 8, isUp: true }}
         description="Awaiting contact"
       />
       <StatCard 
         label="Closed Leads" 
         value={analytics.closedLeads.toLocaleString()} 
-        trend={{ value: 5, isUp: false }}
         description="Deals won"
       />
       <StatCard 
         label="Conversion Rate" 
         value={`${analytics.conversionRate.toFixed(1)}%`} 
-        trend={{ value: 2, isUp: true }}
         description="Lead to customer"
       />
     </div>

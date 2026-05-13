@@ -3,7 +3,6 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Source } from "@prisma/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,15 +25,6 @@ interface EditFormDialogProps {
   onUpdated: () => void;
 }
 
-const SOURCE_OPTIONS = [
-  { value: Source.FACEBOOK_AD, label: "Facebook Ad" },
-  { value: Source.INSTAGRAM, label: "Instagram" },
-  { value: Source.WEBSITE, label: "Website" },
-  { value: Source.REFERRAL, label: "Referral" },
-  { value: Source.COLD_OUTREACH, label: "Cold Outreach" },
-  { value: Source.WALK_IN, label: "Walk-in" },
-  { value: Source.OTHER, label: "Other" },
-];
 
 export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,9 +44,6 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
       newErrors.name = "Form name must be at least 3 characters";
     }
     
-    if (!formData.sourceTag) {
-      newErrors.sourceTag = "Source tag is required";
-    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -122,33 +109,6 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-[12px] font-bold uppercase tracking-wider text-purple-600/80">Source tag *</Label>
-              <Select
-                value={formData.sourceTag}
-                onValueChange={(val) => {
-                  setFormData({ ...formData, sourceTag: val as Source });
-                  if (errors.sourceTag) setErrors({ ...errors, sourceTag: undefined });
-                }}
-              >
-                <SelectTrigger className={cn(
-                  "border-2 border-purple-200/50 focus:border-purple-400 rounded-xl bg-white/50",
-                  errors.sourceTag && "border-destructive focus:border-destructive"
-                )}>
-                  <SelectValue placeholder="Select source" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-2 border-purple-100">
-                  {SOURCE_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value} className="rounded-lg">
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.sourceTag && (
-                <p className="text-xs text-destructive font-medium">{errors.sourceTag}</p>
-              )}
-            </div>
 
             <div className="space-y-3">
               <Label className="text-[12px] font-bold uppercase tracking-wider text-purple-600/80">Show fields</Label>
