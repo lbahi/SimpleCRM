@@ -1,0 +1,263 @@
+// SimpleCRM — Prisma Schema
+// Architecture reference: SimpleCRM.md v3
+// Last updated: 2026-05-08
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum LeadStatus {
+  NEW
+  NO_RESPOND
+  CONTACTED
+  CONVERTED
+  LOST
+}
+
+enum Source {
+  FACEBOOK_AD
+  INSTAGRAM
+  WEBSITE
+  REFERRAL
+  COLD_OUTREACH
+  WALK_IN
+  OTHER
+}
+
+enum ReminderStatus {
+  PENDING
+  DISMISSED
+  RESCHEDULED
+}
+
+enum ActivityAction {
+  CREATED
+  STATUS_CHANGED
+  ASSIGNED
+  REASSIGNED
+  RATING_CHANGED
+  NOTE_ADDED
+  CONTACTED
+  REMINDER_SET
+  REMINDER_DISMISSED
+}
+
+// ─────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  passwordHash   String
+  role           Role     @default(MEMBER)
+  avatarInitials String   @db.VarChar(2)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  assignedLeads  Lead[]         @relation("AssignedLeads")
+  notes          Note[]
+  reminders      Reminder[]
+  activityLogs   ActivityLog[]
+  emailMessages  EmailMessage[]
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// LEAD
+// ─────────────────────────────────────────────
+
+model Lead {
+  id            String     @id @default(cuid())
+  name          String
+  phone         String
+  email         String?
+  customData    Json?
+  location      String?
+  status        LeadStatus @default(NEW)
+  rating        Int        @default(0)   // 0 = unrated, 1–5 stars
+  lastContacted DateTime?
+  order         Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Assignment — null means unassigned (inbox)
+  assignedToId  String?
+  assignedTo    User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
+
+  // Relations
+  sources       LeadSource[]
+  notes         Note[]
+  reminders     Reminder[]
+  activityLogs  ActivityLog[]
+  emailMessages EmailMessage[]
+
+  @@index([assignedToId])
+  @@index([status])
+  @@index([order])
+  @@index([createdAt])
+  @@map("leads")
+}
+
+// ─────────────────────────────────────────────
+// LEAD SOURCE
+// Multiple sources per lead (junction table)
+// ─────────────────────────────────────────────
+
+model LeadSource {
+  id        String   @id @default(cuid())
+  source    Source
+  createdAt DateTime @default(now())
+
+  leadId    String
+  lead      Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  // Which capture form produced this source (null = manually added)
+  formId    String?
+  form      CaptureForm? @relation(fields: [formId], references: [id])
+
+  @@index([leadId])
+  @@map("lead_sources")
+}
+
+// ─────────────────────────────────────────────
+// NOTE
+// Append-only — no update or delete mutations
+// ─────────────────────────────────────────────
+
+model Note {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+
+  leadId    String
+  lead      Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  authorId  String
+  author    User   @relation(fields: [authorId], references: [id])
+
+  @@index([leadId])
+  @@map("notes")
+}
+
+// ─────────────────────────────────────────────
+// REMINDER
+// ─────────────────────────────────────────────
+
+model Reminder {
+  id          String         @id @default(cuid())
+  dueAt       DateTime
+  note        String?        // optional context: "call after board meeting"
+  status      ReminderStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  leadId      String
+  lead        Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  @@index([leadId])
+  @@index([dueAt])
+  @@index([status])
+  @@map("reminders")
+}
+
+// ─────────────────────────────────────────────
+// ACTIVITY LOG
+// Immutable audit trail — no updates or deletes
+// ─────────────────────────────────────────────
+
+model ActivityLog {
+  id         String         @id @default(cuid())
+  action     ActivityAction
+  fromValue  String?        // previous value (e.g. "FRESH")
+  toValue    String?        // new value     (e.g. "INTERESTED")
+  createdAt  DateTime       @default(now())
+
+  leadId     String
+  lead       Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  actorId    String
+  actor      User   @relation(fields: [actorId], references: [id])
+
+  @@index([leadId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// ─────────────────────────────────────────────
+// CAPTURE FORM
+// Each form has its own public URL slug and source tag
+// ─────────────────────────────────────────────
+
+model CaptureForm {
+  id        String  @id @default(cuid())
+  name        String  // internal label: "Facebook Landing Page Q2"
+  description String? // optional description of the form's purpose
+  slug        String  @unique  // public URL: /form/:slug
+  sourceTag Source  // auto-applied to leads from this form
+
+  // Which optional fields are visible on this form
+  // { location: true, message: false }
+  fields    Json
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Leads that arrived through this form
+  leadSources LeadSource[]
+
+  @@map("capture_forms")
+}
+
+// ─────────────────────────────────────────────
+// EMAIL MESSAGE
+// Basic representation of an email for the Inbox module
+// ─────────────────────────────────────────────
+
+enum EmailDirection {
+  INBOUND
+  OUTBOUND
+}
+
+model EmailMessage {
+  id        String       @id @default(cuid())
+  subject   String
+  body      String
+  direction EmailDirection
+  isRead    Boolean      @default(false)
+  createdAt DateTime     @default(now())
+
+  // The lead this email belongs to
+  leadId    String
+  lead      Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  // For outbound emails, who sent it
+  senderId  String?
+  sender    User?        @relation(fields: [senderId], references: [id])
+
+  @@index([leadId])
+  @@index([isRead])
+  @@map("email_messages")
+}
