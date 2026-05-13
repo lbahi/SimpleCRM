@@ -115,11 +115,11 @@ export function PublicForm({ form }: PublicFormProps) {
                           }
                         }}
                         className={`w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors font-medium flex items-center justify-between ${
-                          isActive ? 'bg-purple-50 text-purple-700' : 'hover:bg-gray-50 text-gray-700'
+                          isActive ? 'bg-neutral-50 text-neutral-950' : 'hover:bg-gray-50 text-gray-700'
                         }`}
                       >
                         {opt}
-                        {isActive && <div className="size-1.5 bg-purple-600 rounded-full" />}
+                        {isActive && <div className="size-1.5 bg-neutral-950 rounded-full" />}
                       </button>
                     );
                   })}
@@ -138,7 +138,7 @@ export function PublicForm({ form }: PublicFormProps) {
           onChange={(e) => setValues({ ...values, [field.id]: e.target.value })}
           placeholder={field.placeholder}
           rows={4}
-          className={`w-full px-4 py-3 border rounded-xl text-sm bg-white focus:ring-4 focus:ring-purple-50 focus:border-purple-200 outline-none transition-all resize-none ${
+          className={`w-full px-4 py-3 border rounded-xl text-sm bg-white focus:ring-4 focus:ring-neutral-50 focus:border-neutral-300 outline-none transition-all resize-none ${
             errors[field.id] ? "border-red-200" : "border-gray-200 hover:border-gray-300"
           }`}
         />
@@ -163,7 +163,7 @@ export function PublicForm({ form }: PublicFormProps) {
                     setValues({ ...values, [field.id]: opt });
                   }
                 }}
-                className="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 transition-all cursor-pointer"
+                className="size-4 rounded border-gray-300 text-neutral-950 focus:ring-neutral-900 transition-all cursor-pointer"
               />
               <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors font-medium">{opt}</span>
             </label>
@@ -178,7 +178,7 @@ export function PublicForm({ form }: PublicFormProps) {
         value={values[field.id] || ""}
         onChange={(e) => setValues({ ...values, [field.id]: e.target.value })}
         placeholder={field.placeholder}
-        className={`w-full h-12 px-4 border rounded-xl text-sm bg-white focus:ring-4 focus:ring-purple-50 focus:border-purple-200 outline-none transition-all ${
+        className={`w-full h-12 px-4 border rounded-xl text-sm bg-white focus:ring-4 focus:ring-neutral-50 focus:border-neutral-300 outline-none transition-all ${
           errors[field.id] ? "border-red-200" : "border-gray-200 hover:border-gray-300"
         }`}
       />
@@ -225,7 +225,7 @@ export function PublicForm({ form }: PublicFormProps) {
         <button 
           type="submit" 
           disabled={isSubmitting}
-          className="w-full mt-4 h-14 bg-purple-600 text-white rounded-xl font-bold text-lg hover:bg-purple-700 transition-all shadow-lg shadow-purple-200 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70"
+          className="w-full mt-4 h-14 bg-neutral-950 text-white rounded-xl font-bold text-lg hover:bg-black transition-all shadow-lg shadow-neutral-100 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70"
         >
           {isSubmitting ? (
             <>

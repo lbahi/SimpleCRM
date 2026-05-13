@@ -131,7 +131,7 @@ function SortableField({
               id={`required-${field.id}`}
               checked={field.required}
               onChange={(e) => onUpdate({ ...field, required: e.target.checked })}
-              className="size-4 shrink-0 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+              className="size-4 shrink-0 rounded border-gray-300 text-neutral-950 focus:ring-neutral-900 cursor-pointer"
             />
             <label htmlFor={`required-${field.id}`} className="text-xs font-medium text-gray-600 cursor-pointer select-none">
               Required field
@@ -255,13 +255,12 @@ export function CreateFormDialog({ open, onClose, onCreated }: CreateFormDialogP
                       key={i}
                       type="button"
                       onClick={() => toggleOption(opt)}
-                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors font-medium flex items-center justify-between ${isActive
-                          ? 'bg-purple-50 text-purple-700'
-                          : 'hover:bg-gray-50 text-gray-700'
-                        }`}
+                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors font-medium flex items-center justify-between ${
+                        isActive ? 'bg-neutral-50 text-neutral-900' : 'hover:bg-gray-50 text-gray-700'
+                      }`}
                     >
                       {opt}
-                      {isActive && <div className="size-1.5 bg-purple-600 rounded-full" />}
+                      {isActive && <div className="size-1.5 bg-neutral-950 rounded-full" />}
                     </button>
                   );
                 })}
@@ -299,7 +298,7 @@ export function CreateFormDialog({ open, onClose, onCreated }: CreateFormDialogP
                   <input
                     type={field.type === 'checkbox' ? 'checkbox' : 'radio'}
                     name={`preview-${field.id}`}
-                    className="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 transition-all cursor-pointer"
+                    className="size-4 rounded border-gray-300 text-neutral-950 focus:ring-neutral-900 transition-all cursor-pointer"
                   />
                   <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">{opt}</span>
                 </label>
@@ -309,7 +308,7 @@ export function CreateFormDialog({ open, onClose, onCreated }: CreateFormDialogP
                 <input
                   type={field.type === 'checkbox' ? 'checkbox' : 'radio'}
                   name={`preview-${field.id}`}
-                  className="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 transition-all cursor-pointer"
+                  className="size-4 rounded border-gray-300 text-zinc-900 focus:ring-zinc-800 transition-all cursor-pointer"
                 />
                 <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">Default {field.type} option</span>
               </label>
@@ -331,12 +330,12 @@ export function CreateFormDialog({ open, onClose, onCreated }: CreateFormDialogP
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-purple-600 text-white">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-neutral-950 text-white">
           <div>
             <h2 className="text-2xl font-bold">Create Capture Form</h2>
-            <p className="text-sm text-purple-100 mt-1">Build new forms with layout tools</p>
+            <p className="text-sm text-neutral-400 mt-1">Build new forms with layout tools</p>
           </div>
-          <button onClick={onClose} className="text-white hover:text-purple-100 transition-colors">
+          <button onClick={onClose} className="text-white hover:text-neutral-300 transition-colors">
             <X size={24} />
           </button>
         </div>
@@ -440,7 +439,7 @@ export function CreateFormDialog({ open, onClose, onCreated }: CreateFormDialogP
                 ))}
               </div>
 
-              <button className="w-full mt-8 px-4 py-3.5 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700 transition-all shadow-lg shadow-purple-200 active:scale-[0.98]">
+              <button className="w-full mt-8 px-4 py-3.5 bg-neutral-950 text-white rounded-lg font-bold hover:bg-black transition-all shadow-lg shadow-neutral-200 active:scale-[0.98]">
                 {submitButtonText}
               </button>
             </div>
@@ -465,7 +464,7 @@ export function CreateFormDialog({ open, onClose, onCreated }: CreateFormDialogP
                 fields
               });
             }}
-            className="flex-1 px-4 py-2.5 bg-black text-white rounded-lg text-sm font-bold hover:bg-gray-800 transition-all active:scale-95"
+            className="flex-1 px-4 py-2.5 bg-neutral-950 text-white rounded-lg text-sm font-bold hover:bg-black transition-all active:scale-95 shadow-lg shadow-neutral-200"
           >
             Save and Activate
           </button>
