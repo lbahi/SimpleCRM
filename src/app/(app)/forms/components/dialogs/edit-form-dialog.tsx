@@ -356,12 +356,15 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-neutral-950 text-white">
+        <div className="flex items-center justify-between p-6 bg-neutral-50 border-b border-neutral-200 text-neutral-900">
           <div>
-            <h2 className="text-2xl font-bold">Edit Capture Form</h2>
-            <p className="text-sm text-neutral-400 mt-1">Full builder access for this form</p>
+            <h2 className="text-2xl font-bold tracking-tight">Edit Capture Form</h2>
+            <p className="text-sm text-neutral-500 mt-1 font-medium">Full builder access for this form</p>
           </div>
-          <button onClick={onClose} className="text-white hover:text-neutral-300 transition-colors">
+          <button 
+            onClick={onClose} 
+            className="p-2 hover:bg-neutral-200 rounded-full text-neutral-500 hover:text-neutral-900 transition-all active:scale-90"
+          >
             <X size={24} />
           </button>
         </div>
