@@ -606,14 +606,14 @@ Features shipped:
 - Seed: admin@simplecrm.com / admin1234 + member@simplecrm.com / member1234
 - Zero TypeScript errors confirmed
 
-### ✅ Sprint 6 — Capture Form (95% lead form builder)
+### ✅ Sprint 6 — Capture Form (100% lead form creation)
 Public /form/[slug] page and branding system. Features shipped:
 - Premium Purple Design System adopted for all public-facing surfaces
 - High-fidelity Public Form: project logo integration, purple focus states, custom dropdowns
 - Form Success State: consistent purple branding and typography
 - Page Wrapper: radial background grid + high-contrast utility layout
 - Trust Building: "Secure Data Encryption" interactive green badge with pulsing status indicator
-- Form Settings: standardized "Edit Form" dialog with purple header and high-fidelity inputs
+- Form Settings: standardized "Edit Form" dialog with full builder access (field reordering, real-time preview)
 - Status Management: Premium 'UIVerse' toggle switch design with checkmark/cross icons and spring animations
 - UI Refinement: Resolved transparency issues in all administrative dialogs and dropdown menus
 - Visual Precision: Standardized icon alignment and increased menu widths for better readability
@@ -647,5 +647,5 @@ Do not touch mid-sprint — schedule between sprints only.
 
 ---
 
-*Last updated: 2026-05-13 — Sprint 6 (Capture Form UI) 100% complete. Version: 95% lead form builder.*
+*Last updated: 2026-05-14 — Sprint 6 (Capture Form UI) 100% complete. Version: 100% lead form creation.*
 

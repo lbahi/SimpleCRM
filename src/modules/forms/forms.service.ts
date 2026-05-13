@@ -52,11 +52,22 @@ export async function createForm(data: CreateFormInput): Promise<CaptureForm> {
 }
 
 export async function updateForm(id: string, data: UpdateFormInput): Promise<CaptureForm> {
+  const current = await prisma.captureForm.findUnique({ where: { id } });
+  if (!current) throw new Error("Form not found");
+
+  const currentFields = (current.fields as any) || { items: [], submitButtonText: "Send Request" };
+
   return prisma.captureForm.update({
     where: { id },
     data: {
-      ...data,
-      ...(data.fields && { fields: data.fields as Prisma.InputJsonValue }),
+      name: data.name,
+      description: data.description,
+      sourceTag: data.sourceTag,
+      isActive: data.isActive,
+      fields: (data.fields || data.submitButtonText) ? {
+        items: data.fields ?? currentFields.items,
+        submitButtonText: data.submitButtonText ?? currentFields.submitButtonText
+      } as unknown as Prisma.InputJsonValue : undefined,
     },
   });
 }
