@@ -1,8 +1,7 @@
 // SimpleCRM — customize-dialog (Replicated from reference/CustomizeDialog.tsx)
 "use client";
 
-import { useState } from 'react';
-import { X, Eye, EyeOff, GripVertical, Pin, PinOff } from 'lucide-react';
+import { X, Eye, EyeOff, GripVertical } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -20,23 +19,28 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { ColumnId } from '../model';
 
 interface CustomizeDialogProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   visibleColumns: any[];
-  columnOrder: string[];
-  onToggleVisibility: (id: string) => void;
-  onMoveColumn: (id: string, direction: 'up' | 'down') => void;
-  onReorderColumns: (ids: string[]) => void;
+  visibleColumnIds: ColumnId[];
+  columnOrder: ColumnId[];
+  onToggleVisibility: (id: ColumnId) => void;
+  onMoveColumn: (id: ColumnId, dir: "up" | "down") => void;
+  onReorderColumns: (order: ColumnId[]) => void;
 }
 
 function SortableColumn({
   column,
+  isVisible,
   onToggleVisible,
-  onTogglePin,
-  onRename,
-}: any) {
+}: {
+  column: any;
+  isVisible: boolean;
+  onToggleVisible: () => void;
+}) {
   const {
     attributes,
     listeners,
@@ -63,7 +67,7 @@ function SortableColumn({
       <span className="flex-1 text-sm font-medium">{column.label}</span>
 
       <button onClick={onToggleVisible} className="p-1 hover:bg-gray-100 rounded transition-colors">
-        {column.hidden ? <EyeOff size={16} className="text-gray-400" /> : <Eye size={16} className="text-gray-700" />}
+        {isVisible ? <Eye size={16} className="text-gray-700" /> : <EyeOff size={16} className="text-gray-400" />}
       </button>
     </div>
   );
@@ -73,12 +77,11 @@ export function CustomizeDialog({
   open, 
   onOpenChange, 
   visibleColumns, 
+  visibleColumnIds,
   columnOrder, 
   onToggleVisibility, 
   onReorderColumns 
 }: CustomizeDialogProps) {
-  if (!open) return null;
-
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -86,11 +89,13 @@ export function CustomizeDialog({
     })
   );
 
+  if (!open) return null;
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      const oldIndex = columnOrder.indexOf(active.id as string);
-      const newIndex = columnOrder.indexOf(over.id as string);
+      const oldIndex = columnOrder.indexOf(active.id as ColumnId);
+      const newIndex = columnOrder.indexOf(over.id as ColumnId);
       onReorderColumns(arrayMove(columnOrder, oldIndex, newIndex));
     }
   };
@@ -127,6 +132,7 @@ export function CustomizeDialog({
                     <SortableColumn
                       key={id}
                       column={column}
+                      isVisible={visibleColumnIds.includes(id)}
                       onToggleVisible={() => onToggleVisibility(id)}
                     />
                   );

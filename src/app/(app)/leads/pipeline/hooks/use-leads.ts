@@ -38,10 +38,14 @@ export function useLeads(initialData: PaginatedLeads, tableState: TableState) {
     updateLocalLead(lead.id, () => optimistic);
 
     try {
+      const body = column === "assignedTo" 
+        ? { assignedToId: (rawValue as any)?.id ?? null }
+        : { [column]: rawValue };
+
       await fetch(`/api/leads/${lead.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [column]: rawValue }),
+        body: JSON.stringify(body),
       }).then(checkResponse);
     } catch (error) {
       updateLocalLead(lead.id, () => lead);

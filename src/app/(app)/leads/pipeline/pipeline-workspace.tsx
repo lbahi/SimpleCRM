@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import { DndContext, rectIntersection } from "@dnd-kit/core";
 import type { PaginatedLeads } from "@/modules/leads/leads.types";
 import { useColumnStateContext } from "./context/column-state-context";
 import { ColumnStateProvider } from "./context/column-state-context";
@@ -14,7 +14,13 @@ import { PipelineToolbar } from "./toolbar/pipeline-toolbar";
 import { TableContainer } from "./table-container";
 import { WorkspaceModals } from "./workspace-modals";
 
-function PipelineWorkspaceInner({ initialData }: { initialData: PaginatedLeads }) {
+function PipelineWorkspaceInner({ 
+  initialData, 
+  currentUserRole 
+}: { 
+  initialData: PaginatedLeads; 
+  currentUserRole: string;
+}) {
   const columnState = useColumnStateContext();
   const tableState = useTableState();
   const { sortedLeads, persistFieldChange, refreshLeads, reorderLeads, clearManualOrder } = useLeads(initialData, tableState);
@@ -49,8 +55,10 @@ function PipelineWorkspaceInner({ initialData }: { initialData: PaginatedLeads }
     else setSelectedIds(new Set(sortedLeads.map((l) => l.id)));
   };
 
+  if (!columnState.isHydrated) return <div className="flex-1 flex items-center justify-center">Loading...</div>;
+
   return (
-    <DndContext id="pipeline-dnd" sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext id="pipeline-dnd" sensors={sensors} collisionDetection={rectIntersection} onDragEnd={handleDragEnd}>
       <div className="flex flex-col h-full">
         <PipelineToolbar
           tableState={tableState}
@@ -72,6 +80,7 @@ function PipelineWorkspaceInner({ initialData }: { initialData: PaginatedLeads }
             onToggleSelection={handleToggleSelection}
             onToggleAll={handleToggleAll}
             onExpand={setSelectedDetailId}
+            currentUserRole={currentUserRole}
           />
         </div>
         <WorkspaceModals
@@ -90,10 +99,16 @@ function PipelineWorkspaceInner({ initialData }: { initialData: PaginatedLeads }
   );
 }
 
-export function PipelineWorkspace({ initialData }: { initialData: PaginatedLeads }) {
+export function PipelineWorkspace({ 
+  initialData, 
+  currentUserRole 
+}: { 
+  initialData: PaginatedLeads; 
+  currentUserRole: string;
+}) {
   return (
     <ColumnStateProvider>
-      <PipelineWorkspaceInner initialData={initialData} />
+      <PipelineWorkspaceInner initialData={initialData} currentUserRole={currentUserRole} />
     </ColumnStateProvider>
   );
 }

@@ -2,6 +2,7 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
@@ -37,9 +38,10 @@ interface LeadRowProps {
   onChangeEditingValue: (val: string) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
-  onUpdateField: (lead: PipelineLead, column: ColumnId, value: unknown) => Promise<void>;
+  onUpdateField: (lead: PipelineLead, column: ColumnId, value: unknown) => void | Promise<void>;
   pinnedColumns: string[];
   pinnedOffsets: Record<string, number>;
+  currentUserRole: string;
 }
 
 export function LeadRow({
@@ -60,6 +62,7 @@ export function LeadRow({
   onUpdateField,
   pinnedColumns,
   pinnedOffsets,
+  currentUserRole,
 }: LeadRowProps) {
   const {
     attributes,
@@ -92,8 +95,9 @@ export function LeadRow({
       case "assignedTo":
         return (
           <MemberCell 
-            value={valueToString(value)} 
+            value={lead.assignedTo} 
             onChange={(newVal) => onUpdateField(lead, column, newVal)} 
+            isAdmin={currentUserRole === "ADMIN"}
           />
         );
       case "rating":
@@ -113,7 +117,13 @@ export function LeadRow({
           </div>
         );
       case "createdAt":
-        return <span>{formatDateTime(value)}</span>;
+        return (
+          <span className="text-[12px] text-neutral-400">
+            {lead.createdAt 
+              ? format(new Date(lead.createdAt), "MMM d, yyyy") 
+              : "—"}
+          </span>
+        );
       case "notePreview":
         return <span className="truncate">{valueToString(value) || "-"}</span>;
       default:
@@ -132,14 +142,19 @@ export function LeadRow({
       )}
     >
       <RowDragHandle attributes={attributes} listeners={listeners} />
-      <td className="w-10 border-b border-neutral-100 px-2 py-2.5">
-        {onToggleSelection && (
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={() => onToggleSelection(lead.id)}
-            aria-label="Select row"
-          />
-        )}
+      <td 
+        className="w-12 sticky left-12 z-10 bg-white border-b border-neutral-100 px-2 py-2.5"
+        style={{ width: 48, left: 48 }}
+      >
+        <div className="flex items-center justify-center">
+          {onToggleSelection && (
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelection(lead.id)}
+              aria-label="Select row"
+            />
+          )}
+        </div>
       </td>
       {columns.map((column) => {
         const isEditing = editingCell?.leadId === lead.id && editingCell.column === column;
@@ -156,10 +171,14 @@ export function LeadRow({
             key={`${lead.id}-${column}`}
             className={cn(
               "border-b border-neutral-100 px-3 py-2.5 text-[13px] text-neutral-600 transition-colors",
-              isPinned && `sticky left-[${left}px] z-10 bg-white`,
+              isPinned && "sticky z-10 bg-white",
               isInteractive && "cursor-pointer hover:bg-neutral-50"
             )}
-            style={isPinned ? { left } : { width }}
+            style={{ 
+              width: isPinned ? undefined : width,
+              minWidth: isPinned ? undefined : width,
+              left: isPinned ? left : undefined 
+            }}
           >
             {isEditing ? (
               <CellEditor
@@ -186,7 +205,10 @@ export function LeadRow({
           </td>
         );
       })}
-      <td className="w-10 border-b border-neutral-100 px-2 py-2.5">
+      <td 
+        className="w-12 sticky right-0 z-30 bg-white border-b border-neutral-100 px-2 py-2.5 border-l"
+        style={{ width: 48, right: 0 }}
+      >
         <button
           type="button"
           aria-label={`Open details for ${lead.name}`}

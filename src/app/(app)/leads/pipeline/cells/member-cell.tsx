@@ -1,6 +1,7 @@
 // SimpleCRM — member-cell.tsx
 "use client";
 
+import { useState, useEffect } from "react";
 import { Check, UserPlus, Lock } from "lucide-react";
 import {
   Popover,
@@ -8,41 +9,58 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-
-const MEMBERS = [
-  { name: "John Doe", email: "john@example.com" },
-  { name: "Jane Smith", email: "jane@example.com" },
-  { name: "Bob Wilson", email: "bob@example.com" },
-];
+import { MemberWithStats } from "@/modules/users/users.types";
 
 interface MemberCellProps {
-  value: string | { id: string; name: string; avatarInitials: string } | null;
-  onChange: (value: string | null) => void;
+  value: any | null;
+  onChange: (value: any | null) => void;
   isAdmin?: boolean;
 }
 
-function Avatar({ initials, name, size }: { initials: string; name: string; size: string }) {
-  const sizeClasses = size === "sm" ? "w-5 h-5 text-[10px]" : "w-6 h-6 text-xs";
+function Avatar({ initials, size }: { initials: string; size: string }) {
+  const sizeClasses = size === "sm" ? "w-5 h-5 text-[10px]" : "w-7 h-7 text-xs";
   return (
-    <div className={`${sizeClasses} rounded-full bg-gray-700 text-white flex items-center justify-center flex-shrink-0`}>
+    <div className={cn(
+      sizeClasses,
+      "rounded-full bg-neutral-800 text-white flex items-center justify-center flex-shrink-0 font-medium"
+    )}>
       {initials}
     </div>
   );
 }
 
 export function MemberCell({ value, onChange, isAdmin = false }: MemberCellProps) {
-  const memberName = typeof value === 'string' ? value : value?.name || null;
-  const initials = typeof value === 'string' ? value.slice(0, 2).toUpperCase() : value?.avatarInitials || '??';
+  const [members, setMembers] = useState<MemberWithStats[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isAdmin) {
+      setLoading(true);
+      fetch("/api/users")
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setMembers(data);
+          }
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [isAdmin]);
+
+  const memberName = value?.name || null;
+  const initials = value?.avatarInitials || "??";
 
   const content = (
     <div className="flex items-center gap-1.5 w-full text-left group">
       {memberName ? (
         <>
-          <Avatar initials={initials} name={memberName} size="sm" />
-          <span className="truncate text-xs font-medium text-blue-700">{memberName}</span>
+          <Avatar initials={initials} size="sm" />
+          <span className="truncate text-xs font-medium text-neutral-900 group-hover:text-primary transition-colors">
+            {memberName}
+          </span>
         </>
       ) : (
-        <div className="flex items-center gap-2 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-2 text-neutral-400 opacity-40 group-hover:opacity-100 transition-opacity">
           <div className="w-5 h-5 rounded-full border border-dashed border-neutral-300 flex items-center justify-center">
             <UserPlus className="w-3 h-3" />
           </div>
@@ -61,44 +79,67 @@ export function MemberCell({ value, onChange, isAdmin = false }: MemberCellProps
 
   return (
     <Popover>
-      <PopoverTrigger className="w-full text-left rounded-md outline-none">
-        {content}
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-[220px] p-1 bg-white border border-neutral-200 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.10)]">
-        <div className="p-2 border-b border-neutral-100">
-          <p className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider px-1">Assign Member</p>
+      <PopoverTrigger className="w-full text-left rounded-md outline-none focus:ring-1 focus:ring-primary/20">
+        <div className="px-1 py-0.5 rounded transition-colors hover:bg-neutral-100/50">
+          {content}
         </div>
-        <div className="flex flex-col mt-1">
-          {MEMBERS.map((member) => (
-            <button
-              key={member.email}
-              onClick={() => onChange(member.name)}
-              className={cn(
-                "h-10 px-2 rounded-lg flex items-center gap-3 text-[13px] font-medium transition-colors",
-                member.name === memberName ? "bg-neutral-50 text-neutral-900" : "text-neutral-600 hover:bg-neutral-50"
-              )}
-            >
-              <Avatar 
-                initials={member.name.slice(0, 2).toUpperCase()} 
-                name={member.name} 
-                size="sm" 
-              />
-              <div className="flex flex-col items-start min-w-0">
-                <span className="truncate leading-tight">{member.name}</span>
-                <span className="text-[11px] text-neutral-400 truncate leading-tight">{member.email}</span>
-              </div>
-              {member.name === memberName && <Check className="ml-auto w-3.5 h-3.5 text-neutral-400" />}
-            </button>
-          ))}
+      </PopoverTrigger>
+      <PopoverContent 
+        align="start" 
+        className="w-[240px] p-1 bg-white border border-neutral-200 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-[100]"
+        sideOffset={4}
+      >
+        <div className="px-2 py-1.5 border-b border-neutral-100 mb-1">
+          <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">Assign Lead</p>
+        </div>
+        
+        <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+          {/* Unassign Option */}
           <button
             onClick={() => onChange(null)}
-            className="h-9 px-2 rounded-lg flex items-center gap-3 text-[13px] font-medium text-red-500 hover:bg-red-50 transition-colors mt-1"
+            className="w-full h-10 px-2 rounded-lg flex items-center gap-3 text-[13px] font-medium text-neutral-400 hover:bg-neutral-50 transition-colors border-b border-dashed border-neutral-100 mb-1"
           >
-            <div className="w-6 h-6 rounded-full border border-red-100 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full border border-dashed border-neutral-200 flex items-center justify-center bg-white">
               <span className="text-lg leading-none">×</span>
             </div>
             Unassign
           </button>
+
+          {loading ? (
+            <div className="py-8 text-center text-xs text-neutral-400 italic">Loading members...</div>
+          ) : members.length === 0 ? (
+            <div className="py-8 text-center text-xs text-neutral-400 italic">No active members found</div>
+          ) : (
+            members.map((member) => (
+              <button
+                key={member.id}
+                onClick={() => onChange({ 
+                  id: member.id, 
+                  name: member.name, 
+                  avatarInitials: member.avatarInitials 
+                })}
+                className={cn(
+                  "w-full h-12 px-2 rounded-lg flex items-center gap-3 text-[13px] font-medium transition-all group",
+                  member.id === value?.id ? "bg-neutral-50 text-primary" : "text-neutral-600 hover:bg-neutral-50"
+                )}
+              >
+                <Avatar initials={member.avatarInitials} size="md" />
+                <div className="flex flex-col items-start min-w-0 flex-1">
+                  <span className="truncate leading-tight font-semibold">{member.name}</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[11px] text-neutral-400 truncate max-w-[100px]">{member.email}</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-end gap-1">
+                  <span className="px-1.5 py-0.5 rounded-full bg-neutral-100 text-neutral-500 text-[10px] font-bold">
+                    {member.openLeads} leads
+                  </span>
+                  {member.id === value?.id && <Check className="w-3.5 h-3.5 text-primary" />}
+                </div>
+              </button>
+            ))
+          )}
         </div>
       </PopoverContent>
     </Popover>

@@ -1,4 +1,5 @@
 import { Search, Filter, Settings, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { CustomDropdown } from '@/components/ui/custom-dropdown';
 
 interface ToolbarProps {
   searchValue: string;
@@ -65,15 +66,19 @@ export function Toolbar({
         )}
       </button>
 
-      <select
+      <CustomDropdown
         value={groupBy || ''}
-        onChange={(e) => onGroupByChange(e.target.value || null)}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">No grouping</option>
-        <option value="status">Group by Status</option>
-        <option value="assignedTo">Group by Assignee</option>
-      </select>
+        onChange={(val) => onGroupByChange(val || null)}
+        options={[
+          { value: '', label: 'No grouping' },
+          { value: 'status', label: 'Group by Status' },
+          { value: 'assignedTo', label: 'Group by Assigned to' },
+          { value: 'location', label: 'Group by Location' },
+          { value: 'sources', label: 'Group by Source' },
+          { value: 'rating', label: 'Group by Rating' },
+        ]}
+        className="w-48"
+      />
 
       <button
         onClick={onOpenCustomize}

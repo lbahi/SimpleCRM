@@ -104,10 +104,15 @@ export function ColumnHeader({
   return (
     <th
       ref={setNodeRef}
-      style={style}
+      style={{ 
+        ...style,
+        left: isPinned ? pinnedLeft : undefined
+      }}
+      {...attributes}
+      {...listeners}
       className={cn(
         "relative border-b border-neutral-100 bg-neutral-50 px-3 py-2.5 text-[11px] uppercase tracking-wider text-neutral-400 font-semibold transition-colors hover:bg-neutral-100",
-        isPinned && "sticky bg-white",
+        isPinned && "sticky z-20 bg-neutral-50",
         isDragging && "z-50 opacity-50"
       )}
     >
@@ -125,12 +130,6 @@ export function ColumnHeader({
         />
       ) : (
         <div className="flex items-center gap-2">
-          <div
-            className="group flex items-center gap-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors"
-            {...listeners}
-          >
-            <GripVertical className="h-3.5 w-3.5" />
-          </div>
           <ColumnHeaderDropdown
             columnId={columnId}
             onAction={handleAction}
@@ -141,7 +140,7 @@ export function ColumnHeader({
                 {isDateColumn ? (
                   <div
                     className="ml-auto h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                    onClick={handleSortClick}
+                    onClick={(e) => { e.stopPropagation(); handleSortClick(); }}
                     title="Filter by date"
                   >
                     <Calendar className="h-3.5 w-3.5" />
@@ -150,14 +149,14 @@ export function ColumnHeader({
                   sortDirection === "asc" ? (
                     <div
                       className="ml-auto h-3.5 w-3.5 text-primary hover:text-primary/80 transition-colors cursor-pointer"
-                      onClick={() => onSort(columnId)}
+                      onClick={(e) => { e.stopPropagation(); onSort(columnId); }}
                     >
                       <ArrowUp className="h-3.5 w-3.5" />
                     </div>
                   ) : (
                     <div
                       className="ml-auto h-3.5 w-3.5 text-primary hover:text-primary/80 transition-colors cursor-pointer"
-                      onClick={() => onSort(columnId)}
+                      onClick={(e) => { e.stopPropagation(); onSort(columnId); }}
                     >
                       <ArrowDown className="h-3.5 w-3.5" />
                     </div>
@@ -165,7 +164,7 @@ export function ColumnHeader({
                 ) : (
                   <div
                     className="ml-auto h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:text-foreground cursor-pointer"
-                    onClick={() => onSort(columnId)}
+                    onClick={(e) => { e.stopPropagation(); onSort(columnId); }}
                   >
                     <ArrowUpDown className="h-3.5 w-3.5" />
                   </div>

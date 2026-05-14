@@ -70,7 +70,8 @@ export function WorkspaceModals({
       <CustomizeDialog
         open={modals.showCustomize}
         onOpenChange={modals.setShowCustomize}
-        visibleColumns={columnState.visibleColumns}
+        visibleColumns={columnState.allAvailableColumns}
+        visibleColumnIds={columnState.visibleColumns}
         columnOrder={columnState.columnOrder}
         onToggleVisibility={columnState.toggleVisibility}
         onMoveColumn={moveColumn}

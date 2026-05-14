@@ -15,35 +15,33 @@ export function useWorkspaceDnd(
   reorderColumns: (newOrder: ColumnId[]) => void
 ) {
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    // Check if dragging a row (lead) or column
     const activeId = String(active.id);
     const overId = String(over.id);
     
-    // Check if it's a column drag (column IDs are in columnOrder)
-    if (columnOrder.includes(activeId as ColumnId) && columnOrder.includes(overId as ColumnId)) {
-      // Handle column reordering
-      const oldIndex = columnOrder.findIndex((col) => col === activeId);
-      const newIndex = columnOrder.findIndex((col) => col === overId);
+    // Check if dragging a column
+    const isColumnDrag = columnOrder.includes(activeId as ColumnId);
+    
+    if (isColumnDrag) {
+      const oldIndex = columnOrder.indexOf(activeId as ColumnId);
+      const newIndex = columnOrder.indexOf(overId as ColumnId);
       
       if (oldIndex !== -1 && newIndex !== -1) {
-        const newColumnOrder = arrayMove(columnOrder, oldIndex, newIndex);
-        reorderColumns(newColumnOrder);
+        reorderColumns(arrayMove(columnOrder, oldIndex, newIndex));
       }
     } else {
-      // Handle row reordering
+      // Row reorder
       const oldIndex = leads.findIndex((l) => l.id === activeId);
       const newIndex = leads.findIndex((l) => l.id === overId);
 
       if (oldIndex !== -1 && newIndex !== -1) {
-        const newOrder = arrayMove(leads, oldIndex, newIndex).map(l => l.id);
-        reorderLeads(newOrder);
+        reorderLeads(arrayMove(leads, oldIndex, newIndex).map(l => l.id));
       }
     }
   };

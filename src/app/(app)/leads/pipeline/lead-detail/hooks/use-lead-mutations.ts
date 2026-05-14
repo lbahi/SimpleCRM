@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 import { PipelineLead } from "../../model";
 import type { NoteItem, ActivityItem } from "./use-lead-detail";
-import { updateLeadStatus, updateLead, logContact } from "@/app/actions/leads";
+import { updateLeadStatus, updateLead, logContact as logContactAction } from "@/app/actions/leads";
 import { LeadStatus } from "@prisma/client";
 
 interface MutateState {
@@ -56,7 +56,7 @@ export function useLeadMutations(leadId: string, mutate: MutateState, isSample?:
     mutate.setLead((prev) => prev ? { ...prev, lastContacted: now } : prev);
 
     try {
-      await logContact(leadId);
+      await logContactAction(leadId);
       toast.success("Contact logged");
     } catch {
       toast.error("Failed to log contact");

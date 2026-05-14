@@ -1,6 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { CustomDropdown } from '@/components/ui/custom-dropdown';
 import { TableState } from '../types';
+
+interface Member {
+  id: string;
+  name: string;
+  avatarInitials: string;
+}
 
 interface FilterDialogProps {
   filters: TableState['filters'];
@@ -10,6 +17,16 @@ interface FilterDialogProps {
 
 export function FilterDialog({ filters, onClose, onApply }: FilterDialogProps) {
   const [localFilters, setLocalFilters] = useState(filters);
+  const [members, setMembers] = useState<Member[]>([]);
+
+  useEffect(() => {
+    fetch("/api/users?role=MEMBER")
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setMembers(data);
+      })
+      .catch(err => console.error("Failed to fetch members", err));
+  }, []);
 
   const handleApply = () => {
     onApply(localFilters);
@@ -75,45 +92,55 @@ export function FilterDialog({ filters, onClose, onApply }: FilterDialogProps) {
 
           <div>
             <label className="block text-sm mb-1 text-gray-700">Assigned To</label>
-            <input
-              type="text"
+            <CustomDropdown
               value={localFilters.assignedTo}
-              onChange={(e) => setLocalFilters({ ...localFilters, assignedTo: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              placeholder="Filter by assignee..."
+              onChange={(val) => setLocalFilters({ ...localFilters, assignedTo: val })}
+              placeholder="All members"
+              showSearch
+              options={[
+                { value: "", label: "All members" },
+                { value: "Unassigned", label: "Unassigned" },
+                ...members.map(m => ({
+                  value: m.name, // Store name for the current filter logic
+                  label: m.name,
+                  avatar: m.avatarInitials
+                }))
+              ]}
             />
           </div>
 
           <div>
             <label className="block text-sm mb-1 text-gray-700">Status</label>
-            <select
+            <CustomDropdown
               value={localFilters.status}
-              onChange={(e) => setLocalFilters({ ...localFilters, status: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-            >
-              <option value="">All statuses</option>
-              <option value="NEW">New</option>
-              <option value="NO_RESPOND">No Respond</option>
-              <option value="CONTACTED">Contacted</option>
-              <option value="CONVERTED">Converted</option>
-              <option value="LOST">Lost</option>
-            </select>
+              onChange={(val) => setLocalFilters({ ...localFilters, status: val })}
+              placeholder="All statuses"
+              options={[
+                { value: "", label: "All statuses" },
+                { value: "NEW", label: "New" },
+                { value: "NO_RESPOND", label: "No Respond" },
+                { value: "CONTACTED", label: "Contacted" },
+                { value: "CONVERTED", label: "Converted" },
+                { value: "LOST", label: "Lost" },
+              ]}
+            />
           </div>
 
           <div>
             <label className="block text-sm mb-1 text-gray-700">Minimum Rating</label>
-            <select
-              value={localFilters.rating ?? ''}
-              onChange={(e) => setLocalFilters({ ...localFilters, rating: e.target.value ? Number(e.target.value) : null })}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-            >
-              <option value="">Any rating</option>
-              <option value="1">1 star or more</option>
-              <option value="2">2 stars or more</option>
-              <option value="3">3 stars or more</option>
-              <option value="4">4 stars or more</option>
-              <option value="5">5 stars</option>
-            </select>
+            <CustomDropdown
+              value={localFilters.rating?.toString() ?? ""}
+              onChange={(val) => setLocalFilters({ ...localFilters, rating: val ? Number(val) : null })}
+              placeholder="Any rating"
+              options={[
+                { value: "", label: "Any rating" },
+                { value: "1", label: "1 star or more" },
+                { value: "2", label: "2 stars or more" },
+                { value: "3", label: "3 stars or more" },
+                { value: "4", label: "4 stars or more" },
+                { value: "5", label: "5 stars" },
+              ]}
+            />
           </div>
         </div>
 

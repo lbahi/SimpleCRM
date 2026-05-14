@@ -1,8 +1,15 @@
 // SimpleCRM — filter-dialog (Replicated from reference/FilterDialog.tsx)
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { CustomDropdown } from '@/components/ui/custom-dropdown';
+
+interface Member {
+  id: string;
+  name: string;
+  avatarInitials: string;
+}
 
 interface FilterDialogProps {
   open: boolean;
@@ -21,6 +28,19 @@ export function FilterDialog({
   onApply, 
   onClear 
 }: FilterDialogProps) {
+  const [members, setMembers] = useState<Member[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      fetch("/api/users?role=MEMBER")
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) setMembers(data);
+        })
+        .catch(err => console.error("Failed to fetch members", err));
+    }
+  }, [open]);
+
   if (!open) return null;
 
   return (
@@ -69,46 +89,56 @@ export function FilterDialog({
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Assigned To</label>
-            <input
-              type="text"
+            <CustomDropdown
               value={draftFilters.assignedTo}
-              onChange={(e) => onDraftChange({ ...draftFilters, assignedTo: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-black outline-none"
-              placeholder="Filter by assignee..."
+              onChange={(val) => onDraftChange({ ...draftFilters, assignedTo: val })}
+              placeholder="All members"
+              showSearch
+              options={[
+                { value: "", label: "All members" },
+                { value: "UNASSIGNED", label: "Unassigned" },
+                ...members.map(m => ({
+                  value: m.id,
+                  label: m.name,
+                  avatar: m.avatarInitials
+                }))
+              ]}
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Status</label>
-            <select
+            <CustomDropdown
               value={draftFilters.status}
-              onChange={(e) => onDraftChange({ ...draftFilters, status: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-black outline-none"
-            >
-              <option value="">All statuses</option>
-              <option value="NEW">New</option>
-              <option value="FRESH">Fresh</option>
-              <option value="CONTACTED">Contacted</option>
-              <option value="QUALIFIED">Qualified</option>
-              <option value="CONVERTED">Converted</option>
-              <option value="LOST">Lost</option>
-            </select>
+              onChange={(val) => onDraftChange({ ...draftFilters, status: val })}
+              placeholder="All statuses"
+              options={[
+                { value: "", label: "All statuses" },
+                { value: "NEW", label: "New" },
+                { value: "FRESH", label: "Fresh" },
+                { value: "CONTACTED", label: "Contacted" },
+                { value: "QUALIFIED", label: "Qualified" },
+                { value: "CONVERTED", label: "Converted" },
+                { value: "LOST", label: "Lost" },
+              ]}
+            />
           </div>
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Minimum Rating</label>
-            <select
-              value={draftFilters.rating ?? ''}
-              onChange={(e) => onDraftChange({ ...draftFilters, rating: e.target.value ? Number(e.target.value) : null })}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-black outline-none"
-            >
-              <option value="">Any rating</option>
-              <option value="1">1 star or more</option>
-              <option value="2">2 stars or more</option>
-              <option value="3">3 stars or more</option>
-              <option value="4">4 stars or more</option>
-              <option value="5">5 stars</option>
-            </select>
+            <CustomDropdown
+              value={draftFilters.rating?.toString() ?? ""}
+              onChange={(val) => onDraftChange({ ...draftFilters, rating: val ? Number(val) : null })}
+              placeholder="Any rating"
+              options={[
+                { value: "", label: "Any rating" },
+                { value: "1", label: "1 star or more" },
+                { value: "2", label: "2 stars or more" },
+                { value: "3", label: "3 stars or more" },
+                { value: "4", label: "4 stars or more" },
+                { value: "5", label: "5 stars" },
+              ]}
+            />
           </div>
         </div>
 

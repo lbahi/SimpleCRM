@@ -10,7 +10,7 @@ const DEFAULT_WIDTHS: Record<string, number> = {
   location: 120,
   endDate: 140,
   rating: 100,
-  owner: 160,
+  assignedTo: 160,
   email: 190,
   industry: 120,
   companySize: 120,
@@ -41,6 +41,7 @@ export function useColumnState() {
   const [columnLabels, setColumnLabels] = useState<Record<string, string>>({});
   const [pinnedColumns, setPinnedColumns] = useState<string[]>([]);
   const [customColumns, setCustomColumns] = useState<any[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     const savedOrder = localStorage.getItem("simpleCRM_columnOrder");
@@ -50,12 +51,28 @@ export function useColumnState() {
     const savedCustom = localStorage.getItem("simpleCRM_customColumns");
     const savedPinned = localStorage.getItem("simpleCRM_pinnedColumns");
 
-    if (savedOrder) setColumnOrder(JSON.parse(savedOrder));
+    if (savedOrder) {
+      const parsedOrder = JSON.parse(savedOrder);
+      // Ensure all current columns are included in the order
+      const currentIds = COLUMN_DEFS.map(c => c.id);
+      const missingIds = currentIds.filter(id => !parsedOrder.includes(id));
+      setColumnOrder([...parsedOrder, ...missingIds]);
+    }
     if (savedWidths) setColumnWidths(JSON.parse(savedWidths));
-    if (savedVisible) setVisibleColumns(JSON.parse(savedVisible));
+    if (savedVisible) {
+      const parsedVisible = JSON.parse(savedVisible);
+      // If we've added new columns that should be visible by default, include them
+      const defaultIds = DEFAULT_VISIBLE_COLUMNS;
+      const missingVisible = defaultIds.filter(id => !parsedVisible.includes(id) && !savedVisible.includes(id)); 
+      // Actually, if savedVisible was [], missingVisible would be all defaults.
+      // Let's just ensure everything in COLUMN_DEFS is at least *known*.
+      setVisibleColumns(parsedVisible);
+    }
     if (savedLabels) setColumnLabels(JSON.parse(savedLabels));
     if (savedCustom) setCustomColumns(JSON.parse(savedCustom));
     if (savedPinned) setPinnedColumns(JSON.parse(savedPinned));
+    
+    setIsHydrated(true);
   }, []);
 
   const allAvailableColumns = useMemo(() => {
@@ -133,6 +150,7 @@ export function useColumnState() {
     pinColumn,
     setLabel,
     addCustomColumn,
+    isHydrated,
   };
 }
 

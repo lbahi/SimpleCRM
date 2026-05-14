@@ -113,7 +113,7 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
         return (
           <MemberCell
             value={values[col] || ""}
-            onChange={(value) => setValue(col, value)}
+            onChange={(value) => setValue(col, value || "")}
             isAdmin={isAdmin}
           />
         );

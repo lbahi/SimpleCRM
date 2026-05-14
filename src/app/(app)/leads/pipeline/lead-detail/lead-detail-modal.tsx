@@ -56,8 +56,20 @@ function SortableField({ field, onUpdate }: { field: FieldItem; onUpdate: (value
         <div className="text-xs text-gray-500 mb-1.5 font-bold uppercase tracking-wider">{field.label}</div>
         {field.type === 'status' && <StatusCell status={field.value} />}
         {field.type === 'rating' && <RatingCell rating={field.value} onChange={onUpdate} />}
-        {field.type === 'member' && <div className="text-sm font-medium">{field.value || 'Unassigned'}</div>}
-        {field.type === 'sources' && <div className="text-xs bg-gray-100 px-2 py-0.5 rounded inline-block">{field.value}</div>}
+        {field.type === 'member' && (
+          <div className="text-sm font-medium">
+            {typeof field.value === 'object' && field.value ? field.value.name : (field.value || 'Unassigned')}
+          </div>
+        )}
+        {field.type === 'sources' && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {(Array.isArray(field.value) ? field.value : []).map((s: any, i: number) => (
+              <span key={i} className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-100 font-medium uppercase">
+                {typeof s === 'object' ? s.source : s}
+              </span>
+            ))}
+          </div>
+        )}
         {field.type === 'text' && (
           <input
             type="text"
@@ -87,7 +99,7 @@ export function LeadDetailModal({
     { id: 'status', label: 'Status', value: lead.status, type: 'status', editable: false },
     { id: 'rating', label: 'Rating', value: lead.rating || 0, type: 'rating', editable: true },
     { id: 'assignedTo', label: 'Assigned To', value: lead.assignedTo, type: 'member', editable: false },
-    { id: 'source', label: 'Source', value: lead.source, type: 'sources', editable: false },
+    { id: 'sources', label: 'Sources', value: lead.sources, type: 'sources', editable: false },
     { id: 'lastContacted', label: 'Last Contacted', value: lead.lastContacted, type: 'date', editable: false },
   ]);
 

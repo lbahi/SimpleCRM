@@ -19,6 +19,8 @@ export type GroupByField =
   | "status"
   | "rating"
   | "location"
+  | "assignedTo"
+  | "sources"
   | null;
 
 export type ColumnId =
@@ -229,6 +231,14 @@ export function applyFieldChange(lead: PipelineLead, column: ColumnId, value: un
       return { ...lead, status: value as LeadStatus };
     case "rating":
       return { ...lead, rating: value as number | null };
+    case "assignedTo": {
+      const val = value as { id: string; name: string; avatarInitials: string } | null;
+      return { 
+        ...lead, 
+        assignedToId: val?.id ?? null,
+        assignedTo: val
+      };
+    }
     default:
       return lead;
   }

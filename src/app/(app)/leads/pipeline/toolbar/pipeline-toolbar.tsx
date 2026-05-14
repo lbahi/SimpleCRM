@@ -2,6 +2,7 @@
 "use client";
 
 import { Search, Filter, Settings, Plus, RefreshCw, Sparkles } from 'lucide-react';
+import { CustomDropdown } from '@/components/ui/custom-dropdown';
 
 interface PipelineToolbarProps {
   tableState: any;
@@ -53,16 +54,19 @@ export function PipelineToolbar({
           </button>
 
           {/* Group By */}
-          <select
+          <CustomDropdown
             value={tableState.groupBy || ''}
-            onChange={(e) => tableState.setGroupBy(e.target.value || null)}
-            className="px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-black"
-          >
-            <option value="">No grouping</option>
-            <option value="status">Group by Status</option>
-            <option value="rating">Group by Rating</option>
-            <option value="location">Group by Location</option>
-          </select>
+            onChange={(val) => tableState.setGroupBy(val || null)}
+            options={[
+              { value: '', label: 'No grouping' },
+              { value: 'status', label: 'Group by Status' },
+              { value: 'rating', label: 'Group by Rating' },
+              { value: 'location', label: 'Group by Location' },
+              { value: 'sources', label: 'Group by Source' },
+              { value: 'assignedTo', label: 'Group by Assigned to' },
+            ]}
+            className="w-48"
+          />
 
           {/* Customize */}
           <button
