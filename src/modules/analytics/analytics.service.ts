@@ -11,6 +11,7 @@ export interface AnalyticsData {
     name: string;
     status: string;
     createdAt: Date;
+    updatedAt: Date;
   }>;
   overdueRemindersCount: number;
   leadsByStatus: Array<{
@@ -35,15 +36,18 @@ export interface AnalyticsData {
   }>;
 }
 
-export async function getAnalytics(userId?: string): Promise<AnalyticsData> {
+export async function getAnalytics(userId: string, role: string): Promise<AnalyticsData> {
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+  // Role-based where clause
+  const whereScope = role === "MEMBER" ? { assignedToId: userId } : {};
+
   // Get basic lead counts
   const [totalLeads, freshLeads, closedLeads] = await Promise.all([
-    prisma.lead.count(),
-    prisma.lead.count({ where: { assignedToId: null } }),
-    prisma.lead.count({ where: { status: LeadStatus.CONVERTED } })
+    prisma.lead.count({ where: whereScope }),
+    role === "MEMBER" ? 0 : prisma.lead.count({ where: { assignedToId: null } }),
+    prisma.lead.count({ where: { ...whereScope, status: LeadStatus.CONVERTED } })
   ]);
 
   const conversionRate = totalLeads > 0 ? (closedLeads / totalLeads) * 100 : 0;
@@ -51,12 +55,14 @@ export async function getAnalytics(userId?: string): Promise<AnalyticsData> {
   // Get recent leads (last 5)
   const recentLeads = await prisma.lead.findMany({
     take: 5,
-    orderBy: { createdAt: "desc" },
+    where: whereScope,
+    orderBy: { updatedAt: "desc" },
     select: {
       id: true,
       name: true,
       status: true,
-      createdAt: true
+      createdAt: true,
+      updatedAt: true
     }
   });
 

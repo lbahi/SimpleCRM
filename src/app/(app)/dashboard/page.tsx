@@ -12,7 +12,7 @@ export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const analytics = await getAnalytics(session.userId);
+  const analytics = await getAnalytics(session.userId, session.role);
   const leads = analytics.recentLeads; // For the "Recent Leads" section
 
   return (
@@ -25,25 +25,27 @@ export default async function DashboardPage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1">
-          <DashboardStats analytics={analytics} />
+          <DashboardStats analytics={analytics} role={session.role} />
         </div>
 
         {/* Content Grid */}
         <div className="grid grid-cols-3 gap-8 pb-10">
           {/* Lead Activity */}
-          <div className="col-span-2 bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-            <h2 className="text-lg font-bold text-neutral-900 mb-6">Lead Activity</h2>
-            <div className="flex items-center justify-center h-80 text-gray-400">
-              <div className="text-center">
-                <BarChart3 size={48} className="mx-auto mb-4 opacity-20" />
-                <p className="text-sm font-bold text-neutral-500">Activity Chart coming soon</p>
-                <p className="text-xs text-neutral-400 mt-2">We're building a powerful visualization for your data.</p>
+          {session.role === "ADMIN" && (
+            <div className="col-span-2 bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
+              <h2 className="text-lg font-bold text-neutral-900 mb-6">Lead Activity</h2>
+              <div className="flex items-center justify-center h-80 text-gray-400">
+                <div className="text-center">
+                  <BarChart3 size={48} className="mx-auto mb-4 opacity-20" />
+                  <p className="text-sm font-bold text-neutral-500">Activity Chart coming soon</p>
+                  <p className="text-xs text-neutral-400 mt-2">We're building a powerful visualization for your data.</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Recent Leads */}
-          <div className="col-span-1">
+          <div className={session.role === "ADMIN" ? "col-span-1" : "col-span-3"}>
             <RecentLeads leads={leads} />
           </div>
         </div>

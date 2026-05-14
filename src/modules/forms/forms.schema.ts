@@ -18,12 +18,8 @@ export const updateFormSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-export const submitFormSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  phone: z.string().min(6, "Valid phone number required"),
-  location: z.string().optional(),
-  message: z.string().max(1000).optional(),
-});
+// Form submission is dynamic based on user-defined fields
+export const submitFormSchema = z.record(z.any());
 
 export type CreateFormInput = z.infer<typeof createFormSchema>;
 export type UpdateFormInput = z.infer<typeof updateFormSchema>;

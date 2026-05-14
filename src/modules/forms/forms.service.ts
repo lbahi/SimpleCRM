@@ -80,17 +80,45 @@ export async function submitForm(slug: string, data: Record<string, any>): Promi
   const form = await prisma.captureForm.findUnique({ where: { slug, isActive: true } });
   if (!form) throw new Error("Form not found or inactive");
 
-  // Identify core fields from the dynamic data
-  // We look for keys like 'name', 'phone', 'email' or the labels
-  const name = data.name || data.fullname || data.FullName || "Anonymous Lead";
-  const phone = data.phone || data.tel || data.PhoneNumber || "";
-  const email = data.email || data.Email || null;
-  const location = data.location || data.Location || null;
+  const fieldsData = (form.fields as any) || { items: [] };
+  const formFields = fieldsData.items || [];
 
-  // Everything else goes to customData
+  // Intelligent mapping: Map dynamic IDs to Lead properties
+  let name = "Anonymous Lead";
+  let phone = "";
+  let email: string | null = null;
+  let location: string | null = null;
   const customData: Record<string, any> = {};
+
+  formFields.forEach((field: any) => {
+    const value = data[field.id];
+    if (value === undefined) return;
+
+    const label = (field.label || "").toLowerCase();
+    const type = (field.type || "").toLowerCase();
+
+    // Mapping priorities: Type first, then Label
+    if (type === 'tel' || label.includes('phone') || label.includes('téléphone') || label.includes('mobile')) {
+      if (!phone) phone = value;
+      else customData[field.label] = value;
+    } else if (type === 'email' || label.includes('email') || label.includes('courriel')) {
+      if (!email) email = value;
+      else customData[field.label] = value;
+    } else if (label === 'name' || label === 'full name' || label === 'fullname' || label.includes('nom') || label.includes('prénom')) {
+      if (name === "Anonymous Lead") name = value;
+      else customData[field.label] = value;
+    } else if (label.includes('location') || label.includes('adresse') || label.includes('ville') || label.includes('localisation')) {
+      if (!location) location = value;
+      else customData[field.label] = value;
+    } else {
+      customData[field.label || field.id] = value;
+    }
+  });
+
+  // Handle any leftover data not in formFields (though schema should catch this)
   Object.entries(data).forEach(([key, value]) => {
-    if (!['name', 'phone', 'email', 'location'].includes(key.toLowerCase())) {
+    const isMapped = formFields.some((f: any) => f.id === key);
+    if (!isMapped) {
       customData[key] = value;
     }
   });

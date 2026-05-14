@@ -56,12 +56,14 @@ export function Sidebar({ user }: SidebarProps) {
 
   const menuItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Inbox", href: "/inbox", icon: Inbox, badge: inboxCount },
+    ...(user.role === "ADMIN" ? [
+      { label: "Inbox", href: "/inbox", icon: Inbox, badge: inboxCount },
+    ] : []),
     { label: "Leads", href: "/leads", icon: Users },
     { label: "Reminders", href: "/reminders", icon: Bell },
-    { label: "Analytics", href: "/analytics", icon: BarChart3 },
-    { label: "Forms", href: "/forms", icon: FileText },
     ...(user.role === "ADMIN" ? [
+      { label: "Analytics", href: "/analytics", icon: BarChart3 },
+      { label: "Forms", href: "/forms", icon: FileText },
       { label: "Team", href: "/team", icon: UserCog },
       { label: "Settings", href: "/settings", icon: Settings },
     ] : [])

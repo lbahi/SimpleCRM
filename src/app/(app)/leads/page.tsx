@@ -9,8 +9,11 @@ export default async function LeadsPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  // Fetch leads with relations from Prisma
+  // Fetch leads with relations from Prisma (filtered by role)
+  const whereScope = session.role === "MEMBER" ? { assignedToId: session.userId } : {};
+  
   const prismaLeads = await prisma.lead.findMany({
+    where: whereScope,
     include: {
       assignedTo: true,
       sources: true,

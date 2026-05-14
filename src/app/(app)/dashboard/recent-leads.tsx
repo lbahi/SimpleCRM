@@ -9,6 +9,7 @@ interface RecentLeadsProps {
     name: string;
     status: string;
     createdAt: Date;
+    updatedAt: Date;
   }>;
 }
 
@@ -39,7 +40,7 @@ export function RecentLeads({ leads }: RecentLeadsProps) {
                 <div>
                   <p className={designTokens.typography.body + ' font-semibold text-neutral-900'}>{lead.name}</p>
                   <p className="text-xs text-neutral-400 mt-0.5">
-                    {format(new Date(lead.createdAt), "MMM d, yyyy")}
+                    {format(new Date(lead.updatedAt), "MMM d, yyyy · HH:mm")}
                   </p>
                 </div>
               </div>

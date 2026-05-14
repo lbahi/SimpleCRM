@@ -38,10 +38,10 @@ export function InboxTable({ leads, selectedIds, onToggle, onToggleAll, onRefres
                 />
               </th>
               <th className="px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Lead Details</th>
-              <th className="w-[160px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Phone</th>
-              <th className="w-[140px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Location</th>
-              <th className="w-[180px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Sources</th>
-              <th className="w-[140px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Received At</th>
+              <th className="w-[250px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Phone</th>
+              <th className="w-[220px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Location</th>
+              <th className="w-[280px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Sources</th>
+              <th className="w-[220px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Received At</th>
               <th className="w-[40px] px-4 py-4"></th>
             </tr>
           </thead>

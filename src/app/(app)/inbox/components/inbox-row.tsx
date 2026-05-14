@@ -35,7 +35,7 @@ export function InboxRow({ lead, isSelected, onToggle, onExpand }: InboxRowProps
         />
       </td>
       <td className="px-3 py-2">
-        <span className="text-[13px] font-medium text-neutral-900 truncate block">
+        <span className="text-[13px] font-semibold text-neutral-900 truncate block">
           {lead.name}
         </span>
       </td>

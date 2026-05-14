@@ -6,9 +6,10 @@ import { StatCard } from "@/components/ui/stat-card";
 interface DashboardStatsProps {
   analytics?: AnalyticsData;
   isLoading?: boolean;
+  role?: string;
 }
 
-export function DashboardStats({ analytics, isLoading }: DashboardStatsProps) {
+export function DashboardStats({ analytics, isLoading, role }: DashboardStatsProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -25,17 +26,19 @@ export function DashboardStats({ analytics, isLoading }: DashboardStatsProps) {
   if (!analytics) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div className={`grid grid-cols-1 md:grid-cols-2 ${role === "ADMIN" ? "lg:grid-cols-4" : "lg:grid-cols-3"} gap-8`}>
       <StatCard 
         label="Total Leads" 
         value={analytics.totalLeads.toLocaleString()} 
         description="vs last month"
       />
-      <StatCard 
-        label="Fresh Leads" 
-        value={analytics.freshLeads.toLocaleString()} 
-        description="Awaiting contact"
-      />
+      {role === "ADMIN" && (
+        <StatCard 
+          label="Fresh Leads" 
+          value={analytics.freshLeads.toLocaleString()} 
+          description="Awaiting contact"
+        />
+      )}
       <StatCard 
         label="Closed Leads" 
         value={analytics.closedLeads.toLocaleString()} 
