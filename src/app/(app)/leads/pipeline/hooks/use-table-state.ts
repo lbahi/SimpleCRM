@@ -7,7 +7,8 @@ interface FilterState {
   assignedTo: string;
   sources: string[];
   location: string;
-  [key: string]: string | string[] | null;
+  rating: number;
+  [key: string]: string | string[] | number | null;
 }
 
 const INITIAL_FILTERS: FilterState = {
@@ -15,6 +16,7 @@ const INITIAL_FILTERS: FilterState = {
   assignedTo: "",
   sources: [],
   location: "",
+  rating: 0,
 };
 
 export function useTableState() {

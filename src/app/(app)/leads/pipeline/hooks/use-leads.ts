@@ -101,14 +101,20 @@ export function useLeads(initialData: PaginatedLeads, tableState: TableState) {
       
       // Source (multi-select)
       if (filters.sources && filters.sources.length > 0) {
-        const leadSources = lead.sources.map(s => s.source);
-        if (!filters.sources.some(s => leadSources.includes(s))) {
+        const leadSources = lead.sources.map(s => s.source.toUpperCase());
+        const filterSources = filters.sources.map((s: string) => s.toUpperCase());
+        if (!filterSources.some(s => leadSources.includes(s))) {
           return false;
         }
       }
       
       // Location (text input)
       if (filters.location && !matchesText(lead.location, (filters.location as string))) {
+        return false;
+      }
+
+      // Rating (star rating)
+      if (filters.rating && filters.rating > 0 && (lead.rating ?? 0) < (filters.rating as number)) {
         return false;
       }
 

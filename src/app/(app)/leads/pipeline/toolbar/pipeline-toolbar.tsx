@@ -26,6 +26,7 @@ export function PipelineToolbar({
     tableState.filters.sources?.length > 0,
     !!tableState.filters.assignedTo,
     !!tableState.filters.location,
+    tableState.filters.rating > 0,
   ].filter(Boolean).length;
 
   return (

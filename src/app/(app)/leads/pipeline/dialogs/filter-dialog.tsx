@@ -39,12 +39,12 @@ const STATUS_OPTIONS = [
 ];
 
 const SOURCE_OPTIONS = [
-  { value: "Website", label: "Website" },
-  { value: "Manual", label: "Manual" },
-  { value: "Referral", label: "Referral" },
-  { value: "Facebook", label: "Facebook" },
-  { value: "Instagram", label: "Instagram" },
-  { value: "Google", label: "Google" },
+  { value: "WEBSITE", label: "Website" },
+  { value: "MANUAL", label: "Manual" },
+  { value: "REFERRAL", label: "Referral" },
+  { value: "FACEBOOK", label: "Facebook" },
+  { value: "INSTAGRAM", label: "Instagram" },
+  { value: "GOOGLE", label: "Google" },
 ];
 
 export function FilterDialog({ 
@@ -210,6 +210,39 @@ export function FilterDialog({
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Rating Section */}
+          <div className="space-y-3">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Minimum Rating</label>
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => onDraftChange({ ...draftFilters, rating: star === draftFilters.rating ? 0 : star })}
+                  className={cn(
+                    "flex-1 h-10 rounded-xl border flex items-center justify-center gap-1.5 transition-all duration-200",
+                    draftFilters.rating >= star 
+                      ? "bg-amber-50 border-amber-200 text-amber-500 shadow-sm" 
+                      : "bg-white border-neutral-100 text-neutral-300 hover:border-neutral-200"
+                  )}
+                >
+                  <span className="text-[13px] font-bold">{star}</span>
+                  <svg 
+                    width="12" 
+                    height="12" 
+                    viewBox="0 0 24 24" 
+                    fill={draftFilters.rating >= star ? "currentColor" : "none"} 
+                    stroke="currentColor" 
+                    strokeWidth="2.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                </button>
+              ))}
             </div>
           </div>
 
