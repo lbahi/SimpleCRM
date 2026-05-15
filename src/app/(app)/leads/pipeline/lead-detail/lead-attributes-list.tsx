@@ -18,7 +18,7 @@ import { AttributeRow, type AttributeColumn } from "./attribute-row";
 // ─── Constants ───────────────────────────────────────────────
 
 /** Always visible in the modal regardless of table column visibility */
-const FALLBACK_COLUMNS: ColumnId[] = ["status", "rating", "assignedTo"];
+const FALLBACK_COLUMNS: ColumnId[] = ["status", "rating", "assignedTo", "sources", "lastContacted", "createdAt", "notePreview"];
 
 /** Excluded from attribute list — shown in the header section instead */
 const HEADER_COLUMNS = new Set<ColumnId>(["name", "phone"]);

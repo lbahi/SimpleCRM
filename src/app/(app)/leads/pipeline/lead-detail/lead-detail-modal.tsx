@@ -1,20 +1,23 @@
-// SimpleCRM — lead-detail-modal.tsx
-"use client";
-
-import { X } from "lucide-react";
-import * as Tabs from "@radix-ui/react-tabs";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader,
+  SheetTitle
+} from "@/components/ui/sheet";
 import { LeadDetailHeader } from "./lead-detail-header";
 import { LeadAttributesList } from "./lead-attributes-list";
 import { LeadNotesSection } from "./lead-notes-section";
 import { LeadActivityLog } from "./lead-activity-log";
-import { LeadReminderSection } from "./lead-reminder-section";
 import { useLeadDetail } from "./hooks/use-lead-detail";
 import { useLeadMutations } from "./hooks/use-lead-mutations";
 import { cn } from "@/lib/utils";
+import { StatusCell } from "../cells/status-cell";
+import { RatingCell } from "../cells/rating-cell";
+import { Bell, MessageSquare } from "lucide-react";
 
 interface LeadDetailModalProps {
   open: boolean;
-  lead: any; // Initial lead data from table
+  lead: any;
   onClose: () => void;
   onUpdateField?: (lead: any, field: string, value: any) => void;
   isSample?: boolean;
@@ -33,24 +36,17 @@ export function LeadDetailModal({
   const { updateStatus, updateRating, addNote } = 
     useLeadMutations(initialLead?.id, mutate, isSample);
 
-  if (!open || !initialLead) return null;
+  if (!initialLead) return null;
 
-  // Use either fresh data or initial prop data
   const currentLead = lead || initialLead;
 
   const handleUpdate = async (field: string, value: any) => {
     if (isSample) return;
-    
-    // Call the provided onUpdateField for table sync
-    if (onUpdateField) {
-      onUpdateField(currentLead, field, value);
-    }
+    if (onUpdateField) onUpdateField(currentLead, field, value);
 
-    // For specific fields, use mutations for detailed logging/UI feedback
     if (field === "status") await updateStatus(value);
     else if (field === "rating") await updateRating(value);
     else {
-      // General PATCH for other fields
       try {
         const body = field === "assignedTo" 
           ? { assignedToId: (value as any)?.id ?? null }
@@ -68,71 +64,78 @@ export function LeadDetailModal({
     }
   };
 
+  const hasReminder = (reminders || []).some(r => r.status === "PENDING");
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div 
-        className="relative flex h-full max-h-[850px] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
+    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
+      <SheetContent 
+        className="w-full sm:max-w-[640px] p-0 flex flex-col gap-0 border-l border-neutral-100 shadow-[-20px_0_50px_rgba(0,0,0,0.1)]"
       >
-        {/* Header Section */}
+        <SheetHeader className="sr-only">
+          <SheetTitle>Lead Details - {currentLead.name}</SheetTitle>
+        </SheetHeader>
+
+        {/* Fixed Header Section */}
         <LeadDetailHeader lead={currentLead} />
 
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 z-10 rounded-full p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
-        >
-          <X className="h-6 w-6" />
-        </button>
-
-        {/* Main Content — Tabs */}
-        <div className="flex flex-1 overflow-hidden">
-          <Tabs.Root defaultValue="info" className="flex w-full overflow-hidden">
-            {/* Sidebar Tabs Trigger */}
-            <Tabs.List className="flex w-[200px] flex-col border-r border-border bg-neutral-50/50 p-4 pt-6">
-              {[
-                { id: "info", label: "Information" },
-                { id: "activity", label: "Activity Log" },
-                { id: "notes", label: "Notes" },
-              ].map((tab) => (
-                <Tabs.Trigger
-                  key={tab.id}
-                  value={tab.id}
-                  className={cn(
-                    "mb-1 flex h-10 items-center rounded-lg px-3 text-[13px] font-semibold transition-all duration-100",
-                    "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900",
-                    "data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-black/5"
-                  )}
-                >
-                  {tab.label}
-                </Tabs.Trigger>
-              ))}
-            </Tabs.List>
-
-            {/* Tab Panels */}
-            <div className="flex-1 overflow-hidden bg-white">
-              <Tabs.Content value="info" className="flex h-full flex-col outline-none overflow-y-auto custom-scrollbar">
-                <LeadAttributesList lead={currentLead} onUpdate={handleUpdate} />
-                <div className="mt-auto">
-                  <LeadReminderSection leadId={currentLead.id} reminders={reminders} onRefresh={mutate.refresh} />
-                </div>
-              </Tabs.Content>
-
-              <Tabs.Content value="activity" className="h-full outline-none">
-                <LeadActivityLog activityLogs={activityLogs} />
-              </Tabs.Content>
-
-              <Tabs.Content value="notes" className="h-full outline-none">
-                <LeadNotesSection 
-                  notes={notes} 
-                  onAddNote={addNote} 
-                  isSample={isSample} 
-                />
-              </Tabs.Content>
-            </div>
-          </Tabs.Root>
+        {/* Fixed Action Bar */}
+        <div className="flex items-center gap-3 bg-neutral-50 px-6 py-3 border-b border-neutral-100 overflow-x-auto no-scrollbar">
+          <div className="flex-shrink-0 h-9 flex items-center px-1">
+            <StatusCell value={currentLead.status} onChange={(v) => handleUpdate("status", v)} />
+          </div>
+          <div className="flex-shrink-0 h-9 flex items-center px-3 border-x border-neutral-200">
+            <RatingCell value={currentLead.rating || 0} onChange={(v) => handleUpdate("rating", v)} />
+          </div>
+          <button className="flex-shrink-0 h-9 px-4 rounded-xl border border-neutral-200 bg-white text-[13px] font-bold text-neutral-700 hover:bg-neutral-50 transition-all flex items-center gap-2">
+            <MessageSquare size={14} className="text-neutral-400" />
+            Log contact
+          </button>
+          <button className={cn(
+            "flex-shrink-0 h-9 px-4 rounded-xl border text-[13px] font-bold transition-all flex items-center gap-2",
+            hasReminder 
+              ? "bg-amber-50 border-amber-200 text-amber-600 hover:bg-amber-100" 
+              : "bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-50"
+          )}>
+            <Bell size={14} className={cn(hasReminder ? "text-amber-500 fill-amber-500" : "text-neutral-400")} />
+            Set reminder
+          </button>
         </div>
-      </div>
-    </div>
+
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="flex min-h-full flex-col">
+            <div className="flex flex-1">
+              {/* Left Column: Attributes (55%) */}
+              <div className="w-[55%] border-r border-neutral-100 py-4">
+                <div className="px-6 mb-3">
+                  <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400">Attributes</h3>
+                </div>
+                <LeadAttributesList 
+                  lead={currentLead} 
+                  onUpdate={(f, v) => handleUpdate(f as string, v)} 
+                />
+              </div>
+
+              {/* Right Column: Activity Log (45%) */}
+              <div className="w-[45%] py-4 bg-white/50">
+                <div className="px-6 mb-3">
+                  <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-400">Activity</h3>
+                </div>
+                <LeadActivityLog activityLogs={activityLogs} />
+              </div>
+            </div>
+
+            {/* Bottom: Notes (Full Width) */}
+            <div className="border-t border-neutral-100 bg-neutral-50/30">
+              <LeadNotesSection 
+                notes={notes} 
+                onAddNote={addNote} 
+                isSample={isSample} 
+              />
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
