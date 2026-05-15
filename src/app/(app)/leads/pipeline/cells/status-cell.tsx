@@ -12,11 +12,11 @@ import { LeadStatus } from "@prisma/client";
 const STATUS_CONFIG: Record<LeadStatus, {
   label: string; bg: string; text: string; dot: string
 }> = {
-  NEW:        { label: "New",        bg: "#E6F9F3", text: "#0D6B4E", dot: "#1D9E75" },
+  NEW:        { label: "New",        bg: "#6464648e", text: "#ffffffff", dot: "#ffffffff" },
   NO_RESPOND: { label: "No Respond", bg: "#FEF3C7", text: "#92400E", dot: "#F59E0B" },
   CONTACTED:  { label: "Contacted",  bg: "#E8F2FB", text: "#0C447C", dot: "#378ADD" },
-  CONVERTED:  { label: "Converted",  bg: "#FDEAEA", text: "#7A1F1F", dot: "#E24B4A" },
-  LOST:       { label: "Lost",       bg: "#EEEDFB", text: "#26215C", dot: "#534AB7" },
+  CONVERTED:  { label: "Converted",  bg: "#eafdf0ff", text: "#1f7a3dff", dot: "#00c72bff" },
+  LOST:       { label: "Lost",       bg: "#fbededff", text: "#5c2121ff", dot: "#d60000b7" },
 };
 
 export { STATUS_CONFIG }
