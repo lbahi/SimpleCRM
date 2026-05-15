@@ -1,14 +1,15 @@
 // SimpleCRM — ghost-row.tsx
 "use client";
 
-import { Plus, Star } from "lucide-react";
+import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ColumnId, COLUMN_DEFS } from "../model";
 import { InlineRowState } from "../hooks/use-inline-row";
 import { StatusCell } from "../cells/status-cell";
 import { RatingCell } from "../cells/rating-cell";
 import { MemberCell } from "../cells/member-cell";
-import { DatePicker } from "@/components/ui/date-picker";
+import { SourceCell } from "../cells/source-cell";
+import { LeadStatus } from "@prisma/client";
 
 interface GhostRowProps {
   columns: ColumnId[];
@@ -34,14 +35,15 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
     const hasError = errors[col];
     
     if (!isActive) {
-      return (
-        <div className="flex h-6 items-center text-neutral-400">
-          {col === "name" && <Plus className="mr-2 h-3.5 w-3.5" />}
-          <span className="text-[13px]">
-            {col === "name" ? "Add lead" : ""}
-          </span>
-        </div>
-      );
+      if (col === "name") {
+        return (
+          <div className="flex items-center text-neutral-400">
+            <Plus size={13} className="mr-1.5" />
+            <span className="text-[13px]">Add a lead...</span>
+          </div>
+        );
+      }
+      return null;
     }
 
     // Type-aware inputs based on column
@@ -52,8 +54,9 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
             autoFocus={activeCell === col}
             type="text"
             className={cn(
-              "w-full bg-transparent text-[13px] outline-none",
-              hasError && "border-b-2 border-red-500"
+              "w-full bg-transparent text-[13px] text-neutral-700 outline-none h-[44px]",
+              "placeholder:text-neutral-300 focus:border-b focus:border-neutral-400",
+              hasError && "border-b border-red-500"
             )}
             placeholder="Full name"
             value={values[col] || ""}
@@ -68,8 +71,9 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
             autoFocus={activeCell === col}
             type="tel"
             className={cn(
-              "w-full bg-transparent text-[13px] outline-none",
-              hasError && "border-b-2 border-red-500"
+              "w-full bg-transparent text-[13px] text-neutral-700 outline-none h-[44px]",
+              "placeholder:text-neutral-300 focus:border-b focus:border-neutral-400",
+              hasError && "border-b border-red-500"
             )}
             placeholder="Phone number"
             value={values[col] || ""}
@@ -83,7 +87,10 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
           <input
             autoFocus={activeCell === col}
             type="text"
-            className="w-full bg-transparent text-[13px] outline-none"
+            className={cn(
+              "w-full bg-transparent text-[13px] text-neutral-700 outline-none h-[44px]",
+              "placeholder:text-neutral-300 focus:border-b focus:border-neutral-400"
+            )}
             placeholder="City / Region"
             value={values[col] || ""}
             onChange={(e) => setValue(col, e.target.value)}
@@ -94,7 +101,7 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
       case "status":
         return (
           <StatusCell
-            value={values[col] || "NEW"}
+            value={(values[col] as LeadStatus) || LeadStatus.NEW}
             onChange={(value) => setValue(col, value)}
             readOnly={false}
           />
@@ -103,7 +110,7 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
       case "rating":
         return (
           <RatingCell
-            value={Number(values[col]) || 0}
+            value={values[col] ? parseInt(values[col]) : 0}
             onChange={(value) => setValue(col, String(value))}
             readOnly={false}
           />
@@ -112,63 +119,45 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
       case "assignedTo":
         return (
           <MemberCell
-            value={values[col] || ""}
-            onChange={(value) => setValue(col, value || "")}
+            value={values.assignedToId || ""}
+            onChange={(val) => {
+              const id = typeof val === 'string' ? val : val?.id || "";
+              setValue("assignedToId", id);
+            }}
             isAdmin={isAdmin}
           />
         );
       
-      case "lastContacted":
+      case "sources":
         return (
-          <DatePicker
-            value={values[col] || ""}
-            onChange={(date) => setValue(col, date)}
-            placeholder="Select date"
-            className="w-full bg-transparent text-[13px] outline-none border-0"
+          <SourceCell
+            sources={values.sources || []}
+            onChange={(tags) => setValue("sources", tags)}
+            readOnly={false}
           />
         );
       
       case "createdAt":
-        return (
-          <DatePicker
-            value={values[col] || ""}
-            onChange={(date) => setValue(col, date)}
-            placeholder="Select date"
-            className="w-full bg-transparent text-[13px] outline-none border-0"
-          />
-        );
-      
-      // Read-only fields in ghost row
-      case "sources":
+      case "lastContacted":
       case "notePreview":
-        return (
-          <div className="flex h-6 items-center text-neutral-400">
-            <span className="text-[13px]">—</span>
-          </div>
-        );
+        return <span className="text-[13px] text-neutral-400">—</span>;
       
-      // Custom columns - determine type from context
       default:
-        return (
-          <input
-            autoFocus={activeCell === col}
-            type="text"
-            className="w-full bg-transparent text-[13px] outline-none"
-            placeholder={`Add ${col}...`}
-            value={values[col] || ""}
-            onChange={(e) => setValue(col, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, col)}
-          />
-        );
+        return null;
     }
   };
 
   return (
-    <tr className="group border-b border-neutral-100 transition-all duration-200 hover:bg-neutral-50">
-      <td className="w-8 border-b border-neutral-100" />
-      <td className="w-10 border-b border-neutral-100" />
+    <tr 
+      className={cn(
+        "group h-[44px] border-t border-dashed border-neutral-200 transition-all duration-200",
+        !isActive ? "bg-neutral-50/50 hover:bg-neutral-50 cursor-pointer" : "bg-white"
+      )}
+      onClick={() => !isActive && activate("name")}
+    >
+      <td className="w-8" />
+      <td className="w-10" />
       {columns.map((col) => {
-        const def = COLUMN_DEFS.find((item) => item.id === col);
         const width = columnWidths[col] || 150;
         const isPinned = pinnedColumns.includes(col);
         const left = pinnedOffsets[col];
@@ -183,16 +172,23 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
               zIndex: isPinned ? 20 : 1
             }}
             className={cn(
-              "border-b border-neutral-100 px-3 py-2.5 transition-all duration-200 hover:bg-neutral-50",
-              isPinned && "sticky bg-white"
+              "px-3 py-0 transition-all duration-200",
+              isPinned && "sticky bg-inherit"
             )}
-            onClick={() => !isActive && activate(col)}
+            onClick={(e) => {
+              if (!isActive) {
+                e.stopPropagation();
+                activate(col);
+              }
+            }}
           >
-            {renderGhostInput(col)}
+            <div className="flex items-center h-[44px]">
+              {renderGhostInput(col)}
+            </div>
           </td>
         );
       })}
-      <td className="w-10 border-b border-neutral-100" />
+      <td className="w-10" />
     </tr>
   );
 }

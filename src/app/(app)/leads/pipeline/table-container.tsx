@@ -1,35 +1,18 @@
-// SimpleCRM — table-container (Replicated from reference/LeadsTable.tsx)
+// SimpleCRM — table-container
 "use client";
 
 import { useState, useMemo } from 'react';
-import { StatusCell, RatingCell } from './cells/reference-cells';
-import { MemberCell } from '@/app/(app)/leads/pipeline/cells/member-cell'; // Using existing or creating one
-import { SourceCell } from '@/app/(app)/leads/pipeline/cells/source-cell'; // Using existing or creating one
-import { ArrowUp, ArrowDown, GripVertical, ChevronDown, ChevronRight, Info } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowUp, ArrowDown, ChevronDown, ChevronRight } from 'lucide-react';
 import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  arrayMove,
   SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
   horizontalListSortingStrategy,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { ColumnHeader } from './columns/column-header';
-import { CSS } from '@dnd-kit/utilities';
 import { LeadRow } from './rows/lead-row';
-
-import { useColumnStateContext } from './context/column-state-context';
-import { PipelineLead, ColumnId } from './model';
+import { GhostRow } from './rows/ghost-row';
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ColumnId, PipelineLead } from './model';
 
 interface TableContainerProps {
   leads: PipelineLead[];
@@ -45,11 +28,11 @@ interface TableContainerProps {
   currentUserRole: string;
 }
 
-
 export function TableContainer({
   leads,
   columnState,
   tableState,
+  inlineRow,
   onUpdateField,
   onSortChange,
   selectedIds,
@@ -100,10 +83,22 @@ export function TableContainer({
       .filter((c: any) => c && columnState.visibleColumns.includes(c.id));
   }, [columnState.columnOrder, columnState.allAvailableColumns, columnState.visibleColumns]);
 
+  const pinnedOffsets = useMemo(() => {
+    const offsets: Record<string, number> = {};
+    let currentOffset = 96; // drag handle (48) + checkbox (48)
+    columnState.columnOrder.forEach((id: string) => {
+      if (columnState.pinnedColumns.includes(id) && columnState.visibleColumns.includes(id)) {
+        offsets[id] = currentOffset;
+        currentOffset += columnState.columnWidths[id] || 150;
+      }
+    });
+    return offsets;
+  }, [columnState.columnOrder, columnState.pinnedColumns, columnState.visibleColumns, columnState.columnWidths]);
+
   const renderHeader = () => (
     <thead className="bg-gray-50 sticky top-0 z-20">
       <tr className="border-b border-gray-200">
-        <td className="sticky left-0 z-30 w-12 cursor-grab border-b border-r border-neutral-200 bg-gray-50 px-1 text-center transition-all duration-200 hover:bg-neutral-50 active:cursor-grabbing"></td>
+        <td className="sticky left-0 z-30 w-12 border-b border-r border-neutral-200 bg-gray-50 px-1 text-center transition-all duration-200" style={{ width: 48, left: 0 }}></td>
         <th className="w-12 sticky left-12 bg-gray-50 z-30 border-b border-neutral-100" style={{ width: 48, left: 48 }}>
           <div className="flex items-center justify-center h-full">
             <input
@@ -118,9 +113,9 @@ export function TableContainer({
           items={orderedVisibleColumns.map((c: any) => c!.id)} 
           strategy={horizontalListSortingStrategy}
         >
-          {orderedVisibleColumns.map((column: any, idx: number) => {
+          {orderedVisibleColumns.map((column: any) => {
             const isPinned = columnState.pinnedColumns.includes(column.id);
-            const left = isPinned ? 96 : 0; 
+            const left = pinnedOffsets[column.id] || 0;
 
             return (
               <ColumnHeader
@@ -135,6 +130,7 @@ export function TableContainer({
                 onAction={(id, action, payload) => {
                   if (action === 'hide') columnState.toggleVisibility(id);
                   if (action === 'rename') columnState.setLabel(id, payload);
+                  if (action === 'pin') columnState.togglePin(id);
                 }}
                 isPinned={isPinned}
                 pinnedLeft={left}
@@ -148,110 +144,131 @@ export function TableContainer({
   );
 
   return (
-    <div className="overflow-auto flex-1 bg-white rounded-lg border border-gray-200">
-      <table
-        className="border-collapse"
-        style={{
-          tableLayout: "fixed",
-          width: Math.max(
-            orderedVisibleColumns.reduce(
-              (sum: number, col: any) => sum + (columnState.columnWidths[col.id ?? col] || 150),
-              48 * 3   // drag handle + checkbox + expand (w-12 each)
+    <TooltipProvider delayDuration={100}>
+      <div className="overflow-auto flex-1 bg-white rounded-lg border border-gray-200">
+        <table
+          className="border-collapse"
+          style={{
+            tableLayout: "fixed",
+            width: Math.max(
+              orderedVisibleColumns.reduce(
+                (sum: number, col: any) => sum + (columnState.columnWidths[col.id ?? col] || 150),
+                48 * 3
+              ),
+              800
             ),
-            800            // minimum table width
-          ),
-        }}
-      >
-        <colgroup><col style={{ width: 48 }} /><col style={{ width: 48 }} />{orderedVisibleColumns.map((col: any) => (<col key={col.id ?? col} style={{ width: columnState.columnWidths[col.id ?? col] || 150 }} />))}<col style={{ width: 48 }} /></colgroup>
-        {renderHeader()}
-        <tbody>
-          {Object.entries(groupedLeads).map(([groupKey, groupLeads]) => {
-            if (groupKey === 'ungrouped') {
-              return (
-                <SortableContext 
-                  key="ungrouped-context"
-                  items={leads.map(l => l.id)} 
-                  strategy={verticalListSortingStrategy}
-                >
-                  {groupLeads.map((lead, idx) => (
-                    <LeadRow
-                      key={lead.id}
-                      lead={lead}
-                      rowIndex={idx}
-                      columns={orderedVisibleColumns.map((c: any) => c.id)}
-                      columnWidths={columnState.columnWidths}
-                      selectedDetailId={null} // Will be handled by onExpand
-                      isSelected={selectedIds.has(lead.id)}
-                      onToggleSelection={onToggleSelection}
-                      onExpand={onExpand}
-                      editingCell={editingCell}
-                      editingValue={editingValue}
-                      onStartEdit={handleStartEdit}
-                      onChangeEditingValue={setEditingValue}
-                      onSaveEdit={handleSaveEdit}
-                      onCancelEdit={() => setEditingCell(null)}
-                      onUpdateField={onUpdateField}
-                      pinnedColumns={columnState.pinnedColumns}
-                      pinnedOffsets={{}} // To be calculated if needed
-                      currentUserRole={currentUserRole}
-                    />
-                  ))}
-                </SortableContext>
-              );
-            }
-            const isExpanded = expandedGroups.has(groupKey);
-            return (
-              <>
-                <tr
-                  key={`group-${groupKey}`}
-                  className="bg-gray-50 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
-                  onClick={() => toggleGroup(groupKey)}
-                >
-                  <td colSpan={(orderedVisibleColumns.length + 3) as number} className="px-4 py-2">
-                    <div className="flex items-center gap-2">
-                      {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                      <span className="text-xs font-bold uppercase tracking-wider text-gray-600">
-                        {groupKey} ({groupLeads.length})
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-                {isExpanded && (
+          }}
+        >
+          <colgroup>
+            <col style={{ width: 48 }} />
+            <col style={{ width: 48 }} />
+            {orderedVisibleColumns.map((col: any) => (
+              <col key={col.id ?? col} style={{ width: columnState.columnWidths[col.id ?? col] || 150 }} />
+            ))}
+            <col style={{ width: 48 }} />
+          </colgroup>
+          {renderHeader()}
+          <tbody>
+            {Object.entries(groupedLeads).map(([groupKey, groupLeads]) => {
+              if (groupKey === 'ungrouped') {
+                return (
                   <SortableContext 
-                    key={`group-context-${groupKey}`}
-                    items={groupLeads.map(l => l.id)} 
+                    key="ungrouped-context"
+                    items={leads.map(l => l.id)} 
                     strategy={verticalListSortingStrategy}
                   >
-                  {groupLeads.map((lead, idx) => (
-                    <LeadRow
-                      key={lead.id}
-                      lead={lead}
-                      rowIndex={idx}
-                      columns={orderedVisibleColumns.map((c: any) => c.id)}
-                      columnWidths={columnState.columnWidths}
-                      selectedDetailId={null}
-                      isSelected={selectedIds.has(lead.id)}
-                      onToggleSelection={onToggleSelection}
-                      onExpand={onExpand}
-                      editingCell={editingCell}
-                      editingValue={editingValue}
-                      onStartEdit={handleStartEdit}
-                      onChangeEditingValue={setEditingValue}
-                      onSaveEdit={handleSaveEdit}
-                      onCancelEdit={() => setEditingCell(null)}
-                      onUpdateField={onUpdateField}
-                      pinnedColumns={columnState.pinnedColumns}
-                      pinnedOffsets={{}}
-                      currentUserRole={currentUserRole}
-                    />
-                  ))}
+                    {groupLeads.map((lead, idx) => (
+                      <LeadRow
+                        key={lead.id}
+                        lead={lead}
+                        rowIndex={idx}
+                        columns={orderedVisibleColumns.map((c: any) => c.id)}
+                        columnWidths={columnState.columnWidths}
+                        selectedDetailId={null}
+                        isSelected={selectedIds.has(lead.id)}
+                        onToggleSelection={onToggleSelection}
+                        onExpand={onExpand}
+                        editingCell={editingCell}
+                        editingValue={editingValue}
+                        onStartEdit={handleStartEdit}
+                        onChangeEditingValue={setEditingValue}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={() => setEditingCell(null)}
+                        onUpdateField={onUpdateField}
+                        pinnedColumns={columnState.pinnedColumns}
+                        pinnedOffsets={pinnedOffsets}
+                        currentUserRole={currentUserRole}
+                      />
+                    ))}
                   </SortableContext>
-                )}
-              </>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+                );
+              }
+              const isExpanded = expandedGroups.has(groupKey);
+              return (
+                <React.Fragment key={`group-frag-${groupKey}`}>
+                  <tr
+                    key={`group-${groupKey}`}
+                    className="bg-gray-50 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    onClick={() => toggleGroup(groupKey)}
+                  >
+                    <td colSpan={(orderedVisibleColumns.length + 3) as number} className="px-4 py-2">
+                      <div className="flex items-center gap-2">
+                        {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                        <span className="text-xs font-bold uppercase tracking-wider text-gray-600">
+                          {groupKey} ({groupLeads.length})
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                  {isExpanded && (
+                    <SortableContext 
+                      key={`group-context-${groupKey}`}
+                      items={groupLeads.map(l => l.id)} 
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {groupLeads.map((lead, idx) => (
+                        <LeadRow
+                          key={lead.id}
+                          lead={lead}
+                          rowIndex={idx}
+                          columns={orderedVisibleColumns.map((c: any) => c.id)}
+                          columnWidths={columnState.columnWidths}
+                          selectedDetailId={null}
+                          isSelected={selectedIds.has(lead.id)}
+                          onToggleSelection={onToggleSelection}
+                          onExpand={onExpand}
+                          editingCell={editingCell}
+                          editingValue={editingValue}
+                          onStartEdit={handleStartEdit}
+                          onChangeEditingValue={setEditingValue}
+                          onSaveEdit={handleSaveEdit}
+                          onCancelEdit={() => setEditingCell(null)}
+                          onUpdateField={onUpdateField}
+                          pinnedColumns={columnState.pinnedColumns}
+                          pinnedOffsets={pinnedOffsets}
+                          currentUserRole={currentUserRole}
+                        />
+                      ))}
+                    </SortableContext>
+                  )}
+                </React.Fragment>
+              );
+            })}
+            
+            {/* Ghost Row - Always at the bottom of the last group or table */}
+            <GhostRow 
+              columns={orderedVisibleColumns.map((c: any) => c.id)}
+              columnWidths={columnState.columnWidths}
+              state={inlineRow}
+              pinnedColumns={columnState.pinnedColumns}
+              pinnedOffsets={pinnedOffsets}
+              isAdmin={currentUserRole === "ADMIN"}
+            />
+          </tbody>
+        </table>
+      </div>
+    </TooltipProvider>
   );
 }
+
+import * as React from 'react';

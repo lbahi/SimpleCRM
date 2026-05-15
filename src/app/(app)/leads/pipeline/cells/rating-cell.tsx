@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
@@ -26,40 +25,38 @@ export function RatingCell({
   tooltips = DEFAULT_TOOLTIPS 
 }: RatingCellProps) {
   return (
-    <TooltipProvider delayDuration={100}>
-      <div className="flex items-center gap-[1px]">
-        {[1, 2, 3, 4, 5].map((star, index) => (
-          <Tooltip key={star}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={() => !readOnly && onChange(star)}
-                disabled={readOnly}
-                className={cn(
-                  "p-0 m-0 border-none bg-transparent transition-all duration-100",
-                  readOnly ? "cursor-default" : "cursor-pointer hover:scale-110"
-                )}
-              >
-                <Star
-                  size={16}
-                  className={cn(
-                    "stroke-[1.5px]",
-                    star <= (value || 0)
-                      ? "text-[#FFB800] fill-[#FFB800]"
-                      : "text-[#E5E7EB] fill-[#E5E7EB]"
-                  )}
-                />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent 
-              side="top" 
-              className="bg-black text-white text-[11px] px-2 py-1 rounded shadow-lg animate-in fade-in zoom-in duration-200"
-            >
-              <p>{tooltips[index] || ""}</p>
-            </TooltipContent>
-          </Tooltip>
-        ))}
-      </div>
-    </TooltipProvider>
+    <div className="flex items-center gap-[1px]">
+      {[1, 2, 3, 4, 5].map((star, index) => (
+        <Tooltip key={star}>
+          <TooltipTrigger
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!readOnly) onChange(star);
+            }}
+            disabled={readOnly}
+            className={cn(
+              "p-0 m-0 border-none bg-transparent transition-all duration-100 flex items-center justify-center outline-none",
+              readOnly ? "cursor-default" : "cursor-pointer hover:scale-110 focus:scale-110"
+            )}
+          >
+            <Star
+              size={16}
+              className={cn(
+                "stroke-[1.5px]",
+                star <= (value || 0)
+                  ? "text-[#FFB800] fill-[#FFB800]"
+                  : "text-[#E5E7EB] fill-[#E5E7EB]"
+              )}
+            />
+          </TooltipTrigger>
+          <TooltipContent 
+            side="top" 
+            className="bg-black text-white text-[11px] px-2 py-1 rounded shadow-lg animate-in fade-in zoom-in duration-200"
+          >
+            <p>{tooltips[index] || ""}</p>
+          </TooltipContent>
+        </Tooltip>
+      ))}
+    </div>
   );
 }

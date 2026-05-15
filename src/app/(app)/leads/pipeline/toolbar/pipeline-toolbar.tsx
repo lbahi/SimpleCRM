@@ -88,15 +88,6 @@ export function PipelineToolbar({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* New Lead */}
-          <button
-            onClick={onShowCreate}
-            className="px-4 py-2 bg-black text-white rounded text-sm hover:bg-gray-800 flex items-center gap-2 font-medium"
-          >
-            <Plus size={16} />
-            New lead
-          </button>
-
           {/* Refresh */}
           <button
             onClick={onRefreshLeads}

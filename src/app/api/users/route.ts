@@ -13,8 +13,9 @@ export async function GET(request: NextRequest) {
   const role = searchParams.get("role") as Role | null;
 
   try {
-    // If Admin and no role filter, return full member stats for dashboard
-    if (session.role === Role.ADMIN && !role) {
+    // If Admin and (no role filter OR role is MEMBER), return full member stats
+    // This supports auto-assign logic in the leads pipeline
+    if (session.role === Role.ADMIN && (!role || role === Role.MEMBER)) {
       const members = await listMembers();
       return NextResponse.json(members);
     }
