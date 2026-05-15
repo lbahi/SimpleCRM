@@ -20,6 +20,12 @@ interface GhostRowProps {
   isAdmin?: boolean;
 }
 
+interface MemberValue {
+  id: string;
+  name: string;
+  avatarInitials: string;
+}
+
 export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOffsets, isAdmin = false }: GhostRowProps) {
   const { isActive, values, activeCell, errors, activate, setValue, submit, cancel } = state;
 
@@ -120,9 +126,8 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
         return (
           <MemberCell
             value={values.assignedToId || ""}
-            onChange={(val) => {
-              const id = typeof val === 'string' ? val : val?.id || "";
-              setValue("assignedToId", id);
+            onChange={(val: MemberValue | null) => {
+              setValue("assignedToId", val?.id || "");
             }}
             isAdmin={isAdmin}
           />
@@ -150,13 +155,13 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
   return (
     <tr 
       className={cn(
-        "group h-[44px] border-t border-dashed border-neutral-200 transition-all duration-200",
+        "group h-[44px] border-t border-dashed border-neutral-100 transition-all duration-200",
         !isActive ? "bg-neutral-50/50 hover:bg-neutral-50 cursor-pointer" : "bg-white"
       )}
       onClick={() => !isActive && activate("name")}
     >
-      <td className="w-8" />
-      <td className="w-10" />
+      <td className="w-12 sticky left-0 z-30 bg-inherit" style={{ width: 48, left: 0 }} />
+      <td className="w-12 sticky left-12 z-10 bg-inherit" style={{ width: 48, left: 48 }} />
       {columns.map((col) => {
         const width = columnWidths[col] || 150;
         const isPinned = pinnedColumns.includes(col);

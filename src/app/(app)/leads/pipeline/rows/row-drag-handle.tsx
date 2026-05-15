@@ -2,16 +2,23 @@
 "use client";
 
 import { GripVertical } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { DraggableAttributes } from "@dnd-kit/core";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 
 interface RowDragHandleProps {
-  attributes?: any;
-  listeners?: any;
+  attributes?: DraggableAttributes;
+  listeners?: SyntheticListenerMap;
+  isSelected?: boolean;
 }
 
-export function RowDragHandle({ attributes, listeners }: RowDragHandleProps) {
+export function RowDragHandle({ attributes, listeners, isSelected }: RowDragHandleProps) {
   return (
     <td
-      className="sticky left-0 z-30 w-12 cursor-grab border-b border-r border-border bg-white px-1 text-center transition-all duration-200 hover:bg-neutral-50 active:cursor-grabbing"
+      className={cn(
+        "sticky left-0 z-30 w-12 cursor-grab border-b border-neutral-100 bg-gray-50 px-1 text-center transition-all duration-200 hover:bg-neutral-50 active:cursor-grabbing",
+        isSelected && "border-l-2 border-[#378ADD]"
+      )}
       {...attributes}
       {...listeners}
     >

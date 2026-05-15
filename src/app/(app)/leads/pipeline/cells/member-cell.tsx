@@ -11,9 +11,15 @@ import {
 import { cn } from "@/lib/utils";
 import { MemberWithStats } from "@/modules/users/users.types";
 
+interface MemberValue {
+  id: string;
+  name: string;
+  avatarInitials: string;
+}
+
 interface MemberCellProps {
-  value: any | null;
-  onChange: (value: any | null) => void;
+  value: MemberValue | null | string; // string is allowed for ID
+  onChange: (value: MemberValue | null) => void;
   isAdmin?: boolean;
 }
 
@@ -47,8 +53,10 @@ export function MemberCell({ value, onChange, isAdmin = false }: MemberCellProps
     }
   }, [isAdmin]);
 
-  const memberName = value?.name || null;
-  const initials = value?.avatarInitials || "??";
+  const memberId = typeof value === 'string' ? value : value?.id;
+  const currentMember = typeof value === 'object' ? value : members.find(m => m.id === memberId);
+  const memberName = currentMember?.name || null;
+  const initials = currentMember?.avatarInitials || "??";
 
   const content = (
     <div className="flex items-center gap-1.5 w-full text-left group">
@@ -120,7 +128,7 @@ export function MemberCell({ value, onChange, isAdmin = false }: MemberCellProps
                 })}
                 className={cn(
                   "w-full h-12 px-2 rounded-lg flex items-center gap-3 text-[13px] font-medium transition-all group",
-                  member.id === value?.id ? "bg-neutral-50 text-primary" : "text-neutral-600 hover:bg-neutral-50"
+                  member.id === memberId ? "bg-neutral-50 text-primary" : "text-neutral-600 hover:bg-neutral-50"
                 )}
               >
                 <Avatar initials={member.avatarInitials} size="md" />
@@ -135,7 +143,7 @@ export function MemberCell({ value, onChange, isAdmin = false }: MemberCellProps
                   <span className="px-1.5 py-0.5 rounded-full bg-neutral-100 text-neutral-500 text-[10px] font-bold">
                     {member.openLeads} leads
                   </span>
-                  {member.id === value?.id && <Check className="w-3.5 h-3.5 text-primary" />}
+                  {member.id === memberId && <Check className="w-3.5 h-3.5 text-primary" />}
                 </div>
               </button>
             ))

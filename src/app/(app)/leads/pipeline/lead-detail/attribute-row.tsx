@@ -101,7 +101,7 @@ export function AttributeRow({ col, lead, onUpdate }: AttributeRowProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className="group flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-100 hover:bg-neutral-50"
+      className="group flex items-center min-h-[44px] py-2 px-3 transition-colors duration-100 hover:bg-neutral-50"
     >
       {/* Drag handle — listeners only on this element */}
       <button
@@ -116,12 +116,12 @@ export function AttributeRow({ col, lead, onUpdate }: AttributeRowProps) {
       </button>
 
       {/* Label */}
-      <span className="w-[140px] shrink-0 text-[12px] font-medium text-neutral-400">
+      <span className="w-[160px] flex-shrink-0 text-[12px] font-medium text-neutral-400">
         {col.label}
       </span>
 
       {/* Value */}
-      <div className="flex min-w-0 flex-1 items-center">
+      <div className="flex-1 min-w-0">
         <AttributeValue col={col} lead={lead} onUpdate={onUpdate} />
       </div>
     </div>
