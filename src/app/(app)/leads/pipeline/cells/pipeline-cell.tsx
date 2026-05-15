@@ -12,6 +12,7 @@ import { StatusCell } from "./status-cell";
 import { MemberCell } from "./member-cell";
 import { RatingCell } from "./rating-cell";
 import { SourceCell } from "./source-cell";
+import { LastContactedCell } from "./last-contacted-cell";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ReminderClockBadge } from "@/components/shared/reminder-clock-badge";
 import { useColumnStateContext } from "../context/column-state-context";
@@ -92,13 +93,20 @@ export function PipelineCell({
         />
       );
     case "sources":
-      return <SourceCell sources={lead.sources} />;
+      return (
+        <SourceCell 
+          sources={lead.sources} 
+          onChange={(newVal) => onUpdateField(lead, column, newVal)}
+        />
+      );
     case "lastContacted":
       return (
-        <div className="flex flex-col gap-0.5">
-          <span>{formatDateTime(value)}</span>
+        <LastContactedCell 
+          value={value as any} 
+          onChange={(newDate) => onUpdateField(lead, column, newDate)}
+        >
           <ReminderClockBadge reminders={lead.reminders || []} />
-        </div>
+        </LastContactedCell>
       );
     case "createdAt":
       return (

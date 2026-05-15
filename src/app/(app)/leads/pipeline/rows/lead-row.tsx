@@ -10,6 +10,7 @@ import { PipelineCell } from "../cells/pipeline-cell";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { RowDragHandle } from "./row-drag-handle";
+import { useColumnStateContext } from "../context/column-state-context";
 
 interface LeadRowProps {
   lead: PipelineLead;
@@ -54,6 +55,7 @@ export function LeadRow({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lead.id });
   const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 20 : undefined };
   const selected = selectedDetailId === lead.id;
+  const { allAvailableColumns } = useColumnStateContext();
 
   return (
     <tr ref={setNodeRef} style={style} className={cn("group transition-colors duration-200 hover:bg-neutral-50/60", selected && "bg-blue-50", isDragging && "z-50 bg-neutral-50 opacity-70")}>
@@ -66,7 +68,19 @@ export function LeadRow({
       {columns.map((column) => {
         const isEditing = editingCell?.leadId === lead.id && editingCell.column === column;
         const width = columnWidths[column] || 150;
-        const isInteractive = column === "name" || column === "phone" || column === "location" || column.startsWith("custom_");
+        
+        // Only columns that use the inline CellEditor (text-like fields) should be wrapped in the trigger button.
+        // Columns like Status, AssignedTo, Rating, and Sources handle their own popovers/clicks.
+        const customDef = column.startsWith("custom_") 
+          ? allAvailableColumns.find(c => c.id === column) 
+          : null;
+          
+        const isInteractive = 
+          column === "name" || 
+          column === "phone" || 
+          column === "location" ||
+          (customDef && (customDef.type === "Text" || customDef.type === "Number"));
+        
         const isPinned = pinnedColumns.includes(column);
         const left = pinnedOffsets[column];
 

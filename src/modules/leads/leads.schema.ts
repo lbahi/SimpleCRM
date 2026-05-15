@@ -37,7 +37,9 @@ export const updateLeadSchema = z.object({
   location: z.string().optional(),
   rating: z.number().int().min(0).max(5).optional(),
   status: LeadStatus.optional(),
+  sources: z.array(z.string().max(50)).max(10).optional(),
   customData: z.record(z.string(), z.unknown()).nullable().optional(),
+  customFields: z.record(z.string(), z.unknown()).nullable().optional(),
   notes: z.string().max(2000).optional(),
   tags: z.array(z.string().max(50)).max(20).optional(),
 });

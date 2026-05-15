@@ -197,23 +197,46 @@ export async function updateLead(
 ): Promise<LeadWithRelations> {
   const oldLead = await prisma.lead.findUnique({ where: { id }, select: { status: true, rating: true } });
 
-  const lead = await prisma.lead.update({
-    where: { id },
-    data: {
-      ...(input.name !== undefined && { name: input.name }),
-      ...(input.phone !== undefined && { phone: input.phone }),
-      ...(input.email !== undefined && { email: input.email || null }),
-      ...(input.location !== undefined && { location: input.location }),
-      ...(input.rating !== undefined && { rating: input.rating }),
-      ...(input.status !== undefined && { status: input.status as any }),
-      ...(input.customData !== undefined && {
-        customData:
-          input.customData === null
-            ? Prisma.JsonNull
-            : (input.customData as Prisma.InputJsonValue),
-      }),
-    },
-    select: detailSelect,
+  const updateData: Prisma.LeadUpdateInput = {
+    ...(input.name !== undefined && { name: input.name }),
+    ...(input.phone !== undefined && { phone: input.phone }),
+    ...(input.email !== undefined && { email: input.email || null }),
+    ...(input.location !== undefined && { location: input.location }),
+    ...(input.rating !== undefined && { rating: input.rating }),
+    ...(input.status !== undefined && { status: input.status as any }),
+    ...(input.customData !== undefined && {
+      customData:
+        input.customData === null
+          ? Prisma.JsonNull
+          : (input.customData as Prisma.InputJsonValue),
+    }),
+    ...(input.customFields !== undefined && {
+      customFields:
+        input.customFields === null
+          ? Prisma.JsonNull
+          : (input.customFields as Prisma.InputJsonValue),
+    }),
+  };
+
+  const lead = await prisma.$transaction(async (tx) => {
+    // If sources are provided, clear old and add new
+    if (input.sources !== undefined) {
+      await tx.leadSource.deleteMany({ where: { leadId: id } });
+      if (input.sources.length > 0) {
+        await tx.leadSource.createMany({
+          data: input.sources.map(s => ({
+            leadId: id,
+            source: s,
+          }))
+        });
+      }
+    }
+
+    return tx.lead.update({
+      where: { id },
+      data: updateData,
+      select: detailSelect,
+    });
   });
 
   if (input.status && (oldLead?.status as any) !== input.status) {
