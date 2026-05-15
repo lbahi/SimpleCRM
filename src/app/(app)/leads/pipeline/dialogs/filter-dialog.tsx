@@ -1,9 +1,18 @@
-// SimpleCRM — filter-dialog (Replicated from reference/FilterDialog.tsx)
+// SimpleCRM — filter-dialog.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { CustomDropdown } from '@/components/ui/custom-dropdown';
+import * as React from "react";
+import { X } from "lucide-react";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter 
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CustomDropdown } from "@/components/ui/custom-dropdown";
+import { cn } from "@/lib/utils";
 
 interface Member {
   id: string;
@@ -20,6 +29,24 @@ interface FilterDialogProps {
   onClear: () => void;
 }
 
+const STATUS_OPTIONS = [
+  { value: "NEW", label: "New" },
+  { value: "FRESH", label: "Fresh" },
+  { value: "CONTACTED", label: "Contacted" },
+  { value: "QUALIFIED", label: "Qualified" },
+  { value: "CONVERTED", label: "Converted" },
+  { value: "LOST", label: "Lost" },
+];
+
+const SOURCE_OPTIONS = [
+  { value: "Website", label: "Website" },
+  { value: "Manual", label: "Manual" },
+  { value: "Referral", label: "Referral" },
+  { value: "Facebook", label: "Facebook" },
+  { value: "Instagram", label: "Instagram" },
+  { value: "Google", label: "Google" },
+];
+
 export function FilterDialog({ 
   open, 
   onOpenChange, 
@@ -28,9 +55,9 @@ export function FilterDialog({
   onApply, 
   onClear 
 }: FilterDialogProps) {
-  const [members, setMembers] = useState<Member[]>([]);
+  const [members, setMembers] = React.useState<Member[]>([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (open) {
       fetch("/api/users?role=MEMBER")
         .then(res => res.json())
@@ -41,61 +68,94 @@ export function FilterDialog({
     }
   }, [open]);
 
-  if (!open) return null;
+  const toggleMultiSelect = (field: string, value: string) => {
+    const current = draftFilters[field] || [];
+    const next = current.includes(value)
+      ? current.filter((v: string) => v !== value)
+      : [...current, value];
+    onDraftChange({ ...draftFilters, [field]: next });
+  };
+
+  const setAllMultiSelect = (field: string, options: { value: string }[]) => {
+    onDraftChange({ ...draftFilters, [field]: options.map(o => o.value) });
+  };
+
+  const clearMultiSelect = (field: string) => {
+    onDraftChange({ ...draftFilters, [field]: [] });
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[110] p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md animate-in fade-in zoom-in duration-200">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-bold">Advanced Filters</h2>
-          <button onClick={() => onOpenChange(false)} className="text-gray-400 hover:text-gray-600">
-            <X size={20} />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md p-0 overflow-hidden rounded-2xl border-none shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
+        <DialogHeader className="p-6 pb-4 border-b border-neutral-100 flex flex-row items-center justify-between">
+          <DialogTitle className="text-xl font-bold text-neutral-900">Filter leads</DialogTitle>
+          <button 
+            onClick={() => onOpenChange(false)}
+            className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
+          >
+            <X size={18} className="text-neutral-400" />
           </button>
-        </div>
+        </DialogHeader>
 
-        <div className="p-4 space-y-4">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Name</label>
-            <input
-              type="text"
-              value={draftFilters.name}
-              onChange={(e) => onDraftChange({ ...draftFilters, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-black outline-none"
-              placeholder="Filter by name..."
-            />
+        <div className="p-6 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          {/* Status Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Status</label>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setAllMultiSelect("status", STATUS_OPTIONS)}
+                  className="text-[11px] font-semibold text-primary hover:underline"
+                >
+                  Select all
+                </button>
+                <button 
+                  onClick={() => clearMultiSelect("status")}
+                  className="text-[11px] font-semibold text-neutral-400 hover:text-neutral-600"
+                >
+                  Clear all
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {STATUS_OPTIONS.map((opt) => {
+                const isSelected = (draftFilters.status || []).includes(opt.value);
+                return (
+                  <div 
+                    key={opt.value}
+                    onClick={() => toggleMultiSelect("status", opt.value)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-xl border border-neutral-100 cursor-pointer transition-all duration-200",
+                      isSelected ? "bg-blue-50/50 border-blue-100 ring-1 ring-blue-100" : "hover:bg-neutral-50 hover:border-neutral-200"
+                    )}
+                  >
+                    <Checkbox 
+                      checked={isSelected}
+                      onCheckedChange={() => toggleMultiSelect("status", opt.value)}
+                      className={cn(isSelected && "border-primary bg-primary")}
+                    />
+                    <span className={cn(
+                      "text-[13px] font-medium transition-colors",
+                      isSelected ? "text-primary" : "text-neutral-600"
+                    )}>
+                      {opt.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Phone</label>
-            <input
-              type="text"
-              value={draftFilters.phone}
-              onChange={(e) => onDraftChange({ ...draftFilters, phone: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-black outline-none"
-              placeholder="Filter by phone..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Location</label>
-            <input
-              type="text"
-              value={draftFilters.location}
-              onChange={(e) => onDraftChange({ ...draftFilters, location: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-black outline-none"
-              placeholder="Filter by location..."
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Assigned To</label>
+          {/* Assigned To Section */}
+          <div className="space-y-3">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Assigned to</label>
             <CustomDropdown
-              value={draftFilters.assignedTo}
+              value={draftFilters.assignedTo || ""}
               onChange={(val) => onDraftChange({ ...draftFilters, assignedTo: val })}
-              placeholder="All members"
+              placeholder="Anyone"
               showSearch
               options={[
-                { value: "", label: "All members" },
+                { value: "", label: "Anyone" },
                 { value: "UNASSIGNED", label: "Unassigned" },
                 ...members.map(m => ({
                   value: m.id,
@@ -106,57 +166,81 @@ export function FilterDialog({
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Status</label>
-            <CustomDropdown
-              value={draftFilters.status}
-              onChange={(val) => onDraftChange({ ...draftFilters, status: val })}
-              placeholder="All statuses"
-              options={[
-                { value: "", label: "All statuses" },
-                { value: "NEW", label: "New" },
-                { value: "FRESH", label: "Fresh" },
-                { value: "CONTACTED", label: "Contacted" },
-                { value: "QUALIFIED", label: "Qualified" },
-                { value: "CONVERTED", label: "Converted" },
-                { value: "LOST", label: "Lost" },
-              ]}
-            />
+          {/* Source Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Source</label>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setAllMultiSelect("sources", SOURCE_OPTIONS)}
+                  className="text-[11px] font-semibold text-primary hover:underline"
+                >
+                  Select all
+                </button>
+                <button 
+                  onClick={() => clearMultiSelect("sources")}
+                  className="text-[11px] font-semibold text-neutral-400 hover:text-neutral-600"
+                >
+                  Clear all
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {SOURCE_OPTIONS.map((opt) => {
+                const isSelected = (draftFilters.sources || []).includes(opt.value);
+                return (
+                  <div 
+                    key={opt.value}
+                    onClick={() => toggleMultiSelect("sources", opt.value)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-xl border border-neutral-100 cursor-pointer transition-all duration-200",
+                      isSelected ? "bg-blue-50/50 border-blue-100 ring-1 ring-blue-100" : "hover:bg-neutral-50 hover:border-neutral-200"
+                    )}
+                  >
+                    <Checkbox 
+                      checked={isSelected}
+                      onCheckedChange={() => toggleMultiSelect("sources", opt.value)}
+                    />
+                    <span className={cn(
+                      "text-[13px] font-medium transition-colors",
+                      isSelected ? "text-primary" : "text-neutral-600"
+                    )}>
+                      {opt.label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Minimum Rating</label>
-            <CustomDropdown
-              value={draftFilters.rating?.toString() ?? ""}
-              onChange={(val) => onDraftChange({ ...draftFilters, rating: val ? Number(val) : null })}
-              placeholder="Any rating"
-              options={[
-                { value: "", label: "Any rating" },
-                { value: "1", label: "1 star or more" },
-                { value: "2", label: "2 stars or more" },
-                { value: "3", label: "3 stars or more" },
-                { value: "4", label: "4 stars or more" },
-                { value: "5", label: "5 stars" },
-              ]}
+          {/* Location Section */}
+          <div className="space-y-3">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Location</label>
+            <input
+              type="text"
+              value={draftFilters.location || ""}
+              onChange={(e) => onDraftChange({ ...draftFilters, location: e.target.value })}
+              className="w-full h-10 px-3 rounded-xl border border-neutral-200 bg-white text-[13px] text-neutral-700 placeholder:text-neutral-400 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all"
+              placeholder="Filter by city or region..."
             />
           </div>
         </div>
 
-        <div className="flex gap-2 p-4 border-t border-gray-200">
+        <DialogFooter className="p-6 bg-neutral-50/50 border-t border-neutral-100 flex flex-row items-center justify-between gap-4">
           <button
             onClick={onClear}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+            className="px-4 h-10 rounded-xl text-[13px] font-bold text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-all active:scale-95"
           >
-            Clear All
+            Clear all
           </button>
           <button
             onClick={onApply}
-            className="flex-1 px-4 py-2 bg-black text-white rounded text-sm font-bold hover:bg-gray-800 transition-all active:scale-95"
+            className="flex-1 h-10 bg-neutral-900 text-white rounded-xl text-[13px] font-bold hover:bg-neutral-800 shadow-[0_4px_12px_rgba(0,0,0,0.15)] transition-all active:scale-95 flex items-center justify-center gap-2"
           >
             Apply Filters
           </button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

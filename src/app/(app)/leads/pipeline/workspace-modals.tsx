@@ -63,7 +63,7 @@ export function WorkspaceModals({
         onDraftChange={tableState.setDraftFilters}
         onApply={() => { tableState.setFilters(tableState.draftFilters); modals.setShowFilter(false); }}
         onClear={() => {
-          const empty = { name: "", phone: "", location: "", assignedTo: "", status: "", rating: "" };
+          const empty = { status: [], assignedTo: "", sources: [], location: "" };
           tableState.setFilters(empty); tableState.setDraftFilters(empty); modals.setShowFilter(false);
         }}
       />

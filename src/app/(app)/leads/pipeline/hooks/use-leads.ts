@@ -72,23 +72,45 @@ export function useLeads(initialData: PaginatedLeads, tableState: TableState) {
   const filteredLeads = useMemo(() => {
     const { quickSearch, filters } = tableState;
     return allLeads.filter((lead) => {
+      // Quick search
       const searchBlob = [
         lead.name,
         lead.phone,
         lead.location,
         lead.assignedTo?.name,
-      ]
-        .join(" ")
-        .toLowerCase();
+      ].join(" ").toLowerCase();
 
       if (quickSearch.trim() && !searchBlob.includes(quickSearch.trim().toLowerCase())) {
         return false;
       }
 
-      if (!matchesText(lead.name, filters.name)) return false;
-      if (!matchesText(lead.phone, filters.phone)) return false;
-      if (!matchesText(lead.location, filters.location)) return false;
-      if (!matchesText(lead.assignedTo?.name, filters.assignedTo)) return false;
+      // Advanced Filters
+      // Status (multi-select)
+      if (filters.status && filters.status.length > 0 && !filters.status.includes(lead.status)) {
+        return false;
+      }
+      
+      // Assigned To
+      if (filters.assignedTo) {
+        if (filters.assignedTo === "UNASSIGNED") {
+          if (lead.assignedToId) return false;
+        } else if (lead.assignedToId !== filters.assignedTo) {
+          return false;
+        }
+      }
+      
+      // Source (multi-select)
+      if (filters.sources && filters.sources.length > 0) {
+        const leadSources = lead.sources.map(s => s.source);
+        if (!filters.sources.some(s => leadSources.includes(s))) {
+          return false;
+        }
+      }
+      
+      // Location (text input)
+      if (filters.location && !matchesText(lead.location, (filters.location as string))) {
+        return false;
+      }
 
       return true;
     });

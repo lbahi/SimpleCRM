@@ -3,21 +3,18 @@ import { useState } from "react";
 import { GroupByField, ColumnId } from "../model";
 
 interface FilterState {
-  name: string;
-  phone: string;
-  location: string;
+  status: string[];
   assignedTo: string;
-  status: string;
-  rating: string;
+  sources: string[];
+  location: string;
+  [key: string]: string | string[] | null;
 }
 
 const INITIAL_FILTERS: FilterState = {
-  name: "",
-  phone: "",
-  location: "",
+  status: [],
   assignedTo: "",
-  status: "",
-  rating: "",
+  sources: [],
+  location: "",
 };
 
 export function useTableState() {
