@@ -9,7 +9,7 @@ import { z } from 'zod'
 import { getSession } from '@/lib/session'
 
 // Type definitions
-export type LeadFormData = z.infer<typeof createLeadSchema>
+export type LeadFormData = z.input<typeof createLeadSchema>
 export type LeadUpdateData = z.infer<typeof updateLeadSchema>
 
 /**

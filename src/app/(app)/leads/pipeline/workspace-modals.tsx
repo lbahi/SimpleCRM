@@ -5,7 +5,8 @@ import { FilterDialog } from "./dialogs/filter-dialog";
 import { CustomizeDialog } from "./dialogs/customize-dialog";
 import { CreateLeadDialog } from "../create-lead-dialog";
 import { LeadDetailModal } from "./lead-detail/lead-detail-modal";
-import { CustomAttributeDialog } from "./dialogs/custom-attribute-dialog";
+import { AddColumnDialog } from "./dialogs/add-column-dialog";
+import { CreateAttributeDialog } from "./dialogs/create-attribute-dialog";
 import { TableState } from "./hooks/use-table-state";
 import { ColumnState } from "./hooks/use-column-state";
 import { PipelineLead, ColumnId } from "./model";
@@ -18,8 +19,10 @@ interface WorkspaceModalsProps {
     setShowFilter: (v: boolean) => void;
     showCustomize: boolean;
     setShowCustomize: (v: boolean) => void;
-    showCustomAttr: boolean;
-    setShowCustomAttr: (v: boolean) => void;
+    showAddColumn: boolean;
+    setShowAddColumn: (v: boolean) => void;
+    showCreateAttr: boolean;
+    setShowCreateAttr: (v: boolean) => void;
   };
   tableState: TableState;
   columnState: ColumnState;
@@ -77,9 +80,18 @@ export function WorkspaceModals({
         onMoveColumn={moveColumn}
         onReorderColumns={columnState.reorderColumns}
       />
-      <CustomAttributeDialog
-        open={modals.showCustomAttr}
-        onOpenChange={modals.setShowCustomAttr}
+      <AddColumnDialog
+        open={modals.showAddColumn}
+        onOpenChange={modals.setShowAddColumn}
+        columnState={columnState}
+        onCreateCustom={() => {
+          modals.setShowAddColumn(false);
+          modals.setShowCreateAttr(true);
+        }}
+      />
+      <CreateAttributeDialog
+        open={modals.showCreateAttr}
+        onOpenChange={modals.setShowCreateAttr}
         onSave={columnState.addCustomColumn}
       />
       <CreateLeadDialog

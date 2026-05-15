@@ -27,26 +27,14 @@ interface SidebarProps {
     role: "ADMIN" | "MEMBER";
     avatarInitials: string;
   };
+  inboxCount?: number;
+  reminderCount?: number;
 }
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [inboxCount, setInboxCount] = useState(0);
-
-  useEffect(() => {
-    const fetchCount = async () => {
-      try {
-        const res = await fetch("/api/inbox/count");
-        if (res.ok) {
-          const data = await res.json();
-          setInboxCount(data.count);
-        }
-      } catch {}
-    };
-    fetchCount();
-  }, []);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });

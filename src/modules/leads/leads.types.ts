@@ -15,6 +15,7 @@ export type LeadListItem = Pick<
   | "order"
   | "assignedToId"
   | "location"
+  | "customFields"
   | "lastContacted"
 > & {
   assignedTo: Pick<User, "id" | "name" | "avatarInitials"> | null;

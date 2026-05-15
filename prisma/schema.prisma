@@ -81,6 +81,7 @@ model Lead {
   phone         String
   email         String?
   customData    Json?
+  customFields  Json?      @default("{}")
   location      String?
   status        LeadStatus @default(NEW)
   rating        Int        @default(0)   // 0 = unrated, 1–5 stars

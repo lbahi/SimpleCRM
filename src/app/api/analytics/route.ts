@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const analytics = await getAnalytics(session.userId);
+    const analytics = await getAnalytics(session.userId, session.role);
     return NextResponse.json(analytics);
   } catch (error) {
     console.error("Analytics API error:", error);

@@ -44,6 +44,7 @@ export function prismaLeadToPipelineLead(prismaLead: LeadWithRelations): Pipelin
       status: r.status,
     })),
     notes: prismaLead.notes.map(n => ({ body: n.body })),
+    customFields: prismaLead.customFields as Record<string, unknown> | null,
     order: prismaLead.order,
     updatedAt: prismaLead.updatedAt,
   };

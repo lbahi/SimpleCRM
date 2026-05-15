@@ -8,8 +8,7 @@ export default async function AnalyticsPage() {
   if (!session) redirect("/login");
   if (session.role !== "ADMIN") redirect("/dashboard");
 
-  const analytics = await getAnalytics(session.userId);
+  const analytics = await getAnalytics(session.userId, session.role);
 
   return <AnalyticsWorkspace leads={analytics.recentLeads} />; // In a real app we'd pass all leads or specialized data
 }
-

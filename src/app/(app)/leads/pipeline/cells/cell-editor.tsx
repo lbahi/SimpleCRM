@@ -4,6 +4,7 @@
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { ColumnId } from "../model";
+import { useColumnStateContext } from "../context/column-state-context";
 
 interface CellEditorProps {
   column: ColumnId;
@@ -20,11 +21,14 @@ export function CellEditor({
   onSave,
   onCancel,
 }: CellEditorProps) {
-  if (column === "createdAt" || column === "lastContacted") {
+  const { allAvailableColumns } = useColumnStateContext();
+  const customDef = allAvailableColumns.find((c: any) => c.id === column);
+
+  if (column === "createdAt" || column === "lastContacted" || (customDef?.type === "Date")) {
     return (
       <DatePicker
         value={value}
-        onChange={(date) => onChange(date)}
+        onChange={(date) => { onChange(date); onSave(); }}
         placeholder="Select date"
         className="h-8 text-xs"
       />

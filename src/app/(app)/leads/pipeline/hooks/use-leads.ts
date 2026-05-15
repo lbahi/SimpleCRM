@@ -40,7 +40,9 @@ export function useLeads(initialData: PaginatedLeads, tableState: TableState) {
     try {
       const body = column === "assignedTo" 
         ? { assignedToId: (rawValue as any)?.id ?? null }
-        : { [column]: rawValue };
+        : column.startsWith("custom_")
+          ? { customFields: { ...(lead.customFields || {}), [column]: rawValue } }
+          : { [column]: rawValue };
 
       await fetch(`/api/leads/${lead.id}`, {
         method: "PATCH",

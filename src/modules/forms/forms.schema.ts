@@ -19,7 +19,7 @@ export const updateFormSchema = z.object({
 });
 
 // Form submission is dynamic based on user-defined fields
-export const submitFormSchema = z.record(z.any());
+export const submitFormSchema = z.record(z.string(), z.any());
 
 export type CreateFormInput = z.infer<typeof createFormSchema>;
 export type UpdateFormInput = z.infer<typeof updateFormSchema>;

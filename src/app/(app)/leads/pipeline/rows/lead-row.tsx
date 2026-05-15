@@ -66,7 +66,7 @@ export function LeadRow({
       {columns.map((column) => {
         const isEditing = editingCell?.leadId === lead.id && editingCell.column === column;
         const width = columnWidths[column] || 150;
-        const isInteractive = column === "name" || column === "phone" || column === "location";
+        const isInteractive = column === "name" || column === "phone" || column === "location" || column.startsWith("custom_");
         const isPinned = pinnedColumns.includes(column);
         const left = pinnedOffsets[column];
 

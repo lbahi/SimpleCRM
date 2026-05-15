@@ -34,13 +34,20 @@ const TYPE_ICONS: Record<string, any> = {
   URL: LinkIcon,
 };
 
+interface CustomColumnDef {
+  id: string;
+  label: string;
+  type: string;
+  options?: string[];
+}
+
 export function useColumnState() {
   const [visibleColumns, setVisibleColumns] = useState<ColumnId[]>(DEFAULT_VISIBLE_COLUMNS);
   const [columnOrder, setColumnOrder] = useState<ColumnId[]>(COLUMN_DEFS.map((col) => col.id));
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(DEFAULT_WIDTHS);
   const [columnLabels, setColumnLabels] = useState<Record<string, string>>({});
   const [pinnedColumns, setPinnedColumns] = useState<string[]>([]);
-  const [customColumns, setCustomColumns] = useState<any[]>([]);
+  const [customColumns, setCustomColumns] = useState<CustomColumnDef[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -88,7 +95,7 @@ export function useColumnState() {
     return [...COLUMN_DEFS, ...custom];
   }, [customColumns]);
 
-  const addCustomColumn = (attr: any) => {
+  const addCustomColumn = (attr: CustomColumnDef) => {
     const next = [...customColumns, attr];
     setCustomColumns(next);
     localStorage.setItem("simpleCRM_customColumns", JSON.stringify(next));

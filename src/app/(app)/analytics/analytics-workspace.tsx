@@ -21,7 +21,7 @@ export function AnalyticsWorkspace({ leads }: AnalyticsWorkspaceProps) {
 
     const sourceData = leads.reduce((acc, lead) => {
         const source = lead.source || 'Unknown';
-        const existing = acc.find(s => s.name === source);
+        const existing = acc.find((s: any) => s.name === source);
         if (existing) {
             existing.value += 1;
         } else {
@@ -34,7 +34,7 @@ export function AnalyticsWorkspace({ leads }: AnalyticsWorkspaceProps) {
         { month: '2026-05', count: leads.filter(l => new Date(l.createdAt).getMonth() === 4).length },
     ];
 
-    const teamMembers = Array.from(new Set(leads.map(l => l.assignedTo).filter(Boolean)));
+    const teamMembers = Array.from(new Set(leads.map(l => l.assignedTo).filter(Boolean))) as string[];
     const teamData = teamMembers.length > 0 ? teamMembers.map(member => ({
         name: member?.split(' ')[0] || 'Unassigned',
         total: leads.filter(l => l.assignedTo === member).length,
@@ -65,7 +65,7 @@ export function AnalyticsWorkspace({ leads }: AnalyticsWorkspaceProps) {
                                     cx="50%"
                                     cy="50%"
                                     labelLine={false}
-                                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                                    label={({ name, percent }: any) => `${name}: ${(percent * 100).toFixed(0)}%`}
                                     outerRadius={80}
                                     fill="#8884d8"
                                     dataKey="value"

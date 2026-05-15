@@ -21,7 +21,8 @@ export type ColumnId =
   | "sources"
   | "lastContacted"
   | "createdAt"
-  | "notePreview";
+  | "notePreview"
+  | (string & {});
 
 export type PipelineLead = {
   id: string;
@@ -37,6 +38,7 @@ export type PipelineLead = {
   createdAt: Date;
   reminders: { id: string; dueAt: Date; status: string }[];
   notes: { body: string }[];
+  customFields: Record<string, unknown> | null;
   order: number;
   updatedAt: Date;
 };
@@ -61,4 +63,7 @@ export interface ColumnDef {
   label: string;
   icon: ComponentType<{ className?: string }>;
   width: string;
+  isCustom?: boolean;
+  type?: string;
+  options?: string[];
 }

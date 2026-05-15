@@ -35,12 +35,13 @@ export const designTokens = {
   
   // Status Badges (extracted from Figma Leads design)
   badges: {
-    new: 'bg-blue-100 text-blue-700 px-2.5 py-1 rounded-md text-xs font-medium',
-    no_respond: 'bg-orange-100 text-orange-700 px-2.5 py-1 rounded-md text-xs font-medium',
-    contacted: 'bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-md text-xs font-medium',
-    converted: 'bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-medium',
-    lost: 'bg-red-100 text-red-700 px-2.5 py-1 rounded-md text-xs font-medium',
-    inactive: 'bg-neutral-100 text-neutral-700 px-2.5 py-1 rounded-md text-xs font-medium',
+    base: 'px-2.5 py-1 rounded-md text-xs font-medium',
+    new: 'bg-blue-100 text-blue-700',
+    no_respond: 'bg-orange-100 text-orange-700',
+    contacted: 'bg-yellow-100 text-yellow-700',
+    converted: 'bg-emerald-100 text-emerald-700',
+    lost: 'bg-red-100 text-red-700',
+    inactive: 'bg-neutral-100 text-neutral-700',
   },
   
   // Colors (Neutral focus for premium feel)

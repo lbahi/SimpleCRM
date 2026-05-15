@@ -10,6 +10,7 @@ interface PipelineToolbarProps {
   onShowCreate: () => void;
   onShowFilter: () => void;
   onShowCustomize: () => void;
+  onShowAddColumn: () => void;
   onRefreshLeads: () => void;
 }
 
@@ -19,6 +20,7 @@ export function PipelineToolbar({
   onShowCreate,
   onShowFilter,
   onShowCustomize,
+  onShowAddColumn,
   onRefreshLeads,
 }: PipelineToolbarProps) {
   const activeFiltersCount = [
@@ -85,7 +87,7 @@ export function PipelineToolbar({
 
           {/* Add Column */}
           <button
-            onClick={() => {}}
+            onClick={onShowAddColumn}
             className="px-3 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 flex items-center gap-2"
           >
             <Plus size={16} />
