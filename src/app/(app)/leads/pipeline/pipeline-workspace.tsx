@@ -16,14 +16,16 @@ import { WorkspaceModals } from "./workspace-modals";
 
 function PipelineWorkspaceInner({ 
   initialData, 
-  currentUserRole 
+  currentUserRole,
+  currentUserId 
 }: { 
   initialData: PaginatedLeads; 
   currentUserRole: string;
+  currentUserId: string;
 }) {
   const columnState = useColumnStateContext();
   const tableState = useTableState();
-  const { sortedLeads, persistFieldChange, refreshLeads, reorderLeads, clearManualOrder } = useLeads(initialData, tableState);
+  const { sortedLeads, persistFieldChange, refreshLeads, reorderLeads, clearManualOrder, duplicateLead, deleteLead } = useLeads(initialData, tableState);
   const inlineRow = useInlineRow(refreshLeads);
   const { sensors, handleDragEnd } = useWorkspaceDnd(sortedLeads, reorderLeads, columnState.columnOrder, columnState.reorderColumns);
 
@@ -82,7 +84,10 @@ function PipelineWorkspaceInner({
             onToggleSelection={handleToggleSelection}
             onToggleAll={handleToggleAll}
             onExpand={setSelectedDetailId}
+            onDuplicate={duplicateLead}
+            onDelete={deleteLead}
             currentUserRole={currentUserRole}
+            currentUserId={currentUserId}
           />
         </div>
         <WorkspaceModals
@@ -109,14 +114,16 @@ function PipelineWorkspaceInner({
 
 export function PipelineWorkspace({ 
   initialData, 
-  currentUserRole 
+  currentUserRole,
+  currentUserId
 }: { 
   initialData: PaginatedLeads; 
   currentUserRole: string;
+  currentUserId: string;
 }) {
   return (
     <ColumnStateProvider>
-      <PipelineWorkspaceInner initialData={initialData} currentUserRole={currentUserRole} />
+      <PipelineWorkspaceInner initialData={initialData} currentUserRole={currentUserRole} currentUserId={currentUserId} />
     </ColumnStateProvider>
   );
 }

@@ -22,6 +22,8 @@ interface ColumnHeaderProps {
   label: string;
   isPinned: boolean;
   pinnedLeft: number;
+  isCustom?: boolean;
+  icon: any;
 }
 
 export function ColumnHeader({
@@ -35,6 +37,8 @@ export function ColumnHeader({
   label,
   isPinned,
   pinnedLeft,
+  isCustom,
+  icon: Icon,
 }: ColumnHeaderProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(label);
@@ -96,9 +100,6 @@ export function ColumnHeader({
     }
   };
 
-  const def = COLUMN_DEFS.find((item) => item.id === columnId);
-  if (!def) return null;
-  const Icon = def.icon;
   const isSorted = sortField === columnId;
 
   return (
@@ -133,6 +134,7 @@ export function ColumnHeader({
           <ColumnHeaderDropdown
             columnId={columnId}
             onAction={handleAction}
+            isCustom={isCustom}
             trigger={
               <div className="group flex w-full cursor-pointer items-center gap-2 text-left">
                 <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />

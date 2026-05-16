@@ -113,6 +113,20 @@ export function useColumnState() {
     localStorage.setItem("simpleCRM_columnLabels", JSON.stringify(next));
   };
 
+  const deleteCustomColumn = (columnId: string) => {
+    const nextCustom = customColumns.filter(c => c.id !== columnId);
+    setCustomColumns(nextCustom);
+    localStorage.setItem("simpleCRM_customColumns", JSON.stringify(nextCustom));
+    
+    const nextOrder = columnOrder.filter(id => id !== columnId);
+    setColumnOrder(nextOrder);
+    localStorage.setItem("simpleCRM_columnOrder", JSON.stringify(nextOrder));
+    
+    const nextVisible = visibleColumns.filter(id => id !== columnId);
+    setVisibleColumns(nextVisible as ColumnId[]);
+    localStorage.setItem("simpleCRM_columnVisibility", JSON.stringify(nextVisible));
+  };
+
   const toggleVisibility = (columnId: ColumnId) => {
     setVisibleColumns((prev) => {
       const next = prev.includes(columnId)
@@ -157,6 +171,7 @@ export function useColumnState() {
     pinColumn,
     setLabel,
     addCustomColumn,
+    deleteCustomColumn,
     isHydrated,
   };
 }

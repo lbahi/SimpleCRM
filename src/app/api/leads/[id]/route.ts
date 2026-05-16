@@ -3,10 +3,12 @@ import { getSession } from "@/lib/session";
 import { updateLeadSchema, assignLeadSchema } from "@/modules/leads/leads.schema";
 import {
   getLeadById,
+} from "@/modules/leads/leads.service";
+import {
   updateLead,
   assignLead,
   deleteLead,
-} from "@/modules/leads/leads.service";
+} from "@/modules/leads/leads-mutations.service";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -59,11 +61,15 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id } = await params;
+
   if (session.role !== "ADMIN") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const lead = await getLeadById(id);
+    if (!lead || lead.assignedToId !== session.userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
-  const { id } = await params;
   await deleteLead(id);
   return new NextResponse(null, { status: 204 });
 }

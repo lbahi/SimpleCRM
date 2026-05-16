@@ -73,6 +73,10 @@ export function applyFieldChange(lead: PipelineLead, column: ColumnId, value: un
         assignedTo: val
       };
     }
+    case "sources": {
+      const sourcesArr = value as string[];
+      return { ...lead, sources: sourcesArr.map(s => ({ source: s })) };
+    }
     default:
       return lead;
   }

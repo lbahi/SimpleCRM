@@ -2,7 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSession } from "@/lib/session";
 import { bulkAssignSchema } from "@/modules/leads/leads.schema";
-import { bulkAssignLeads } from "@/modules/leads/leads.service";
+import { bulkAssignLeads } from "@/modules/leads/leads-bulk.service";
 
 export async function POST(req: NextRequest) {
   const session = await getSession();

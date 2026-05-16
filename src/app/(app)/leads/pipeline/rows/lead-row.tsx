@@ -30,7 +30,10 @@ interface LeadRowProps {
   onUpdateField: (lead: PipelineLead, column: ColumnId, value: unknown) => void | Promise<void>;
   pinnedColumns: string[];
   pinnedOffsets: Record<string, number>;
+  onDuplicate?: (id: string) => void;
+  onDelete?: (id: string) => void;
   currentUserRole: string;
+  currentUserId: string;
 }
 
 export function LeadRow({
@@ -50,21 +53,29 @@ export function LeadRow({
   onUpdateField,
   pinnedColumns,
   pinnedOffsets,
+  onDuplicate,
+  onDelete,
   currentUserRole,
+  currentUserId,
 }: LeadRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lead.id });
   const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 20 : undefined };
   const selected = selectedDetailId === lead.id;
   const { allAvailableColumns } = useColumnStateContext();
 
+  const canDelete = currentUserRole === "ADMIN" || lead.assignedToId === currentUserId;
+
   return (
     <tr ref={setNodeRef} style={style} className={cn("group transition-colors duration-200 hover:bg-neutral-50/60", selected && "bg-blue-50", isDragging && "z-50 bg-neutral-50 opacity-70")}>
-      <RowDragHandle attributes={attributes} listeners={listeners} isSelected={isSelected} />
-      <td className="w-12 sticky left-12 z-10 bg-white border-b border-neutral-100 px-2 py-2.5" style={{ width: 48, left: 48 }}>
-        <div className="flex items-center justify-center">
-          {onToggleSelection && <Checkbox checked={isSelected} onCheckedChange={() => onToggleSelection(lead.id)} />}
-        </div>
-      </td>
+      <RowDragHandle 
+        attributes={attributes} 
+        listeners={listeners} 
+        isSelected={isSelected} 
+        leadId={lead.id}
+        onDuplicate={onDuplicate}
+        onDelete={canDelete ? onDelete : undefined}
+      />
+
       {columns.map((column) => {
         const isEditing = editingCell?.leadId === lead.id && editingCell.column === column;
         const width = columnWidths[column] || 150;

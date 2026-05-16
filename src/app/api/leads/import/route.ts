@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import Papa from "papaparse";
 import { getSession } from "@/lib/session";
 import { importRowSchema } from "@/modules/leads/leads.schema";
-import { importLeads } from "@/modules/leads/leads.service";
+import { importLeads } from "@/modules/leads/leads-bulk.service";
 
 export async function POST(request: NextRequest) {
   const session = await getSession();

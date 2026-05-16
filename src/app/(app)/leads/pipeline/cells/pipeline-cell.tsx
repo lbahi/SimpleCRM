@@ -16,6 +16,7 @@ import { LastContactedCell } from "./last-contacted-cell";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ReminderClockBadge } from "@/components/shared/reminder-clock-badge";
 import { useColumnStateContext } from "../context/column-state-context";
+import { CustomFieldCell } from "./custom-field-cell";
 
 interface PipelineCellProps {
   lead: PipelineLead;
@@ -37,34 +38,14 @@ export function PipelineCell({
 
     if (!customDef) return <span className="text-neutral-400">—</span>;
 
-    switch (customDef.type) {
-      case "Checkbox":
-        return <Checkbox checked={!!val} onCheckedChange={(checked: boolean) => onUpdateField(lead, column, checked)} />;
-      case "Date":
-        return <span>{val ? format(new Date(val as string), "MMM d, yyyy") : "—"}</span>;
-      case "Number":
-        return <span>{val !== "" ? Number(val).toLocaleString() : "—"}</span>;
-      case "Select":
-        return val ? (
-          <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-[11px] font-bold border border-blue-100">
-            {val as string}
-          </span>
-        ) : <span className="text-neutral-400">—</span>;
-      case "Multi-select":
-        const values = Array.isArray(val) ? val : [];
-        return (
-          <div className="flex flex-wrap gap-1">
-            {values.map((v: string) => (
-              <span key={v} className="px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 text-[11px] font-bold border border-neutral-200">
-                {v}
-              </span>
-            ))}
-            {values.length === 0 && <span className="text-neutral-400">—</span>}
-          </div>
-        );
-      default:
-        return <span className="truncate">{String(val || "—")}</span>;
-    }
+    return (
+      <CustomFieldCell 
+        type={customDef.type || "Text"} 
+        value={val} 
+        options={customDef.options}
+        onChange={(newVal) => onUpdateField(lead, column, newVal)}
+      />
+    );
   }
 
   const value = lead[column as keyof PipelineLead];

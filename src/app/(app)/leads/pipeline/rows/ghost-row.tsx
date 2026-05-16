@@ -161,7 +161,6 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
       onClick={() => !isActive && activate("name")}
     >
       <td className="w-12 sticky left-0 z-30 bg-inherit" style={{ width: 48, left: 0 }} />
-      <td className="w-12 sticky left-12 z-10 bg-inherit" style={{ width: 48, left: 48 }} />
       {columns.map((col) => {
         const width = columnWidths[col] || 150;
         const isPinned = pinnedColumns.includes(col);

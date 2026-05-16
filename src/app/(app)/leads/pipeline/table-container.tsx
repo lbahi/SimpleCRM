@@ -32,6 +32,7 @@ interface TableContainerProps {
     toggleVisibility: (id: ColumnId) => void;
     setLabel: (id: string, label: string) => void;
     pinColumn: (id: string) => void;
+    deleteCustomColumn: (id: string) => void;
   };
   tableState: TableState;
   inlineRow: InlineRowState;
@@ -41,7 +42,10 @@ interface TableContainerProps {
   onToggleSelection: (id: string) => void;
   onToggleAll: () => void;
   onExpand: (id: string) => void;
+  onDuplicate: (id: string) => void;
+  onDelete: (id: string) => void;
   currentUserRole: string;
+  currentUserId: string;
 }
 
 export function TableContainer({
@@ -55,7 +59,10 @@ export function TableContainer({
   onToggleSelection,
   onToggleAll,
   onExpand,
+  onDuplicate,
+  onDelete,
   currentUserRole,
+  currentUserId,
 }: TableContainerProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [editingCell, setEditingCell] = useState<{ leadId: string; column: ColumnId } | null>(null);
@@ -93,7 +100,7 @@ export function TableContainer({
 
   const pinnedOffsets = useMemo(() => {
     const offsets: Record<string, number> = {};
-    let currentOffset = 96; // drag handle (48) + checkbox (48)
+    let currentOffset = 48; // drag handle (48)
     columnState.columnOrder.forEach((id: ColumnId) => {
       if (columnState.pinnedColumns.includes(id) && columnState.visibleColumns.includes(id)) {
         offsets[id] = currentOffset;
@@ -118,7 +125,10 @@ export function TableContainer({
     onUpdateField,
     pinnedColumns: columnState.pinnedColumns,
     pinnedOffsets,
+    onDuplicate,
+    onDelete,
     currentUserRole,
+    currentUserId,
   };
 
   return (

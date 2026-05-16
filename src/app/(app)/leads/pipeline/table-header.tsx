@@ -4,6 +4,7 @@
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { ColumnHeader } from './columns/column-header';
 import { ColumnId, ColumnDef } from './model';
+import { toast } from 'sonner';
 
 interface TableHeaderProps {
   orderedVisibleColumns: ColumnDef[];
@@ -18,6 +19,7 @@ interface TableHeaderProps {
     toggleVisibility: (id: ColumnId) => void;
     setLabel: (id: string, label: string) => void;
     pinColumn: (id: string) => void;
+    deleteCustomColumn: (id: string) => void;
   };
   tableState: {
     sortField: ColumnId;
@@ -44,16 +46,7 @@ export function TableHeader({
     <thead className="bg-gray-50 sticky top-0 z-20">
       <tr className="border-b border-gray-100">
         <td className="sticky left-0 z-30 w-12 border-b border-neutral-100 bg-gray-50 px-1 text-center" style={{ width: 48, left: 0 }}></td>
-        <th className="w-12 sticky left-12 bg-gray-50 z-30 border-b border-neutral-100" style={{ width: 48, left: 48 }}>
-          <div className="flex items-center justify-center h-full">
-            <input
-              type="checkbox"
-              checked={selectedIds.size === leadsCount && leadsCount > 0}
-              onChange={onToggleAll}
-              className="size-4 rounded border-gray-300"
-            />
-          </div>
-        </th>
+
         <SortableContext 
           items={orderedVisibleColumns.map((c: ColumnDef) => c.id)} 
           strategy={horizontalListSortingStrategy}
@@ -76,9 +69,15 @@ export function TableHeader({
                   if (action === 'hide') columnState.toggleVisibility(id as ColumnId);
                   if (action === 'rename') columnState.setLabel(id, payload);
                   if (action === 'pin') columnState.pinColumn(id);
+                  if (action === 'delete') {
+                    columnState.deleteCustomColumn(id);
+                    toast.success("Column deleted");
+                  }
                 }}
                 isPinned={isPinned}
                 pinnedLeft={left}
+                isCustom={column.isCustom}
+                icon={column.icon}
               />
             );
           })}

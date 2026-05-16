@@ -1,7 +1,7 @@
 // SimpleCRM — api/inbox/route.ts
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
-import { listUnassignedLeads } from "@/modules/leads/leads.service";
+import { listUnassignedLeads } from "@/modules/leads/leads-interactions.service";
 
 export async function GET() {
   const session = await getSession();

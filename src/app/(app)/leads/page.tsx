@@ -18,5 +18,5 @@ export default async function LeadsPage() {
     sortDir: "desc"
   });
 
-  return <PipelineWorkspace initialData={initialData} currentUserRole={session.role} />;
+  return <PipelineWorkspace initialData={initialData} currentUserRole={session.role} currentUserId={session.userId} />;
 }

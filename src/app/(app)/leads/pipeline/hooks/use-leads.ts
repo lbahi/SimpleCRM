@@ -169,6 +169,62 @@ export function useLeads(initialData: PaginatedLeads, tableState: TableState) {
     }
   };
 
+  const duplicateLead = async (leadId: string) => {
+    const original = allLeads.find(l => l.id === leadId);
+    if (!original) return;
+
+    // Optimistically insert
+    const tempId = `temp-${Date.now()}`;
+    const newLead = { ...original, id: tempId, name: `${original.name} (Copy)` };
+    
+    setAllLeads(prev => {
+      const idx = prev.findIndex(l => l.id === leadId);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      next.splice(idx + 1, 0, newLead);
+      return next;
+    });
+
+    try {
+      // Fetch full lead data (PipelineLead omits email)
+      const fullRes = await fetch(`/api/leads/${leadId}`);
+      const fullLead = fullRes.ok ? await fullRes.json() : null;
+      const body = {
+        name: newLead.name,
+        phone: original.phone || "",
+        email: fullLead?.email || undefined,
+        location: original.location || undefined,
+        rating: original.rating || 0,
+        status: original.status,
+        assignedToId: original.assignedToId || undefined,
+        sources: original.sources?.map((s: any) => s.source) || []
+      };
+      await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }).then(checkResponse);
+      toast.success("Lead duplicated");
+      refreshLeads();
+    } catch (e) {
+      toast.error("Failed to duplicate lead");
+      refreshLeads();
+    }
+  };
+
+  const deleteLead = async (leadId: string) => {
+    setAllLeads(prev => prev.filter(l => l.id !== leadId));
+    try {
+      await fetch(`/api/leads/${leadId}`, {
+        method: "DELETE"
+      }).then(checkResponse);
+      toast.success("Lead deleted");
+    } catch (e) {
+      toast.error("Failed to delete lead");
+      refreshLeads();
+    }
+  };
+
   return {
     allLeads,
     setAllLeads,
@@ -178,5 +234,7 @@ export function useLeads(initialData: PaginatedLeads, tableState: TableState) {
     updateLocalLead,
     reorderLeads,
     clearManualOrder: () => setManualOrder(null),
+    duplicateLead,
+    deleteLead,
   };
 }

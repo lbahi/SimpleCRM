@@ -7,7 +7,8 @@ import {
   ArrowUp, 
   ArrowDown, 
   Pin, 
-  Columns3 
+  Columns3,
+  Trash2
 } from "lucide-react";
 import {
   Popover,
@@ -21,12 +22,14 @@ interface ColumnHeaderDropdownProps {
   columnId: ColumnId;
   onAction: (action: string) => void;
   trigger: React.ReactNode;
+  isCustom?: boolean;
 }
 
 export function ColumnHeaderDropdown({
   columnId,
   onAction,
   trigger,
+  isCustom,
 }: ColumnHeaderDropdownProps) {
   const items = [
     { id: "rename", label: "Rename", icon: Pencil },
@@ -38,6 +41,11 @@ export function ColumnHeaderDropdown({
     { id: "pin", label: "Pin column", icon: Pin },
     { id: "group", label: "Group by", icon: Columns3 },
   ];
+
+  if (isCustom) {
+    items.push({ type: "divider" });
+    items.push({ id: "delete", label: "Delete column", icon: Trash2, destructive: true });
+  }
 
   return (
     <Popover>

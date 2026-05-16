@@ -11,8 +11,7 @@ import {
   Star, 
   User, 
   List, 
-  Calendar,
-  X
+  Calendar
 } from "lucide-react";
 import { 
   Dialog, 
@@ -57,12 +56,6 @@ export function AddColumnDialog({
       <DialogContent className="max-w-md p-0 overflow-hidden rounded-2xl border-none shadow-[0_20px_50px_rgba(0,0,0,0.2)]">
         <DialogHeader className="p-6 border-b border-neutral-100 flex flex-row items-center justify-between">
           <DialogTitle className="text-xl font-bold text-neutral-900">Add Column</DialogTitle>
-          <button 
-            onClick={() => onOpenChange(false)}
-            className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
-          >
-            <X size={18} className="text-neutral-400" />
-          </button>
         </DialogHeader>
 
         <div className="p-6 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
