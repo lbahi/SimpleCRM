@@ -5,17 +5,10 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, 
   CartesianGrid, Tooltip, ResponsiveContainer, Line, LineChart, Legend 
 } from 'recharts';
-
-interface LeadItem {
-  id?: string;
-  status?: string;
-  source?: string | null;
-  createdAt: string | Date;
-  assignedTo?: string | null;
-}
+import type { AnalyticsData } from '@/modules/analytics/analytics.service';
 
 interface AnalyticsWorkspaceProps {
-  leads: LeadItem[];
+  analytics: AnalyticsData;
 }
 
 interface PieLabelProps {
@@ -27,6 +20,26 @@ interface PieLabelProps {
   percent?: number;
   name?: string;
 }
+
+const STATUS_LABELS: Record<string, string> = {
+  NEW: "New",
+  FRESH: "Fresh",
+  CONTACTED: "Contacted",
+  QUALIFIED: "Qualified",
+  CONVERTED: "Converted",
+  NO_RESPOND: "No Respond",
+  LOST: "Lost",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  NEW: "#3b82f6",
+  FRESH: "#10b981",
+  CONTACTED: "#a855f7",
+  QUALIFIED: "#f59e0b",
+  CONVERTED: "#059669",
+  NO_RESPOND: "#6b7280",
+  LOST: "#ef4444",
+};
 
 const RADIAN = Math.PI / 180;
 const renderCustomLabel = ({
@@ -51,42 +64,24 @@ const renderCustomLabel = ({
   );
 };
 
-export function AnalyticsWorkspace({ leads }: AnalyticsWorkspaceProps) {
-  const statusData = [
-    { name: 'New', value: leads.filter(l => l.status === 'NEW').length, color: '#3b82f6' },
-    { name: 'Fresh', value: leads.filter(l => l.status === 'FRESH').length, color: '#10b981' },
-    { name: 'Contacted', value: leads.filter(l => l.status === 'CONTACTED').length, color: '#a855f7' },
-    { name: 'Qualified', value: leads.filter(l => l.status === 'QUALIFIED').length, color: '#f59e0b' },
-    { name: 'Converted', value: leads.filter(l => l.status === 'CONVERTED').length, color: '#059669' },
-  ];
+export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
+  const statusData = analytics.leadsByStatus.map(s => ({
+    name: STATUS_LABELS[s.status] ?? s.status,
+    value: s.count,
+    color: STATUS_COLORS[s.status] ?? '#8884d8'
+  }));
 
   const nonZeroStatusData = statusData.filter(item => item.value > 0);
 
-  const sourceData = leads.reduce((acc, lead) => {
-    const source = lead.source || 'Unknown';
-    const existing = acc.find((s) => s.name === source);
-    if (existing) {
-      existing.value += 1;
-    } else {
-      acc.push({ name: source, value: 1 });
-    }
-    return acc;
-  }, [] as { name: string; value: number }[]);
+  const sourceData = analytics.leadsBySource;
 
-  const monthData = [
-    { month: '2026-05', count: leads.filter(l => new Date(l.createdAt).getMonth() === 4).length },
-  ];
+  const monthData = analytics.leadsByMonth;
 
-  const teamMembers = Array.from(new Set(leads.map(l => l.assignedTo).filter(Boolean))) as string[];
-  const teamData = teamMembers.length > 0 ? teamMembers.map(member => ({
-    name: member?.split(' ')[0] || 'Unassigned',
-    total: leads.filter(l => l.assignedTo === member).length,
-    converted: leads.filter(l => l.assignedTo === member && l.status === 'CONVERTED').length,
-  })) : [
-    { name: 'Sarah', total: 10, converted: 4 },
-    { name: 'Mike', total: 15, converted: 7 },
-    { name: 'Alex', total: 8, converted: 3 }
-  ];
+  const teamData = analytics.teamPerformance.map(t => ({
+    name: t.memberName?.split(' ')[0] || 'Unassigned',
+    total: t.leadsAssigned,
+    converted: t.leadsClosed,
+  }));
 
   return (
     <div className="flex-1 overflow-auto bg-gray-50 -m-6 h-[calc(100vh-64px)]">
@@ -140,15 +135,21 @@ export function AnalyticsWorkspace({ leads }: AnalyticsWorkspaceProps) {
           {/* Leads by Source */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h2 className="text-lg mb-4 font-semibold">Leads by Source</h2>
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={sourceData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" fontSize={12} />
-                <YAxis fontSize={12} />
-                <Tooltip />
-                <Bar dataKey="value" fill="#000000" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {sourceData.length === 0 ? (
+              <div className="flex items-center justify-center h-[320px] text-sm text-neutral-400 font-medium">
+                No source data yet
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={sourceData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="label" fontSize={12} />
+                  <YAxis fontSize={12} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#000000" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 

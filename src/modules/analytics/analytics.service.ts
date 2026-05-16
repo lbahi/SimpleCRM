@@ -1,5 +1,17 @@
+// SimpleCRM — analytics.service.ts
 import { prisma } from "@/lib/prisma";
 import { ReminderStatus, LeadStatus } from "@prisma/client";
+
+const SOURCE_LABELS: Record<string, string> = {
+  FACEBOOK_AD: "Facebook Ad",
+  INSTAGRAM: "Instagram",
+  WEBSITE: "Website",
+  REFERRAL: "Referral",
+  COLD_OUTREACH: "Cold Outreach",
+  WALK_IN: "Walk-in",
+  MANUAL: "Manual",
+  OTHER: "Other",
+};
 
 export interface AnalyticsData {
   totalLeads: number;
@@ -23,6 +35,7 @@ export interface AnalyticsData {
     source: string;
     count: number;
     percentage: number;
+    label: string;
   }>;
   leadsByMonth: Array<{
     month: string;
@@ -38,7 +51,6 @@ export interface AnalyticsData {
 
 export async function getAnalytics(userId: string, role: string): Promise<AnalyticsData> {
   const now = new Date();
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
   // Role-based where clause
   const whereScope = role === "MEMBER" ? { assignedToId: userId } : {};
@@ -88,16 +100,20 @@ export async function getAnalytics(userId: string, role: string): Promise<Analyt
   }));
 
   // Get leads by source
-  const leadsBySourceRaw = await prisma.leadSource.groupBy({
+  const bySource = await prisma.leadSource.groupBy({
     by: ["source"],
-    _count: { source: true }
+    _count: { id: true },
+    orderBy: { _count: { id: "desc" } }
   });
 
-  const leadsBySource = leadsBySourceRaw.map(item => ({
-    source: item.source,
-    count: item._count.source,
-    percentage: totalLeads > 0 ? (item._count.source / totalLeads) * 100 : 0
-  }));
+  const leadsBySource = bySource
+    .filter(item => item._count.id > 0)
+    .map(item => ({
+      source: item.source,
+      count: item._count.id,
+      label: SOURCE_LABELS[item.source] ?? item.source,
+      percentage: totalLeads > 0 ? (item._count.id / totalLeads) * 100 : 0
+    }));
 
   // Get leads by month (last 6 months)
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);

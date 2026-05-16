@@ -1,3 +1,4 @@
+// SimpleCRM — AnalyticsPage
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { AnalyticsWorkspace } from "./analytics-workspace";
@@ -10,5 +11,5 @@ export default async function AnalyticsPage() {
 
   const analytics = await getAnalytics(session.userId, session.role);
 
-  return <AnalyticsWorkspace leads={analytics.recentLeads} />; // In a real app we'd pass all leads or specialized data
+  return <AnalyticsWorkspace analytics={analytics} />;
 }
