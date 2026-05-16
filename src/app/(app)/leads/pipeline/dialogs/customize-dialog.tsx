@@ -1,7 +1,8 @@
 // SimpleCRM — customize-dialog (Replicated from reference/CustomizeDialog.tsx)
 "use client";
 
-import { X, Eye, EyeOff, GripVertical } from 'lucide-react';
+import { X, Eye, EyeOff, GripVertical, Trash2, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   DndContext,
   closestCenter,
@@ -30,6 +31,8 @@ interface CustomizeDialogProps {
   onToggleVisibility: (id: ColumnId) => void;
   onMoveColumn: (id: ColumnId, dir: "up" | "down") => void;
   onReorderColumns: (order: ColumnId[]) => void;
+  onDeleteCustomColumn?: (id: string) => void;
+  onShowCreateAttr?: () => void;
 }
 
 function SortableColumn({
@@ -80,8 +83,12 @@ export function CustomizeDialog({
   visibleColumnIds,
   columnOrder, 
   onToggleVisibility, 
-  onReorderColumns 
+  onReorderColumns,
+  onDeleteCustomColumn,
+  onShowCreateAttr
 }: CustomizeDialogProps) {
+  const customColumns = visibleColumns.filter((c: any) => c.id.startsWith("custom_"));
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -101,7 +108,7 @@ export function CustomizeDialog({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[110] p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-bold">Customize Columns</h2>
@@ -140,6 +147,49 @@ export function CustomizeDialog({
               </div>
             </SortableContext>
           </DndContext>
+
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <h3 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-4">
+              Custom attributes
+            </h3>
+            
+            <div className="space-y-2 mb-4">
+              {customColumns.length > 0 ? (
+                customColumns.map((col) => (
+                  <div key={col.id} className="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded shadow-sm">
+                    <span className="flex-1 text-sm font-medium">{col.label}</span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-[11px] font-medium tracking-wide">
+                      {col.type || "Text"}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (onDeleteCustomColumn) {
+                          onDeleteCustomColumn(col.id);
+                          toast.success("Column deleted");
+                        }
+                      }}
+                      className="p-1 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded transition-colors"
+                      title="Delete attribute"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-[13px] text-gray-400 italic">No custom attributes yet</p>
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                if (onShowCreateAttr) onShowCreateAttr();
+              }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 transition-all"
+            >
+              <Plus size={16} />
+              Add custom attribute
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-2 p-4 border-t border-gray-200 bg-gray-50">

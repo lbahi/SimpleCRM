@@ -5,7 +5,6 @@ import { FilterDialog } from "./dialogs/filter-dialog";
 import { CustomizeDialog } from "./dialogs/customize-dialog";
 import { CreateLeadDialog } from "../create-lead-dialog";
 import { LeadDetailModal } from "./lead-detail/lead-detail-modal";
-import { AddColumnDialog } from "./dialogs/add-column-dialog";
 import { CreateAttributeDialog } from "./dialogs/create-attribute-dialog";
 import { TableState } from "./hooks/use-table-state";
 import { ColumnState } from "./hooks/use-column-state";
@@ -19,8 +18,6 @@ interface WorkspaceModalsProps {
     setShowFilter: (v: boolean) => void;
     showCustomize: boolean;
     setShowCustomize: (v: boolean) => void;
-    showAddColumn: boolean;
-    setShowAddColumn: (v: boolean) => void;
     showCreateAttr: boolean;
     setShowCreateAttr: (v: boolean) => void;
   };
@@ -79,15 +76,8 @@ export function WorkspaceModals({
         onToggleVisibility={columnState.toggleVisibility}
         onMoveColumn={moveColumn}
         onReorderColumns={columnState.reorderColumns}
-      />
-      <AddColumnDialog
-        open={modals.showAddColumn}
-        onOpenChange={modals.setShowAddColumn}
-        columnState={columnState}
-        onCreateCustom={() => {
-          modals.setShowAddColumn(false);
-          modals.setShowCreateAttr(true);
-        }}
+        onDeleteCustomColumn={columnState.deleteCustomColumn}
+        onShowCreateAttr={() => modals.setShowCreateAttr(true)}
       />
       <CreateAttributeDialog
         open={modals.showCreateAttr}

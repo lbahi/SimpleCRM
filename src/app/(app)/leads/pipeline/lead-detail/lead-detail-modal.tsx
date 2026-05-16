@@ -18,6 +18,7 @@ import { useLeadMutations } from "./hooks/use-lead-mutations";
 import { cn } from "@/lib/utils";
 import { StatusCell } from "../cells/status-cell";
 import { RatingCell } from "../cells/rating-cell";
+import { applyFieldChange } from "../model";
 import { Bell, MessageSquare, Clock } from "lucide-react";
 
 // ─── Tab config ──────────────────────────────────────────────
@@ -63,16 +64,29 @@ export function LeadDetailModal({
 
   const handleUpdate = async (field: string, value: any) => {
     if (isSample) return;
+
+    // Optimistically update popup state
+    mutate.setLead((prev: any) => prev ? applyFieldChange(prev, field as any, value) : prev);
+
     if (onUpdateField) onUpdateField(currentLead, field, value);
 
     if (field === "status") await updateStatus(value);
     else if (field === "rating") await updateRating(value);
     else {
       try {
-        const body =
-          field === "assignedTo"
-            ? { assignedToId: (value as any)?.id ?? null }
-            : { [field]: value };
+        let body: any = {};
+        if (field === "assignedTo") {
+          body = { assignedToId: (value as any)?.id ?? null };
+        } else if (field.startsWith("custom_")) {
+          body = {
+            customFields: {
+              ...(currentLead.customFields || {}),
+              [field]: value,
+            },
+          };
+        } else {
+          body = { [field]: value };
+        }
 
         await fetch(`/api/leads/${currentLead.id}`, {
           method: "PATCH",

@@ -1,14 +1,13 @@
 // SimpleCRM — attribute-row
 "use client";
 
-import { CSS } from "@dnd-kit/utilities";
-import { useSortable } from "@dnd-kit/sortable";
-import { GripVertical } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { StatusCell } from "../cells/status-cell";
 import { RatingCell } from "../cells/rating-cell";
 import { MemberCell } from "../cells/member-cell";
 import { SourceCell } from "../cells/source-cell";
+import { LastContactedCell } from "../cells/last-contacted-cell";
 import { type ColumnId, type PipelineLead, valueToString, getFieldValue } from "../model";
 
 export interface AttributeColumn {
@@ -51,7 +50,7 @@ function AttributeValue({
     case "assignedTo":
       return (
         <MemberCell
-          value={lead.assignedTo}
+          value={lead.assignedTo?.id ?? ""}
           onChange={(v) => onUpdate("assignedTo", v)}
           isAdmin={true}
         />
@@ -71,74 +70,67 @@ function AttributeValue({
 
     case "lastContacted":
       return (
-        <span className="text-[13px] text-neutral-700">
-          {lead.lastContacted
-            ? format(new Date(lead.lastContacted), "MMM d, yyyy h:mm a")
-            : "Never"}
+        <LastContactedCell
+          value={lead.lastContacted}
+          onChange={(v) => onUpdate("lastContacted", v)}
+        />
+      );
+
+    case "createdAt":
+      return (
+        <span className="text-[13px] text-neutral-700 px-1">
+          {format(new Date(lead.createdAt), "MMM d, yyyy")}
         </span>
       );
+
+    case "name":
+    case "phone":
+    case "location": {
+      const raw = getFieldValue(lead, col.id);
+      const text = valueToString(raw);
+      return (
+        <input
+          defaultValue={text || ""}
+          onBlur={(e) => onUpdate(col.id, e.target.value)}
+          className={cn(
+            "w-full bg-transparent text-neutral-700 outline-none border-b border-transparent hover:border-neutral-200 focus:border-neutral-400 px-1 py-1 rounded-sm",
+            col.id === "name" ? "text-[14px] font-medium" : "text-[13px]"
+          )}
+          placeholder="—"
+          type={col.id === "phone" ? "tel" : "text"}
+        />
+      );
+    }
 
     default: {
       if (typeof col.id === "string" && col.id.startsWith("custom_")) {
         const val = (lead.customFields as any)?.[col.id] ?? "";
         return (
-          <span className="text-[13px] text-neutral-700">
-            {String(val) || "—"}
-          </span>
+          <input
+            defaultValue={String(val)}
+            onBlur={(e) => onUpdate(col.id, e.target.value)}
+            className="w-full bg-transparent text-[13px] text-neutral-700 outline-none border-b border-transparent hover:border-neutral-200 focus:border-neutral-400 px-1 py-1 rounded-sm"
+            placeholder="—"
+          />
         );
       }
       const raw = getFieldValue(lead, col.id);
       const text = valueToString(raw);
       return (
-        <span className="text-[13px] text-neutral-700">{text || "—"}</span>
+        <span className="text-[13px] text-neutral-700 px-1">{text || "—"}</span>
       );
     }
   }
 }
 
 export function AttributeRow({ col, lead, onUpdate }: AttributeRowProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: col.id });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    position: "relative",
-    zIndex: isDragging ? 10 : undefined,
-  };
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="group flex items-start gap-2 py-3 px-3 hover:bg-neutral-50 border-b border-neutral-100 last:border-b-0 transition-colors"
-    >
-      {/* Drag handle — hidden until hover */}
-      <button
-        type="button"
-        className="mt-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
-        {...attributes}
-        {...listeners}
-        tabIndex={-1}
-      >
-        <GripVertical size={16} className="text-neutral-400" />
-      </button>
-
-      {/* Label on top, value below — matching reference SortableField */}
-      <div className="flex-1 min-w-0">
-        <div className="text-[12px] text-neutral-500 mb-1.5">
-          {col.label}
-        </div>
-        <div className="min-h-[24px] flex items-center">
-          <AttributeValue col={col} lead={lead} onUpdate={onUpdate} />
-        </div>
+    <div className="flex items-center min-h-[44px] px-6 border-b border-neutral-50 group">
+      <span className="w-[160px] flex-shrink-0 text-[12px] font-medium text-neutral-400">
+        {col.label}
+      </span>
+      <div className="flex-1 flex items-center min-w-0">
+        <AttributeValue col={col} lead={lead} onUpdate={onUpdate} />
       </div>
     </div>
   );

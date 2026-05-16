@@ -13,7 +13,6 @@ const DEFAULT_WIDTHS: Record<string, number> = {
   sources: 160,
   lastContacted: 160,
   createdAt: 160,
-  notePreview: 200,
 };
 
 const TYPE_ICONS: Record<string, any> = {
@@ -70,7 +69,6 @@ export function useColumnState() {
     const VALID_IDS = new Set([
       "name", "phone", "location", "status", "rating",
       "assignedTo", "sources", "lastContacted", "createdAt", 
-      "notePreview",
       ...parsedCustomColumns.map((c: any) => c.id)
     ]);
     

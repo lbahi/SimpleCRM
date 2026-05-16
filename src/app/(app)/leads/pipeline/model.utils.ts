@@ -46,8 +46,6 @@ export function getFieldValue(lead: PipelineLead, column: ColumnId): unknown {
       return lead.lastContacted;
     case "createdAt":
       return lead.createdAt;
-    case "notePreview":
-      return lead.notes?.[0]?.body ?? "";
     default:
       return "";
   }
@@ -81,6 +79,15 @@ export function applyFieldChange(lead: PipelineLead, column: ColumnId, value: un
       return { ...lead, lastContacted: value ? new Date(value as string) : null };
     }
     default:
+      if (typeof column === "string" && column.startsWith("custom_")) {
+        return {
+          ...lead,
+          customFields: {
+            ...(typeof lead.customFields === "object" && lead.customFields !== null ? lead.customFields : {}),
+            [column]: value,
+          },
+        };
+      }
       return lead;
   }
 }

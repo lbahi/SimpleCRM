@@ -81,7 +81,6 @@ export const COLUMN_DEFS: ColumnDef[] = [
   { id: "sources", label: "Sources", icon: List, width: "min-w-[160px]" },
   { id: "lastContacted", label: "Last Contacted", icon: Calendar, width: "min-w-[160px]" },
   { id: "createdAt", label: "Created At", icon: Calendar, width: "min-w-[160px]" },
-  { id: "notePreview", label: "Note Preview", icon: MessageSquare, width: "min-w-[200px]" },
 ];
 
 export const DEFAULT_VISIBLE_COLUMNS: ColumnId[] = [

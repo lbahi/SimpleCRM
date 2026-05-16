@@ -32,7 +32,6 @@ function PipelineWorkspaceInner({
   const [showCreate, setShowCreate] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [showCustomize, setShowCustomize] = useState(false);
-  const [showAddColumn, setShowAddColumn] = useState(false);
   const [showCreateAttr, setShowCreateAttr] = useState(false);
   const [selectedDetailId, setSelectedDetailId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -69,7 +68,6 @@ function PipelineWorkspaceInner({
           onShowCreate={() => setShowCreate(true)}
           onShowFilter={() => { tableState.setDraftFilters(tableState.filters); setShowFilter(true); }}
           onShowCustomize={() => setShowCustomize(true)}
-          onShowAddColumn={() => setShowAddColumn(true)}
           onRefreshLeads={refreshLeads}
         />
         <div className="flex-1 overflow-hidden flex flex-col">
@@ -95,7 +93,6 @@ function PipelineWorkspaceInner({
             showCreate, setShowCreate, 
             showFilter, setShowFilter, 
             showCustomize, setShowCustomize, 
-            showAddColumn, setShowAddColumn,
             showCreateAttr, setShowCreateAttr 
           }}
           tableState={tableState}

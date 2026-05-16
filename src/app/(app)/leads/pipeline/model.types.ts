@@ -21,7 +21,6 @@ export type ColumnId =
   | "sources"
   | "lastContacted"
   | "createdAt"
-  | "notePreview"
   | (string & {});
 
 export type PipelineLead = {
