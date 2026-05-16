@@ -42,6 +42,7 @@ export const updateLeadSchema = z.object({
   customFields: z.record(z.string(), z.unknown()).nullable().optional(),
   notes: z.string().max(2000).optional(),
   tags: z.array(z.string().max(50)).max(20).optional(),
+  lastContacted: z.string().datetime().optional(),
 });
 
 // ─── Assign ──────────────────────────────────────────────────

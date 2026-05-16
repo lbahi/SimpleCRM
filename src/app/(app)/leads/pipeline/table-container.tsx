@@ -131,6 +131,19 @@ export function TableContainer({
     currentUserId,
   };
 
+  // DEV-ONLY alignment guard
+  if (process.env.NODE_ENV === "development" && typeof document !== "undefined") {
+    const headerCount = orderedVisibleColumns.length + 2; // +drag +expand
+    const actualThCount = document.querySelectorAll("thead tr th").length;
+    // We only assert if the elements actually exist in the DOM (to avoid false positives on first render)
+    if (actualThCount > 0) {
+      console.assert(
+        actualThCount === headerCount,
+        `Column mismatch: header has ${actualThCount} th but expected ${headerCount}`
+      );
+    }
+  }
+
   return (
     <TooltipProvider delay={100}>
       <div className="overflow-auto flex-1 bg-white rounded-lg border border-gray-100">

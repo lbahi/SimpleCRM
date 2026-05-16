@@ -17,11 +17,13 @@ import { AttributeRow, type AttributeColumn } from "./attribute-row";
 
 // ─── Constants ───────────────────────────────────────────────
 
-/** Always visible in the modal regardless of table column visibility */
-const FALLBACK_COLUMNS: ColumnId[] = ["status", "rating", "assignedTo", "sources", "lastContacted", "createdAt", "notePreview"];
-
-/** Excluded from attribute list — shown in the header section instead */
-const HEADER_COLUMNS = new Set<ColumnId>(["name", "phone"]);
+/**
+ * Canonical ordered list of built-in fields shown in the attributes panel.
+ * "name" and "phone" are excluded — they appear in the header instead.
+ */
+const ORDERED_ATTR_COLUMNS: ColumnId[] = [
+  "status", "rating", "assignedTo", "sources", "lastContacted",
+];
 
 // ─── Helpers ─────────────────────────────────────────────────
 
@@ -41,7 +43,7 @@ interface LeadAttributesListProps {
 }
 
 export function LeadAttributesList({ lead, onUpdate }: LeadAttributesListProps) {
-  const { visibleColumns, columnOrder, allAvailableColumns, reorderColumns } =
+  const { columnOrder, allAvailableColumns, reorderColumns } =
     useColumnStateContext();
 
   const sensors = useSensors(
@@ -49,28 +51,22 @@ export function LeadAttributesList({ lead, onUpdate }: LeadAttributesListProps) 
   );
 
   const orderedCols = useMemo<AttributeColumn[]>(() => {
-    const visibleSet = new Set(visibleColumns);
+    // Built-in fields in canonical order (always shown, matching reference)
+    const builtIn: AttributeColumn[] = ORDERED_ATTR_COLUMNS.map((id) => ({
+      id,
+      label: resolveLabel(id, allAvailableColumns),
+    }));
 
-    const base = columnOrder
-      .filter((id) => visibleSet.has(id) && !HEADER_COLUMNS.has(id))
-      .map((id): AttributeColumn => ({ id: id as ColumnId, label: resolveLabel(id as ColumnId, allAvailableColumns) }));
+    // Append any custom_ columns from columnOrder
+    const customCols: AttributeColumn[] = columnOrder
+      .filter((id) => typeof id === "string" && id.startsWith("custom_"))
+      .map((id): AttributeColumn => ({
+        id: id as ColumnId,
+        label: resolveLabel(id as ColumnId, allAvailableColumns),
+      }));
 
-    // All columns hidden → fallback to guaranteed three
-    if (base.length === 0) {
-      return FALLBACK_COLUMNS.map((id) => ({ id, label: resolveLabel(id, allAvailableColumns) }));
-    }
-
-    // Ensure fallback columns always appear even if table-hidden
-    const baseIds = new Set(base.map((c) => c.id));
-    const missing = FALLBACK_COLUMNS
-      .filter((id) => !baseIds.has(id) && !HEADER_COLUMNS.has(id))
-      .map((id): AttributeColumn => ({ id, label: resolveLabel(id, allAvailableColumns) }));
-
-    return [...missing, ...base];
-  }, [visibleColumns, columnOrder, allAvailableColumns]);
-
-  const isFallback =
-    visibleColumns.filter((id) => !HEADER_COLUMNS.has(id)).length === 0;
+    return [...builtIn, ...customCols];
+  }, [columnOrder, allAvailableColumns]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -84,30 +80,24 @@ export function LeadAttributesList({ lead, onUpdate }: LeadAttributesListProps) 
   const colIds = orderedCols.map((c) => c.id);
 
   return (
-    <div className="flex flex-col py-1">
-      <DndContext
-        id="attr-dnd"
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext items={colIds} strategy={verticalListSortingStrategy}>
-          {orderedCols.map((col, i) => (
-            <div key={col.id}>
-              <AttributeRow col={col} lead={lead} onUpdate={onUpdate} />
-              {i < orderedCols.length - 1 && (
-                <div className="mx-3 border-b border-neutral-50" />
-              )}
-            </div>
+    <DndContext
+      id="attr-dnd"
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext items={colIds} strategy={verticalListSortingStrategy}>
+        <div className="border border-neutral-200 rounded-lg overflow-hidden">
+          {orderedCols.map((col) => (
+            <AttributeRow
+              key={col.id}
+              col={col}
+              lead={lead}
+              onUpdate={onUpdate}
+            />
           ))}
-        </SortableContext>
-      </DndContext>
-
-      {isFallback && (
-        <p className="mt-2 px-3 text-[11px] text-neutral-400">
-          Add more fields via the pipeline table columns
-        </p>
-      )}
-    </div>
+        </div>
+      </SortableContext>
+    </DndContext>
   );
 }

@@ -86,11 +86,12 @@ export const COLUMN_DEFS: ColumnDef[] = [
 
 export const DEFAULT_VISIBLE_COLUMNS: ColumnId[] = [
   "name",
-  "status",
-  "assignedTo",
-  "rating",
   "phone",
   "location",
+  "status",
+  "rating",
+  "assignedTo",
+  "sources",
   "lastContacted",
   "createdAt",
 ];

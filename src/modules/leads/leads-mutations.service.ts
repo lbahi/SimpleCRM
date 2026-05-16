@@ -61,6 +61,9 @@ export async function updateLead(
           ? Prisma.JsonNull
           : (input.customFields as Prisma.InputJsonValue),
     }),
+    ...(input.lastContacted !== undefined && { 
+      lastContacted: input.lastContacted ? new Date(input.lastContacted) : null 
+    }),
   };
 
   const lead = await prisma.$transaction(async (tx) => {

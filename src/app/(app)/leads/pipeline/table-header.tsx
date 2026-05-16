@@ -45,7 +45,7 @@ export function TableHeader({
   return (
     <thead className="bg-gray-50 sticky top-0 z-20">
       <tr className="border-b border-gray-100">
-        <td className="sticky left-0 z-30 w-12 border-b border-neutral-100 bg-gray-50 px-1 text-center" style={{ width: 48, left: 0 }}></td>
+        <th className="sticky left-0 z-30 w-12 border-b border-neutral-100 bg-gray-50 px-1 text-center" style={{ width: 48, left: 0 }}></th>
 
         <SortableContext 
           items={orderedVisibleColumns.map((c: ColumnDef) => c.id)} 

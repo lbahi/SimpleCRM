@@ -77,6 +77,9 @@ export function applyFieldChange(lead: PipelineLead, column: ColumnId, value: un
       const sourcesArr = value as string[];
       return { ...lead, sources: sourcesArr.map(s => ({ source: s })) };
     }
+    case "lastContacted": {
+      return { ...lead, lastContacted: value ? new Date(value as string) : null };
+    }
     default:
       return lead;
   }

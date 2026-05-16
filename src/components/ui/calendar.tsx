@@ -12,6 +12,7 @@ interface CalendarProps {
   onSelect?: (date: Date | undefined) => void;
   initialFocus?: boolean;
   className?: string;
+  disabled?: (date: Date) => boolean;
 }
 
 export function Calendar({
@@ -20,6 +21,7 @@ export function Calendar({
   onSelect,
   initialFocus,
   className,
+  disabled,
 }: CalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   
@@ -45,6 +47,7 @@ export function Calendar({
   
   const handleDateClick = (day: number) => {
     const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    if (disabled?.(newDate)) return;
     onSelect?.(newDate);
   };
   
@@ -58,17 +61,21 @@ export function Calendar({
     
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
       const isSelected = selected && 
         selected.getDate() === day &&
         selected.getMonth() === currentMonth.getMonth() &&
         selected.getFullYear() === currentMonth.getFullYear();
       
+      const isDisabled = disabled?.(date);
+      
       daysArray.push(
         <Button
           key={day}
           variant={isSelected ? "default" : "ghost"}
-          className="h-8 w-8 p-0"
+          className={cn("h-8 w-8 p-0", isDisabled && "opacity-30 cursor-not-allowed")}
           onClick={() => handleDateClick(day)}
+          disabled={isDisabled}
         >
           {day}
         </Button>

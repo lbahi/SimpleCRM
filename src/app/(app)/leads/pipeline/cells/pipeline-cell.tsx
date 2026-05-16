@@ -82,12 +82,13 @@ export function PipelineCell({
       );
     case "lastContacted":
       return (
-        <LastContactedCell 
-          value={value as any} 
-          onChange={(newDate) => onUpdateField(lead, column, newDate)}
-        >
+        <div className="flex flex-col gap-0.5 w-full">
+          <LastContactedCell 
+            value={lead.lastContacted} 
+            onChange={(newDate) => onUpdateField(lead, column, newDate)}
+          />
           <ReminderClockBadge reminders={lead.reminders || []} />
-        </LastContactedCell>
+        </div>
       );
     case "createdAt":
       return (

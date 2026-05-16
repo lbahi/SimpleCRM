@@ -14,8 +14,13 @@ export function LeadDetailHeader({ lead }: LeadDetailHeaderProps) {
   const statusConfig = STATUS_CONFIG[lead.status] || STATUS_CONFIG.NEW;
   const initials = lead.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
 
+  // Deduplicate sources so the same source doesn't appear multiple times
+  const uniqueSources = lead.sources.filter(
+    (s, i, arr) => arr.findIndex(x => x.source === s.source) === i
+  );
+
   return (
-    <div className="flex shrink-0 flex-col bg-white px-6 py-5 border-b border-neutral-100">
+    <div className="flex shrink-0 flex-col bg-white pl-6 pr-14 py-5 border-b border-neutral-100">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
           <div 
@@ -49,7 +54,7 @@ export function LeadDetailHeader({ lead }: LeadDetailHeaderProps) {
         </div>
 
         <div className="flex items-center">
-          <SourceCell sources={lead.sources} readOnly />
+          <SourceCell sources={uniqueSources} readOnly />
         </div>
       </div>
       

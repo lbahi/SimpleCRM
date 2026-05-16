@@ -6,21 +6,13 @@ import { Type, Hash, Calendar, CheckSquare, List, Star, Link as LinkIcon, Sparkl
 const DEFAULT_WIDTHS: Record<string, number> = {
   name: 200,
   phone: 140,
-  salesStatus: 140,
   location: 120,
-  endDate: 140,
+  status: 140,
   rating: 100,
   assignedTo: 160,
-  email: 190,
-  industry: 120,
-  companySize: 120,
-  amount: 110,
-  company: 220,
-  progress: 160,
-  createdAt: 160,
-  commentsCount: 110,
-  lastActivity: 150,
   sources: 160,
+  lastContacted: 160,
+  createdAt: 160,
   notePreview: 200,
 };
 
@@ -58,27 +50,54 @@ export function useColumnState() {
     const savedCustom = localStorage.getItem("simpleCRM_customColumns");
     const savedPinned = localStorage.getItem("simpleCRM_pinnedColumns");
 
-    if (savedOrder) {
-      const parsedOrder = JSON.parse(savedOrder);
-      // Ensure all current columns are included in the order
-      const currentIds = COLUMN_DEFS.map(c => c.id);
-      const missingIds = currentIds.filter(id => !parsedOrder.includes(id));
-      setColumnOrder([...parsedOrder, ...missingIds]);
-    }
     if (savedWidths) setColumnWidths(JSON.parse(savedWidths));
-    if (savedVisible) {
-      const parsedVisible = JSON.parse(savedVisible);
-      // If we've added new columns that should be visible by default, include them
-      const defaultIds = DEFAULT_VISIBLE_COLUMNS;
-      const missingVisible = defaultIds.filter(id => !parsedVisible.includes(id) && !savedVisible.includes(id)); 
-      // Actually, if savedVisible was [], missingVisible would be all defaults.
-      // Let's just ensure everything in COLUMN_DEFS is at least *known*.
-      setVisibleColumns(parsedVisible);
-    }
     if (savedLabels) setColumnLabels(JSON.parse(savedLabels));
-    if (savedCustom) setCustomColumns(JSON.parse(savedCustom));
     if (savedPinned) setPinnedColumns(JSON.parse(savedPinned));
     
+    let parsedCustomColumns: any[] = [];
+    if (savedCustom) {
+      const parsed = JSON.parse(savedCustom);
+      // FIX 4: Cleanup any accidental custom columns with empty or single-char names
+      const cleanCustom = parsed.filter(
+        (c: any) => c.label && c.label.trim().length >= 2
+      );
+      parsedCustomColumns = cleanCustom;
+      setCustomColumns(cleanCustom);
+      localStorage.setItem("simpleCRM_customColumns", JSON.stringify(cleanCustom));
+    }
+
+    // ─── LocalStorage Cleanup & Sanitization ───
+    const VALID_IDS = new Set([
+      "name", "phone", "location", "status", "rating",
+      "assignedTo", "sources", "lastContacted", "createdAt", 
+      "notePreview",
+      ...parsedCustomColumns.map((c: any) => c.id)
+    ]);
+    
+    // Sanitize column order — remove any invalid IDs
+    const cleanOrder = (savedOrder ? JSON.parse(savedOrder) : COLUMN_DEFS.map(c => c.id))
+      .filter((id: string) => VALID_IDS.has(id) || id.startsWith("custom_"));
+    
+    // Ensure "name" is always first
+    const nameIdx = cleanOrder.indexOf("name");
+    if (nameIdx > 0) {
+      cleanOrder.splice(nameIdx, 1);
+      cleanOrder.unshift("name");
+    } else if (nameIdx === -1) {
+      cleanOrder.unshift("name");
+    }
+    
+    // Sanitize visible columns
+    const cleanVisible = (savedVisible ? JSON.parse(savedVisible) : DEFAULT_VISIBLE_COLUMNS)
+      .filter((id: string) => VALID_IDS.has(id) || id.startsWith("custom_"));
+    
+    // Ensure "name" is always visible
+    if (!cleanVisible.includes("name")) {
+      cleanVisible.unshift("name");
+    }
+    
+    setColumnOrder(cleanOrder);
+    setVisibleColumns(cleanVisible);
     setIsHydrated(true);
   }, []);
 
@@ -128,6 +147,7 @@ export function useColumnState() {
   };
 
   const toggleVisibility = (columnId: ColumnId) => {
+    if (columnId === "name") return; // name is always visible, ignore
     setVisibleColumns((prev) => {
       const next = prev.includes(columnId)
         ? prev.filter((id) => id !== columnId)
