@@ -17,7 +17,8 @@ import { useLeadDetail } from "./hooks/use-lead-detail";
 import { useLeadMutations } from "./hooks/use-lead-mutations";
 import { cn } from "@/lib/utils";
 import { applyFieldChange } from "../model";
-import { Bell, MessageSquare, Clock } from "lucide-react";
+import { Bell, MessageSquare, Clock, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 // ─── Tab config ──────────────────────────────────────────────
 
@@ -49,6 +50,7 @@ export function LeadDetailModal({
 }: LeadDetailModalProps) {
   const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("info");
+  const [loggingContact, setLoggingContact] = useState(false);
 
   const { lead, notes, activityLogs, reminders, mutate } =
     useLeadDetail(initialLead?.id, isSample);
@@ -103,17 +105,41 @@ export function LeadDetailModal({
   };
 
   const handleLogContact = async () => {
-    if (isSample) return;
+    if (isSample || loggingContact) return;
+    setLoggingContact(true);
     try {
+      const now = new Date().toISOString();
+
+      // Optimistically update popup state
+      mutate.setLead((prev: any) =>
+        prev ? applyFieldChange(prev, "lastContacted" as any, now) : prev
+      );
+
+      // 1. PATCH lastContacted on lead
       await fetch(`/api/leads/${currentLead.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lastContacted: new Date().toISOString() }),
+        body: JSON.stringify({ lastContacted: now }),
       });
-      if (onUpdateField) onUpdateField(currentLead, "lastContacted", new Date());
+
+      // 2. POST activity log
+      await fetch(`/api/leads/${currentLead.id}/activity`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "CONTACTED" }),
+      });
+
+      if (onUpdateField) {
+        await onUpdateField(currentLead, "lastContacted" as any, now);
+      }
+
       mutate.refresh();
+      toast.success("Contact logged");
     } catch (error) {
       console.error("Log contact failed", error);
+      toast.error("Failed to log contact");
+    } finally {
+      setLoggingContact(false);
     }
   };
 
@@ -140,10 +166,20 @@ export function LeadDetailModal({
           <div className="flex items-center gap-3 px-6 py-3 border-b border-neutral-200">
             <button
               onClick={handleLogContact}
-              className="flex-shrink-0 h-9 px-4 rounded-lg border border-neutral-200 bg-white text-[13px] font-medium text-neutral-700 hover:bg-neutral-50 transition-all flex items-center gap-2"
+              disabled={loggingContact || isSample}
+              className="flex-shrink-0 h-9 px-4 rounded-lg border border-neutral-200 bg-white text-[13px] font-medium text-neutral-700 hover:bg-neutral-50 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Clock size={14} className="text-neutral-400" />
-              Log Contact
+              {loggingContact ? (
+                <>
+                  <Loader2 size={14} className="animate-spin text-neutral-400" />
+                  Logging...
+                </>
+              ) : (
+                <>
+                  <Clock size={14} className="text-neutral-400" />
+                  Log Contact
+                </>
+              )}
             </button>
             <button
               onClick={() => setReminderDialogOpen(true)}
