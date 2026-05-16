@@ -13,9 +13,10 @@ import {
 interface LastContactedCellProps {
   value: string | Date | null;
   onChange: (isoString: string) => void;
+  usePortal?: boolean;
 }
 
-export function LastContactedCell({ value, onChange }: LastContactedCellProps) {
+export function LastContactedCell({ value, onChange, usePortal = true }: LastContactedCellProps) {
   const [open, setOpen] = useState(false);
   const currentDate = value ? new Date(value) : undefined;
 
@@ -30,7 +31,7 @@ export function LastContactedCell({ value, onChange }: LastContactedCellProps) {
           <span className="text-neutral-300">—</span>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 bg-white border border-neutral-200 shadow-md rounded-md z-[100]" align="start">
+      <PopoverContent usePortal={usePortal} className="w-auto p-0 bg-white border border-neutral-200 shadow-md rounded-md z-[100]" align="start">
         <Calendar
           mode="single"
           selected={currentDate}

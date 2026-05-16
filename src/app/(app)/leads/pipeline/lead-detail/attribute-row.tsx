@@ -36,6 +36,7 @@ function AttributeValue({
         <StatusCell
           value={lead.status}
           onChange={(v) => onUpdate("status", v)}
+          usePortal={false}
         />
       );
 
@@ -50,29 +51,28 @@ function AttributeValue({
     case "assignedTo":
       return (
         <MemberCell
-          value={lead.assignedTo?.id ?? ""}
+          value={lead.assignedTo}
           onChange={(v) => onUpdate("assignedTo", v)}
           isAdmin={true}
+          usePortal={false}
         />
       );
 
-    case "sources": {
-      const unique = lead.sources.filter(
-        (s, i, arr) => arr.findIndex((x) => x.source === s.source) === i
-      );
+    case "sources":
       return (
         <SourceCell
-          sources={unique}
+          sources={lead.sources}
           onChange={(v) => onUpdate("sources", v)}
+          usePortal={false}
         />
       );
-    }
 
     case "lastContacted":
       return (
         <LastContactedCell
           value={lead.lastContacted}
           onChange={(v) => onUpdate("lastContacted", v)}
+          usePortal={false}
         />
       );
 

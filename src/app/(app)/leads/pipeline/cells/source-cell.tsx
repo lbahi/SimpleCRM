@@ -79,6 +79,7 @@ interface SourceCellProps {
   sources: { source: string }[] | string[] | any;
   onChange?: (sources: string[]) => void;
   readOnly?: boolean;
+  usePortal?: boolean;
 }
 
 // ─── Pill badge ──────────────────────────────────────────────
@@ -114,7 +115,7 @@ function SourcePill({
 }
 
 // ─── Main component ──────────────────────────────────────────
-export function SourceCell({ sources, onChange, readOnly = false }: SourceCellProps) {
+export function SourceCell({ sources, onChange, readOnly = false, usePortal = true }: SourceCellProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [customSources, setCustomSources] = useState<string[]>([]);
@@ -212,6 +213,7 @@ export function SourceCell({ sources, onChange, readOnly = false }: SourceCellPr
       </PopoverTrigger>
 
       <PopoverContent
+        usePortal={usePortal}
         className="w-[280px] rounded-xl border border-neutral-200 bg-white p-0 shadow-[0_8px_32px_rgba(0,0,0,0.12)] z-[200]"
         align="start"
         side="bottom"

@@ -25,9 +25,10 @@ interface StatusCellProps {
   value: LeadStatus | string;
   onChange: (value: LeadStatus) => void;
   readOnly?: boolean;
+  usePortal?: boolean;
 }
 
-export function StatusCell({ value, onChange, readOnly = false }: StatusCellProps) {
+export function StatusCell({ value, onChange, readOnly = false, usePortal = true }: StatusCellProps) {
   const currentStatus = (value as LeadStatus) || "NEW";
   const config = STATUS_CONFIG[currentStatus as LeadStatus] ?? STATUS_CONFIG.NEW;
 
@@ -53,7 +54,7 @@ export function StatusCell({ value, onChange, readOnly = false }: StatusCellProp
           {pill}
         </div>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-[180px] p-1 bg-white border border-neutral-200 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.10)]">
+      <PopoverContent usePortal={usePortal} align="start" className="w-[180px] p-1 bg-white border border-neutral-200 rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.10)]">
         <div className="flex flex-col">
           {Object.entries(STATUS_CONFIG).map(([key, config]) => (
             <button

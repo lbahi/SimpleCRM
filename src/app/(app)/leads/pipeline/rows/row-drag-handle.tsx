@@ -38,7 +38,7 @@ export function RowDragHandle({ attributes, listeners, isSelected, leadId, onDup
     >
       <Popover open={menuOpen} onOpenChange={setMenuOpen}>
         <PopoverTrigger 
-          render={<div />}
+          render={<button type="button" />}
           {...attributes}
           {...listeners}
           onClick={(e) => {

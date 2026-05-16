@@ -16,8 +16,6 @@ import { SetReminderDialog } from "./dialogs/set-reminder-dialog";
 import { useLeadDetail } from "./hooks/use-lead-detail";
 import { useLeadMutations } from "./hooks/use-lead-mutations";
 import { cn } from "@/lib/utils";
-import { StatusCell } from "../cells/status-cell";
-import { RatingCell } from "../cells/rating-cell";
 import { applyFieldChange } from "../model";
 import { Bell, MessageSquare, Clock } from "lucide-react";
 
@@ -68,7 +66,11 @@ export function LeadDetailModal({
     // Optimistically update popup state
     mutate.setLead((prev: any) => prev ? applyFieldChange(prev, field as any, value) : prev);
 
-    if (onUpdateField) onUpdateField(currentLead, field, value);
+    if (onUpdateField) {
+      await onUpdateField(currentLead, field as any, value);
+      mutate.refresh();
+      return;
+    }
 
     if (field === "status") await updateStatus(value);
     else if (field === "rating") await updateRating(value);
@@ -136,18 +138,6 @@ export function LeadDetailModal({
 
           {/* ── Actions Bar ── */}
           <div className="flex items-center gap-3 px-6 py-3 border-b border-neutral-200">
-            <div className="flex-shrink-0 h-9 flex items-center">
-              <StatusCell
-                value={currentLead.status}
-                onChange={(v) => handleUpdate("status", v)}
-              />
-            </div>
-            <div className="flex-shrink-0 h-9 flex items-center px-3 border-x border-neutral-200">
-              <RatingCell
-                value={currentLead.rating || 0}
-                onChange={(v) => handleUpdate("rating", v)}
-              />
-            </div>
             <button
               onClick={handleLogContact}
               className="flex-shrink-0 h-9 px-4 rounded-lg border border-neutral-200 bg-white text-[13px] font-medium text-neutral-700 hover:bg-neutral-50 transition-all flex items-center gap-2"

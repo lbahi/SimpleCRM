@@ -25,14 +25,24 @@ function PopoverContent({
   align = "center",
   side = "bottom",
   sideOffset = 4,
+  usePortal = true,
   ...props
 }: PopoverPrimitive.Popup.Props &
   Pick<
     PopoverPrimitive.Positioner.Props,
     "align" | "side" | "sideOffset"
-  >) {
+  > & { usePortal?: boolean }) {
+  const [container, setContainer] = React.useState<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    if (!usePortal) {
+      const dlg = document.getElementById("simplecrm-dialog-root");
+      if (dlg) setContainer(dlg);
+    }
+  }, [usePortal]);
+
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Portal container={container || undefined}>
       <PopoverPrimitive.Positioner
         align={align}
         side={side}
@@ -48,7 +58,7 @@ function PopoverContent({
         />
       </PopoverPrimitive.Positioner>
     </PopoverPrimitive.Portal>
-  )
+  );
 }
 
 export { Popover, PopoverTrigger, PopoverContent }

@@ -21,6 +21,7 @@ interface MemberCellProps {
   value: MemberValue | null | string; // string is allowed for ID
   onChange: (value: MemberValue | null) => void;
   isAdmin?: boolean;
+  usePortal?: boolean;
 }
 
 function Avatar({ initials, size }: { initials: string; size: string }) {
@@ -35,7 +36,7 @@ function Avatar({ initials, size }: { initials: string; size: string }) {
   );
 }
 
-export function MemberCell({ value, onChange, isAdmin = false }: MemberCellProps) {
+export function MemberCell({ value, onChange, isAdmin = false, usePortal = true }: MemberCellProps) {
   const [members, setMembers] = useState<MemberWithStats[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -93,6 +94,7 @@ export function MemberCell({ value, onChange, isAdmin = false }: MemberCellProps
         </div>
       </PopoverTrigger>
       <PopoverContent 
+        usePortal={usePortal}
         align="start" 
         className="w-[240px] p-1 bg-white border border-neutral-200 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] z-[100]"
         sideOffset={4}
