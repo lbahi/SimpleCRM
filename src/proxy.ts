@@ -2,7 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
 
-const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/logout", "/form/"];
+const PUBLIC_PATHS = ["/login", "/form", "/api/seed", "/api/health", "/api/auth/login", "/api/auth/logout"];
 
 const ADMIN_ONLY_PATHS = ["/inbox", "/analytics", "/forms", "/team"];
 
