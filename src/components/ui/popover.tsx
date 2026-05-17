@@ -36,8 +36,12 @@ function PopoverContent({
 
   React.useEffect(() => {
     if (!usePortal) {
-      const dlg = document.getElementById("simplecrm-dialog-root");
-      if (dlg) setContainer(dlg);
+      // Find the topmost open dialog to portal into
+      const dlgs = Array.from(document.querySelectorAll('[data-slot="dialog-content"]'));
+      // The last one in the DOM is usually the topmost/active one when stacking
+      if (dlgs.length > 0) {
+        setContainer(dlgs[dlgs.length - 1] as HTMLElement);
+      }
     }
   }, [usePortal]);
 

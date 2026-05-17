@@ -3,12 +3,14 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Bell } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Bell, X, Loader2, AlignLeft, Clock } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 interface SetReminderDialogProps {
   leadId: string;
@@ -61,85 +63,104 @@ export function SetReminderDialog({ leadId, open, onClose, onReminderSet }: SetR
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md rounded-2xl p-6 bg-gradient-to-br from-blue-50/30 to-purple-50/30">
-        <DialogHeader>
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
-              <Bell className="h-4 w-4 text-white" />
+      <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
+        <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 p-8 text-white relative">
+          <div className="flex items-center gap-4">
+            <div className="size-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/10">
+              <Bell className="size-5 text-white" />
             </div>
-            <DialogTitle className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Set Reminder</DialogTitle>
+            <div>
+              <DialogTitle className="text-xl font-semibold tracking-tight text-white">Set Reminder</DialogTitle>
+              <p className="text-xs text-neutral-400 mt-1">Schedule a follow-up for this lead</p>
+            </div>
           </div>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
-          <div className="space-y-3">
-            <label className="text-[12px] font-bold uppercase tracking-wider text-purple-600/80">Date</label>
-            <DatePicker
-              value={date}
-              onChange={(date) => setDate(date)}
-              placeholder="Select date"
-              className="text-[13px] border-2 border-purple-200/50 focus:border-purple-400 rounded-xl"
-            />
-          </div>
-          
-          <div className="space-y-3">
-            <label className="text-[12px] font-bold uppercase tracking-wider text-purple-600/80">Time</label>
+          <button 
+            onClick={onClose}
+            className="absolute top-6 right-6 text-neutral-400 hover:text-white transition-colors"
+          >
+            <X className="size-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="bg-white">
+          <div className="p-8 space-y-6">
             <div className="space-y-2">
-              <Input
-                type="time"
-                required
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="text-[13px] border-2 border-purple-200/50 focus:border-purple-400 rounded-xl"
+              <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Date</Label>
+              <DatePicker
+                value={date}
+                onChange={(date) => setDate(date)}
+                placeholder="Select date"
+                usePortal={false}
+                className="h-11 bg-neutral-50/50 border-neutral-200 focus:bg-white transition-all rounded-xl w-full"
               />
+            </div>
+            
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Time</Label>
+              <div className="relative mb-3">
+                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-neutral-400" />
+                <Input
+                  type="time"
+                  required
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="pl-10 h-11 bg-neutral-50/50 border-neutral-200 focus:bg-white transition-all rounded-xl"
+                />
+              </div>
               <div className="flex flex-wrap gap-2">
                 {quickTimes.map((qt) => (
                   <button
                     key={qt.value}
                     type="button"
                     onClick={() => setTime(qt.value)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-medium rounded-lg transition-all",
                       time === qt.value
-                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md"
-                        : "bg-white/50 border border-purple-200/50 text-purple-700 hover:bg-purple-50"
-                    }`}
+                        ? "bg-neutral-900 text-white shadow-md"
+                        : "bg-neutral-50 border border-neutral-200 text-neutral-600 hover:bg-neutral-100"
+                    )}
                   >
                     {qt.label}
                   </button>
                 ))}
               </div>
             </div>
+            
+            <div className="space-y-2 relative">
+              <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Note (optional)</Label>
+              <div className="relative">
+                <AlignLeft className="absolute left-3 top-3.5 size-4 text-neutral-400" />
+                <Textarea
+                  placeholder="What's the follow-up about?"
+                  maxLength={200}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  className="pl-10 resize-none h-24 pb-8 bg-neutral-50/50 border-neutral-200 focus:bg-white transition-all rounded-xl text-[13px]"
+                />
+                <span className="absolute bottom-3 right-3 text-[10px] font-medium text-neutral-400">
+                  {note.length}/200
+                </span>
+              </div>
+            </div>
           </div>
           
-          <div className="space-y-2 relative">
-            <label className="text-[12px] font-bold uppercase tracking-wider text-purple-600/80">Note (optional)</label>
-            <Textarea
-              placeholder="What's the follow-up about?"
-              maxLength={200}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="resize-none h-24 text-[13px] pb-8 border-2 border-purple-200/50 focus:border-purple-400 rounded-xl bg-white/50"
-            />
-            <span className="absolute bottom-3 right-3 text-[10px] font-medium text-purple-400">
-              {note.length}/200
-            </span>
-          </div>
-          
-          <DialogFooter className="pt-4 gap-2">
+          <DialogFooter className="p-6 bg-neutral-50 border-t border-neutral-100 flex items-center gap-3">
             <Button 
               type="button" 
-              variant="outline" 
+              variant="ghost" 
               onClick={onClose} 
               disabled={isSubmitting}
-              className="rounded-xl border-2 border-purple-200/50 hover:bg-purple-50"
+              className="rounded-xl h-11 px-6 hover:bg-neutral-200 transition-colors"
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
               disabled={isSubmitting || !date || !time}
-              className="rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-md"
+              className="rounded-xl h-11 px-8 bg-neutral-900 text-white hover:bg-black shadow-lg shadow-neutral-200 active:scale-95 transition-all"
             >
-              {isSubmitting ? "Saving..." : "Save Reminder"}
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Bell className="h-4 w-4 mr-2" />}
+              Save Reminder
             </Button>
           </DialogFooter>
         </form>

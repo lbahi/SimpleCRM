@@ -99,9 +99,11 @@ export function matchesText(value: unknown, query: string): boolean {
 }
 
 export function compareValues(a: unknown, b: unknown, direction: "asc" | "desc"): number {
-  const valA = valueToString(a).toLowerCase();
-  const valB = valueToString(b).toLowerCase();
+  const valA = valueToString(a);
+  const valB = valueToString(b);
+  
   if (valA === valB) return 0;
-  const result = valA < valB ? -1 : 1;
+  
+  const result = valA.localeCompare(valB, undefined, { numeric: true, sensitivity: 'base' });
   return direction === "asc" ? result : -result;
 }

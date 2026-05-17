@@ -73,6 +73,8 @@ export function TableHeader({
                     columnState.deleteCustomColumn(id);
                     toast.success("Column deleted");
                   }
+                  if (action === 'sort-asc') onSortChange(id, 'asc');
+                  if (action === 'sort-desc') onSortChange(id, 'desc');
                 }}
                 isPinned={isPinned}
                 pinnedLeft={left}

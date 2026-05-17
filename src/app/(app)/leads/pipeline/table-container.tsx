@@ -131,6 +131,8 @@ export function TableContainer({
     currentUserId,
   };
 
+  const leadIds = useMemo(() => leads.map(l => l.id), [leads]);
+
   // DEV-ONLY alignment guard
   if (process.env.NODE_ENV === "development" && typeof document !== "undefined") {
     const headerCount = orderedVisibleColumns.length + 2; // +drag +expand
@@ -159,31 +161,34 @@ export function TableContainer({
             onToggleAll={onToggleAll}
           />
           <tbody>
-            {Object.entries(groupedLeads).map(([groupKey, groupLeads]) => (
-              <React.Fragment key={groupKey}>
-                {groupKey !== 'ungrouped' && (
-                  <tr className="bg-gray-50 border-b border-gray-100 cursor-pointer hover:bg-gray-100" onClick={() => {
-                    const next = new Set(expandedGroups);
-                    if (next.has(groupKey)) next.delete(groupKey); else next.add(groupKey);
-                    setExpandedGroups(next);
-                  }}>
-                    <td colSpan={orderedVisibleColumns.length + 3} className="px-4 py-2">
-                      <div className="flex items-center gap-2">
-                        {expandedGroups.has(groupKey) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                        <span className="text-xs font-bold uppercase tracking-wider text-gray-600">{groupKey} ({groupLeads.length})</span>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-                {(groupKey === 'ungrouped' || expandedGroups.has(groupKey)) && (
-                  <SortableContext items={groupLeads.map(l => l.id)} strategy={verticalListSortingStrategy}>
-                    {groupLeads.map((lead, idx) => (
-                      <LeadRow key={lead.id} lead={lead} rowIndex={idx} isSelected={selectedIds.has(lead.id)} {...rowProps} />
-                    ))}
-                  </SortableContext>
-                )}
-              </React.Fragment>
-            ))}
+            {Object.entries(groupedLeads).map(([groupKey, groupLeads]) => {
+              const groupItems = groupKey === 'ungrouped' ? leadIds : groupLeads.map(l => l.id);
+              return (
+                <React.Fragment key={groupKey}>
+                  {groupKey !== 'ungrouped' && (
+                    <tr className="bg-gray-50 border-b border-gray-100 cursor-pointer hover:bg-gray-100" onClick={() => {
+                      const next = new Set(expandedGroups);
+                      if (next.has(groupKey)) next.delete(groupKey); else next.add(groupKey);
+                      setExpandedGroups(next);
+                    }}>
+                      <td colSpan={orderedVisibleColumns.length + 3} className="px-4 py-2">
+                        <div className="flex items-center gap-2">
+                          {expandedGroups.has(groupKey) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">{groupKey} ({groupLeads.length})</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  {(groupKey === 'ungrouped' || expandedGroups.has(groupKey)) && (
+                    <SortableContext items={groupItems} strategy={verticalListSortingStrategy}>
+                      {groupLeads.map((lead, idx) => (
+                        <LeadRow key={lead.id} lead={lead} rowIndex={idx} isSelected={selectedIds.has(lead.id)} {...rowProps} />
+                      ))}
+                    </SortableContext>
+                  )}
+                </React.Fragment>
+              );
+            })}
             <GhostRow columns={rowProps.columns} columnWidths={rowProps.columnWidths} state={inlineRow} pinnedColumns={rowProps.pinnedColumns} pinnedOffsets={rowProps.pinnedOffsets} isAdmin={currentUserRole === "ADMIN"} />
           </tbody>
         </table>

@@ -19,6 +19,7 @@ interface DatePickerProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  usePortal?: boolean;
 }
 
 export function DatePicker({
@@ -27,6 +28,7 @@ export function DatePicker({
   placeholder = "Select date",
   className,
   disabled = false,
+  usePortal = true,
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
   
@@ -45,7 +47,7 @@ export function DatePicker({
 
   return (
     <Popover open={open && !disabled} onOpenChange={setOpen}>
-      <PopoverTrigger>
+      <PopoverTrigger asChild>
         <Button
           variant="outline"
           className={cn(
@@ -61,13 +63,13 @@ export function DatePicker({
           {value ? format(date!, "MMM d, yyyy") : placeholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent usePortal={usePortal} className="w-auto p-0 z-[200]" align="start">
         <Calendar
           mode="single"
           selected={date}
           onSelect={handleSelect}
           initialFocus
-          className="rounded-lg border"
+          className="rounded-lg border bg-white shadow-md"
         />
       </PopoverContent>
     </Popover>
