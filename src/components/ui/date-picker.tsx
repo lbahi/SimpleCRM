@@ -47,21 +47,18 @@ export function DatePicker({
 
   return (
     <Popover open={open && !disabled} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "w-full justify-start text-left font-normal h-8",
-            "border-neutral-200 focus:border-neutral-300 focus:ring-0",
-            !value && "text-muted-foreground",
-            disabled && "opacity-50 cursor-not-allowed",
-            className
-          )}
-          disabled={disabled}
-        >
-          <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-          {value ? format(date!, "MMM d, yyyy") : placeholder}
-        </Button>
+      <PopoverTrigger
+        className={cn(
+          "flex h-9 w-full items-center justify-start gap-2 rounded-lg",
+          "border border-neutral-200 bg-white px-3 text-[13px]",
+          "text-neutral-700 hover:bg-neutral-50 transition-colors",
+          !value && "text-neutral-400",
+          disabled && "opacity-50 cursor-not-allowed",
+          className
+        )}
+      >
+        <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+        {value ? format(date!, "MMM d, yyyy") : placeholder}
       </PopoverTrigger>
       <PopoverContent usePortal={usePortal} className="w-auto p-0 z-[200]" align="start">
         <Calendar
