@@ -1,6 +1,7 @@
 // SimpleCRM — analytics.service.ts
 import { prisma } from "@/lib/prisma";
 import { ReminderStatus, LeadStatus } from "@prisma/client";
+import { subDays, format } from "date-fns";
 
 const SOURCE_LABELS: Record<string, string> = {
   FACEBOOK_AD: "Facebook Ad",
@@ -37,8 +38,8 @@ export interface AnalyticsData {
     percentage: number;
     label: string;
   }>;
-  leadsByMonth: Array<{
-    month: string;
+  leadsOverTime: Array<{
+    date: string;
     count: number;
   }>;
   teamPerformance: Array<{
@@ -115,30 +116,33 @@ export async function getAnalytics(userId: string, role: string): Promise<Analyt
       percentage: totalLeads > 0 ? (item._count.id / totalLeads) * 100 : 0
     }));
 
-  // Get leads by month (last 6 months)
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  // Get all leads created in the last 30 days
+  const thirtyDaysAgo = subDays(now, 30);
   
-  const leadsByMonthRaw = await prisma.lead.findMany({
-    where: {
-      createdAt: {
-        gte: sixMonthsAgo
-      }
-    },
-    select: {
-      createdAt: true
-    }
+  const recentLeadsForTime = await prisma.lead.findMany({
+    where: { ...whereScope, createdAt: { gte: thirtyDaysAgo } },
+    select: { createdAt: true },
+    orderBy: { createdAt: "asc" }
   });
 
-  // Group by month manually
-  const leadsByMonthMap = new Map<string, number>();
-  leadsByMonthRaw.forEach(lead => {
-    const monthKey = new Date(lead.createdAt).toISOString().slice(0, 7); // YYYY-MM format
-    leadsByMonthMap.set(monthKey, (leadsByMonthMap.get(monthKey) || 0) + 1);
+  // Build a map of date → count
+  const countByDate = new Map<string, number>();
+  
+  // Initialize all 30 days with 0
+  for (let i = 29; i >= 0; i--) {
+    const date = format(subDays(now, i), "yyyy-MM-dd");
+    countByDate.set(date, 0);
+  }
+  
+  // Fill in actual counts
+  recentLeadsForTime.forEach(lead => {
+    const date = format(new Date(lead.createdAt), "yyyy-MM-dd");
+    countByDate.set(date, (countByDate.get(date) ?? 0) + 1);
   });
-
-  const leadsByMonth = Array.from(leadsByMonthMap.entries())
-    .map(([month, count]) => ({ month, count }))
-    .sort((a, b) => a.month.localeCompare(b.month));
+  
+  // Convert to array
+  const leadsOverTime = Array.from(countByDate.entries())
+    .map(([date, count]) => ({ date, count }));
 
   // Get team performance
   const teamPerformanceRaw = await prisma.user.findMany({
@@ -172,7 +176,7 @@ export async function getAnalytics(userId: string, role: string): Promise<Analyt
     overdueRemindersCount,
     leadsByStatus,
     leadsBySource,
-    leadsByMonth,
+    leadsOverTime,
     teamPerformance: teamPerformanceData
   };
 }

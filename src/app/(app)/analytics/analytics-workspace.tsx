@@ -3,8 +3,9 @@
 
 import { 
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, 
-  CartesianGrid, Tooltip, ResponsiveContainer, Line, LineChart, Legend 
+  CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend 
 } from 'recharts';
+import { format } from 'date-fns';
 import type { AnalyticsData } from '@/modules/analytics/analytics.service';
 
 interface AnalyticsWorkspaceProps {
@@ -19,6 +20,13 @@ interface PieLabelProps {
   outerRadius?: number;
   percent?: number;
   name?: string;
+}
+
+interface TooltipPayloadItem {
+  payload: {
+    date: string;
+    count: number;
+  };
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -75,7 +83,7 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
 
   const sourceData = analytics.leadsBySource;
 
-  const monthData = analytics.leadsByMonth;
+  const leadsOverTimeData = analytics.leadsOverTime;
 
   const teamData = analytics.teamPerformance.map(t => ({
     name: t.memberName?.split(' ')[0] || 'Unassigned',
@@ -144,7 +152,7 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
                 <BarChart data={sourceData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="label" fontSize={12} />
-                  <YAxis fontSize={12} />
+                  <YAxis fontSize={12} allowDecimals={false} />
                   <Tooltip />
                   <Bar dataKey="count" fill="#000000" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -154,28 +162,55 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-6">
-          {/* Leads by Month */}
+          {/* Leads Over Time */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg mb-4 font-semibold">Leads by Month</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={monthData}>
+            <h2 className="text-lg mb-4 font-semibold">New leads — last 30 days</h2>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={leadsOverTimeData}>
+                <defs>
+                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#378ADD" stopOpacity={0.08}/>
+                    <stop offset="95%" stopColor="#378ADD" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" fontSize={12} />
-                <YAxis fontSize={12} />
-                <Tooltip />
-                <Line type="monotone" dataKey="count" stroke="#000000" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-              </LineChart>
+                <XAxis 
+                  dataKey="date" 
+                  fontSize={12} 
+                  tickFormatter={(dateStr, index) => 
+                    index % 5 === 0 ? format(new Date(dateStr), "MMM d") : ""
+                  }
+                />
+                <YAxis fontSize={12} allowDecimals={false} />
+                <Tooltip 
+                  content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null;
+                    const { date, count } = (payload as unknown as TooltipPayloadItem[])[0].payload;
+                    return (
+                      <div className="bg-white border border-neutral-200 rounded-lg px-3 py-2 shadow-sm text-[13px]">
+                        <span className="text-neutral-500">
+                          {format(new Date(date), "MMM d, yyyy")}:
+                        </span>
+                        <span className="font-medium text-neutral-900 ml-1">
+                          {count} {count === 1 ? "lead" : "leads"}
+                        </span>
+                      </div>
+                    );
+                  }}
+                />
+                <Area type="monotone" dataKey="count" stroke="#378ADD" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
 
           {/* Team Performance */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h2 className="text-lg mb-4 font-semibold">Team Performance</h2>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={220}>
               <BarChart data={teamData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="name" fontSize={12} />
-                <YAxis fontSize={12} />
+                <YAxis fontSize={12} allowDecimals={false} />
                 <Tooltip />
                 <Bar dataKey="total" fill="#000000" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="converted" fill="#10b981" radius={[4, 4, 0, 0]} />
