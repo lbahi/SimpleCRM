@@ -6,6 +6,7 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend 
 } from 'recharts';
 import { format } from 'date-fns';
+import { Users } from 'lucide-react';
 import type { AnalyticsData } from '@/modules/analytics/analytics.service';
 
 interface AnalyticsWorkspaceProps {
@@ -85,15 +86,18 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
 
   const leadsOverTimeData = analytics.leadsOverTime;
 
-  const teamData = analytics.teamPerformance.map(t => ({
+  const byMember = analytics.teamPerformance;
+  const hasMemberData = byMember.length > 0 && byMember.some(m => m.total > 0);
+
+  const teamChartData = byMember.map(t => ({
     name: t.memberName?.split(' ')[0] || 'Unassigned',
-    total: t.leadsAssigned,
-    converted: t.leadsClosed,
+    total: t.total,
+    closed: t.closed,
   }));
 
   return (
     <div className="flex-1 overflow-auto bg-gray-50 -m-6 h-[calc(100vh-64px)]">
-      <div className="p-8">
+      <div className="p-8 pb-16">
         <div className="mb-8">
           <h1 className="text-3xl mb-2 font-normal text-neutral-900">Analytics & Reports</h1>
           <p className="text-gray-600">Deep dive into your sales performance and lead distribution.</p>
@@ -203,19 +207,81 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
             </ResponsiveContainer>
           </div>
 
-          {/* Team Performance */}
+          {/* Team Performance Chart */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h2 className="text-lg mb-4 font-semibold">Team Performance</h2>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={teamData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" fontSize={12} />
-                <YAxis fontSize={12} allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="total" fill="#000000" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="converted" fill="#10b981" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {!hasMemberData ? (
+              <div className="flex flex-col items-center justify-center h-[220px] text-center">
+                <Users size={40} className="text-neutral-300 mb-2" />
+                <p className="text-sm font-medium text-neutral-600">No member data yet</p>
+                <p className="text-xs text-neutral-400 mt-1">Assign leads to team members to see performance.</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={teamChartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" fontSize={12} />
+                  <YAxis fontSize={12} allowDecimals={false} />
+                  <Tooltip />
+                  <Bar name="Total Assigned" dataKey="total" fill="#000000" radius={[4, 4, 0, 0]} />
+                  <Bar name="Closed" dataKey="closed" fill="#10b981" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+
+        {/* Team Performance Summary Table */}
+        <div className="mt-6 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-lg font-semibold text-neutral-900">Member Breakdown</h2>
+            <p className="text-sm text-neutral-500 mt-1">Detailed performance metrics across all active team members.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr className="bg-neutral-50/75 border-b border-gray-100 text-neutral-500 font-medium text-xs uppercase tracking-wider">
+                  <th className="py-3.5 px-6">Member</th>
+                  <th className="py-3.5 px-6 text-center">Total</th>
+                  <th className="py-3.5 px-6 text-center">Open</th>
+                  <th className="py-3.5 px-6 text-center">Closed</th>
+                  <th className="py-3.5 px-6 text-right">Conversion</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-neutral-700 font-medium">
+                {byMember.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-10 text-center text-neutral-400 text-sm">
+                      No active team members found.
+                    </td>
+                  </tr>
+                ) : (
+                  byMember.map(member => {
+                    const convColor = member.conversionRate > 30 
+                      ? "text-green-600 font-semibold" 
+                      : member.conversionRate < 10 
+                      ? "text-red-500 font-semibold" 
+                      : "text-neutral-700 font-medium";
+                    return (
+                      <tr key={member.memberId} className="hover:bg-neutral-50/50 transition-colors">
+                        <td className="py-4 px-6 flex items-center gap-3.5 font-semibold text-neutral-900">
+                          <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                            {member.avatarInitials || member.memberName[0]?.toUpperCase() || "?"}
+                          </div>
+                          {member.memberName}
+                        </td>
+                        <td className="py-4 px-6 text-center text-neutral-600">{member.total}</td>
+                        <td className="py-4 px-6 text-center text-neutral-600">{member.open}</td>
+                        <td className="py-4 px-6 text-center text-neutral-600">{member.closed}</td>
+                        <td className={`py-4 px-6 text-right ${convColor}`}>
+                          {member.conversionRate}%
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

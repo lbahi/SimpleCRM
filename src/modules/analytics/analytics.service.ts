@@ -14,6 +14,16 @@ const SOURCE_LABELS: Record<string, string> = {
   OTHER: "Other",
 };
 
+export interface MemberStat {
+  memberId: string;
+  memberName: string;
+  avatarInitials: string;
+  total: number;
+  open: number;
+  closed: number;
+  conversionRate: number;
+}
+
 export interface AnalyticsData {
   totalLeads: number;
   freshLeads: number;
@@ -42,12 +52,7 @@ export interface AnalyticsData {
     date: string;
     count: number;
   }>;
-  teamPerformance: Array<{
-    memberName: string;
-    leadsAssigned: number;
-    leadsClosed: number;
-    conversionRate: number;
-  }>;
+  teamPerformance: MemberStat[];
 }
 
 export async function getAnalytics(userId: string, role: string): Promise<AnalyticsData> {
@@ -145,27 +150,38 @@ export async function getAnalytics(userId: string, role: string): Promise<Analyt
     .map(([date, count]) => ({ date, count }));
 
   // Get team performance
-  const teamPerformanceRaw = await prisma.user.findMany({
-    where: { role: "MEMBER" },
-    include: {
+  const members = await prisma.user.findMany({
+    where: { role: "MEMBER", isActive: true },
+    select: {
+      id: true,
+      name: true,
+      avatarInitials: true,
       assignedLeads: {
         select: { status: true }
       }
     }
   });
 
-  const teamPerformanceData = teamPerformanceRaw.map(member => {
-    const leadsAssigned = member.assignedLeads.length;
-    const leadsClosed = member.assignedLeads.filter(lead => lead.status === LeadStatus.CONVERTED).length;
-    const conversionRate = leadsAssigned > 0 ? (leadsClosed / leadsAssigned) * 100 : 0;
+  const byMember: MemberStat[] = members.map(member => {
+    const total = member.assignedLeads.length;
+    const closed = member.assignedLeads.filter(
+      l => l.status === "CONVERTED" || (l.status as string) === "CLOSED"
+    ).length;
+    const open = total - closed;
+    const conversionRate = total > 0
+      ? Number(((closed / total) * 100).toFixed(1))
+      : 0;
 
     return {
+      memberId: member.id,
       memberName: member.name,
-      leadsAssigned,
-      leadsClosed,
-      conversionRate
+      avatarInitials: member.avatarInitials,
+      total,
+      open,
+      closed,
+      conversionRate,
     };
-  });
+  }).sort((a, b) => b.total - a.total);
 
   return {
     totalLeads,
@@ -177,6 +193,6 @@ export async function getAnalytics(userId: string, role: string): Promise<Analyt
     leadsByStatus,
     leadsBySource,
     leadsOverTime,
-    teamPerformance: teamPerformanceData
+    teamPerformance: byMember
   };
 }
