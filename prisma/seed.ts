@@ -167,6 +167,15 @@ async function main() {
     console.log(`✅ Created lead: ${lead.name}`);
   }
 
+  // ── Create AppSettings singleton ───────────────────
+  console.log("⚙️  Creating AppSettings singleton...");
+  await prisma.appSettings.upsert({
+    where: { id: "singleton" },
+    update: {},
+    create: { id: "singleton" }
+  });
+  console.log("✅ AppSettings singleton created/updated");
+
   console.log("\n🎉 Seed complete!");
   console.log("   admin@simplecrm.com / admin123");
   console.log("   john.smith@simplecrm.com / member123");

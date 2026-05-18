@@ -35,6 +35,14 @@ export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProp
   const router = useRouter();
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [logo, setLogo] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) => setLogo(d.logoUrl))
+      .catch((err) => console.error("Error loading logo:", err));
+  }, []);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -64,24 +72,34 @@ export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProp
         isCollapsed ? "w-[80px]" : "w-[260px]"
       )}
     >
-      {/* Brand Section with SVG Logo */}
+      {/* Brand Section */}
       <div className={cn(
-        "h-24 flex items-center relative", // Removed transition-all and duration-100
+        "h-24 flex items-center relative",
         isCollapsed ? "justify-center px-0" : "px-6"
       )}>
         <div className="flex items-center justify-center w-full">
-          <div className={cn(
-            "relative shrink-0", // Removed transition-all and duration-300
-            isCollapsed ? "h-8 w-8" : "h-[180px] w-full max-w-[300px]"
-          )}>
-             <Image 
-              src={isCollapsed ? "/Favicon.svg" : "/Logo.svg"} 
-              alt="Logo" 
-              fill 
-              className="object-contain"
-              priority
-            />
-          </div>
+          {isCollapsed ? (
+            <div className="relative h-8 w-8 shrink-0">
+              <Image 
+                src={logo || "/Favicon.svg"} 
+                alt="Logo" 
+                fill 
+                className="object-contain rounded-md"
+                priority
+              />
+            </div>
+          ) : (
+            <div className="relative shrink-0 flex items-center justify-center h-16 w-full px-4">
+              {logo ? (
+                <img src={logo} alt="Logo" className="h-10 w-auto max-w-full object-contain" />
+              ) : (
+                <span className="text-[16px] font-bold tracking-tight text-neutral-900 flex items-center gap-2">
+                  <Image src="/Favicon.svg" alt="Icon" width={20} height={20} className="object-contain" />
+                  SimpleCRM
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

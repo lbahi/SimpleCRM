@@ -1,10 +1,9 @@
 // SimpleCRM — edit-form-dialog
 "use client";
 
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { X, Plus, Trash2, GripVertical, ChevronDown, Save } from 'lucide-react';
-import Image from 'next/image';
+import { useState } from "react";
+import { toast } from "sonner";
+import { X, Plus, Save } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -13,25 +12,16 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-} from '@dnd-kit/core';
+} from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+} from "@dnd-kit/sortable";
 import { CaptureFormWithCount } from "@/modules/forms/forms.types";
-
-interface FormField {
-  id: string;
-  type: 'text' | 'email' | 'phone' | 'textarea' | 'select' | 'multiselect' | 'checkbox' | 'radio';
-  label: string;
-  placeholder?: string;
-  required: boolean;
-  options?: string[];
-}
+import { SortableField, FormField } from "./sortable-field";
+import { FormPreviewCard } from "../form-preview-card";
 
 interface EditFormDialogProps {
   form: CaptureFormWithCount;
@@ -40,125 +30,23 @@ interface EditFormDialogProps {
   onUpdated: () => void;
 }
 
-function SortableField({
-  field,
-  onUpdate,
-  onDelete,
-}: {
-  field: FormField;
-  onUpdate: (field: FormField) => void;
-  onDelete: () => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: field.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="bg-white border border-gray-200 rounded p-4 mb-3 shadow-sm"
-    >
-      <div className="flex items-start gap-3">
-        <button className="mt-2 cursor-grab active:cursor-grabbing outline-none" {...attributes} {...listeners}>
-          <GripVertical size={16} className="text-gray-400" />
-        </button>
-
-        <div className="flex-1 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Field Type</label>
-              <select
-                value={field.type}
-                onChange={(e) => onUpdate({ ...field, type: e.target.value as any })}
-                className="w-full px-3 py-1.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-black outline-none bg-white transition-all"
-              >
-                <option value="text">Text</option>
-                <option value="email">Email</option>
-                <option value="phone">Phone</option>
-                <option value="textarea">Textarea</option>
-                <option value="select">Single Select</option>
-                <option value="multiselect">Multiple Select</option>
-                <option value="checkbox">Checkbox</option>
-                <option value="radio">Radio Option</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Label</label>
-              <input
-                type="text"
-                value={field.label}
-                onChange={(e) => onUpdate({ ...field, label: e.target.value })}
-                className="w-full px-3 py-1.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-black outline-none transition-all"
-                placeholder="Field label"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Placeholder</label>
-            <input
-              type="text"
-              value={field.placeholder || ''}
-              onChange={(e) => onUpdate({ ...field, placeholder: e.target.value })}
-              className="w-full px-3 py-1.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-black outline-none transition-all"
-              placeholder="Enter placeholder text"
-            />
-          </div>
-
-          {(field.type === 'select' || field.type === 'multiselect' || field.type === 'radio' || field.type === 'checkbox') && (
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">Options (comma separated)</label>
-              <input
-                type="text"
-                value={field.options?.join(', ') || ''}
-                onChange={(e) => onUpdate({ ...field, options: e.target.value.split(',').map(s => s.trim()) })}
-                className="w-full px-3 py-1.5 border border-gray-200 rounded text-sm focus:ring-1 focus:ring-black outline-none transition-all"
-                placeholder="Option 1, Option 2, Option 3"
-              />
-            </div>
-          )}
-
-          <div className="flex items-center gap-2 pt-1">
-            <input
-              type="checkbox"
-              id={`edit-required-${field.id}`}
-              checked={field.required}
-              onChange={(e) => onUpdate({ ...field, required: e.target.checked })}
-              className="size-4 shrink-0 rounded border-gray-300 text-neutral-950 focus:ring-neutral-900 cursor-pointer"
-            />
-            <label htmlFor={`edit-required-${field.id}`} className="text-xs font-medium text-gray-600 cursor-pointer select-none">
-              Required field
-            </label>
-          </div>
-        </div>
-
-        <button onClick={onDelete} className="mt-2 text-red-600 hover:text-red-700 transition-colors">
-          <Trash2 size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialogProps) {
   if (!open) return null;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formName, setFormName] = useState(form.name);
-  const [formDescription, setFormDescription] = useState(form.description || "Submit your information below");
-  
-  const fieldsData = (form.fields as any) || {};
-  const [submitButtonText, setSubmitButtonText] = useState(fieldsData.submitButtonText || "Send Request");
+  const [formDescription, setFormDescription] = useState(
+    form.description || "Submit your information below"
+  );
+
+  const fieldsData = (form.fields as unknown as {
+    items?: FormField[];
+    submitButtonText?: string;
+  }) || {};
+
+  const [submitButtonText, setSubmitButtonText] = useState(
+    fieldsData.submitButtonText || "Send Request"
+  );
   const [sourceTag, setSourceTag] = useState(form.sourceTag);
   const [fields, setFields] = useState<FormField[]>(fieldsData.items || []);
 
@@ -183,20 +71,20 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
   const addField = () => {
     const newField: FormField = {
       id: `${Date.now()}`,
-      type: 'text',
-      label: 'New Field',
-      placeholder: '',
+      type: "text",
+      label: "New Field",
+      placeholder: "",
       required: false,
     };
     setFields([...fields, newField]);
   };
 
   const updateField = (id: string, updatedField: FormField) => {
-    setFields(fields.map(f => f.id === id ? updatedField : f));
+    setFields(fields.map((f) => (f.id === id ? updatedField : f)));
   };
 
   const deleteField = (id: string) => {
-    setFields(fields.filter(f => f.id !== id));
+    setFields(fields.filter((f) => f.id !== id));
   };
 
   const handleSave = async () => {
@@ -215,7 +103,10 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
           description: formDescription,
           submitButtonText: submitButtonText,
           sourceTag: sourceTag,
-          fields: fields,
+          fields: {
+            items: fields,
+            submitButtonText,
+          },
         }),
       });
 
@@ -231,127 +122,6 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
     }
   };
 
-  const PreviewSelect = ({ field }: { field: FormField }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selected, setSelected] = useState<string[]>([]);
-    const isMulti = field.type === 'multiselect';
-
-    const toggleOption = (opt: string) => {
-      if (isMulti) {
-        setSelected(prev =>
-          prev.includes(opt)
-            ? prev.filter(o => o !== opt)
-            : [...prev, opt]
-        );
-      } else {
-        setSelected([opt]);
-        setIsOpen(false);
-      }
-    };
-
-    const displayText = selected.length > 0
-      ? selected.join(', ')
-      : (field.placeholder || (isMulti ? 'Select options...' : 'Select an option'));
-
-    return (
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white hover:border-gray-300 transition-all text-left shadow-sm active:scale-[0.99]"
-        >
-          <span className={`truncate ${selected.length > 0 ? 'text-gray-900 font-medium' : 'text-gray-400 font-medium'}`}>
-            {displayText}
-          </span>
-          <ChevronDown size={14} className={`text-gray-400 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-        </button>
-
-        {isOpen && (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="max-h-60 overflow-y-auto p-1.5">
-                {field.options?.filter(opt => opt.trim().length > 0).map((opt, i) => {
-                  const isActive = selected.includes(opt);
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => toggleOption(opt)}
-                      className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors font-medium flex items-center justify-between ${isActive
-                          ? 'bg-neutral-50 text-neutral-900'
-                          : 'hover:bg-gray-50 text-gray-700'
-                        }`}
-                    >
-                      {opt}
-                      {isActive && <div className="size-1.5 bg-purple-600 rounded-full" />}
-                    </button>
-                  );
-                })}
-                {(!field.options || field.options.filter(opt => opt.trim().length > 0).length === 0) && (
-                  <div className="px-3 py-2 text-sm text-gray-400 italic">No options defined</div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
-  const renderPreview = (field: FormField) => {
-    switch (field.type) {
-      case 'textarea':
-        return (
-          <textarea
-            readOnly
-            placeholder={field.placeholder}
-            className="w-full px-3 py-1.5 border border-gray-200 rounded text-sm bg-gray-50 focus:outline-none cursor-default"
-            rows={4}
-          />
-        );
-      case 'select':
-      case 'multiselect':
-        return <PreviewSelect field={field} />;
-      case 'checkbox':
-      case 'radio':
-        return (
-          <div className="flex flex-wrap gap-4 mt-2">
-            {field.options && field.options.length > 0 ? (
-              field.options.filter(opt => opt.length > 0).map((opt, i) => (
-                <label key={i} className="flex items-center gap-2 cursor-pointer group">
-                  <input
-                    readOnly
-                    type={field.type === 'checkbox' ? 'checkbox' : 'radio'}
-                    className="size-4 rounded border-gray-300 text-neutral-950 focus:ring-neutral-900 transition-all cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">{opt}</span>
-                </label>
-              ))
-            ) : (
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input
-                  readOnly
-                  type={field.type === 'checkbox' ? 'checkbox' : 'radio'}
-                  className="size-4 rounded border-gray-300 text-zinc-900 focus:ring-zinc-800 transition-all cursor-pointer"
-                />
-                <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">Default {field.type} option</span>
-              </label>
-            )}
-          </div>
-        );
-      default:
-        return (
-          <input
-            readOnly
-            type={field.type}
-            placeholder={field.placeholder}
-            className="w-full px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none cursor-default"
-          />
-        );
-    }
-  };
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
@@ -361,8 +131,8 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
             <h2 className="text-2xl font-bold tracking-tight">Edit Capture Form</h2>
             <p className="text-sm text-neutral-500 mt-1 font-medium">Full builder access for this form</p>
           </div>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="p-2 hover:bg-neutral-200 rounded-full text-neutral-500 hover:text-neutral-900 transition-all active:scale-90"
           >
             <X size={24} />
@@ -408,24 +178,19 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
 
             <div className="mb-8">
               <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Lead Source Tag</label>
-              <div className="relative">
-                <select
-                  value={sourceTag}
-                  onChange={(e) => setSourceTag(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-black outline-none bg-white appearance-none cursor-pointer"
-                >
-                  <option value="WEBSITE">Website</option>
-                  <option value="FACEBOOK_AD">Facebook Ad</option>
-                  <option value="INSTAGRAM">Instagram</option>
-                  <option value="REFERRAL">Referral</option>
-                  <option value="COLD_OUTREACH">Cold Outreach</option>
-                  <option value="WALK_IN">Walk-in</option>
-                  <option value="OTHER">Other</option>
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                  <ChevronDown size={14} />
-                </div>
-              </div>
+              <select
+                value={sourceTag}
+                onChange={(e) => setSourceTag(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-1 focus:ring-black outline-none bg-white appearance-none cursor-pointer"
+              >
+                <option value="WEBSITE">Website</option>
+                <option value="FACEBOOK_AD">Facebook Ad</option>
+                <option value="INSTAGRAM">Instagram</option>
+                <option value="REFERRAL">Referral</option>
+                <option value="COLD_OUTREACH">Cold Outreach</option>
+                <option value="WALK_IN">Walk-in</option>
+                <option value="OTHER">Other</option>
+              </select>
             </div>
 
             <div className="mb-4">
@@ -441,7 +206,7 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
               </div>
 
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={fields.map(f => f.id)} strategy={verticalListSortingStrategy}>
+                <SortableContext items={fields.map((f) => f.id)} strategy={verticalListSortingStrategy}>
                   {fields.map((field) => (
                     <SortableField
                       key={field.id}
@@ -456,43 +221,18 @@ export function EditFormDialog({ form, open, onClose, onUpdated }: EditFormDialo
           </div>
 
           {/* Right Panel - Live Preview */}
-          <div className="w-1/2 overflow-y-auto p-6 bg-gray-50">
-            <div className="mb-6 flex items-center justify-between">
+          <div className="w-1/2 overflow-y-auto p-6 bg-gray-50 flex flex-col justify-center">
+            <div className="mb-4 flex items-center justify-between max-w-md mx-auto w-full">
               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">Live Preview</h3>
               <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase">Active</span>
             </div>
 
-            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-auto border border-gray-100">
-              <div className="text-center mb-8">
-                <div className="relative h-20 w-full max-w-[160px] mx-auto mb-6">
-                  <Image 
-                    src="/Logo.svg" 
-                    alt="Logo" 
-                    fill 
-                    className="object-contain opacity-90"
-                    priority
-                  />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">{formName || 'Form Title'}</h2>
-                <p className="text-sm text-gray-500">{formDescription}</p>
-              </div>
-
-              <div className="space-y-5">
-                {fields.map((field) => (
-                  <div key={field.id}>
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                      {field.label}
-                      {field.required && <span className="text-red-500 ml-1">*</span>}
-                    </label>
-                    {renderPreview(field)}
-                  </div>
-                ))}
-              </div>
-
-              <button className="w-full mt-8 px-4 py-3.5 bg-neutral-950 text-white rounded-lg font-bold hover:bg-black transition-all shadow-lg shadow-neutral-200 active:scale-[0.98]">
-                {submitButtonText}
-              </button>
-            </div>
+            <FormPreviewCard
+              formName={formName}
+              formDescription={formDescription}
+              submitButtonText={submitButtonText}
+              fields={fields}
+            />
           </div>
         </div>
 

@@ -57,7 +57,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             <ChevronDown className="h-4 w-4 text-gray-400 transition-transform duration-200" style={{ transform: open ? 'rotate(180deg)' : 'none' }} />
           </PopoverTrigger>
 
-          <PopoverContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-gray-100">
+          <PopoverContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-gray-100 bg-white">
             <div className="flex flex-col gap-1 p-2">
               <button className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-black rounded-xl transition-all">
                 <User className="h-4 w-4" />

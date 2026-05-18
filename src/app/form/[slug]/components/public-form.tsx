@@ -1,40 +1,75 @@
 // SimpleCRM — public-form
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { CaptureForm } from "@prisma/client";
-import { Loader2, ChevronDown } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import { FormSuccess } from "./form-success";
+import { FormFieldRenderer } from "./form-field-renderer";
+
+interface FormFieldItem {
+  id: string;
+  label: string;
+  type: string;
+  placeholder?: string;
+  required?: boolean;
+  options?: string[];
+}
 
 interface PublicFormProps {
   form: CaptureForm;
+  brandColor: string;
+  logoUrl: string | null;
 }
 
-export function PublicForm({ form }: PublicFormProps) {
+export function PublicForm({ form, brandColor, logoUrl }: PublicFormProps) {
   const [state, setState] = useState<"FORM" | "SUCCESS">("FORM");
-  
-  const fieldsData = form.fields as { 
-    items: any[]; 
+  const [logo, setLogo] = useState<string | null>(logoUrl);
+  const [color, setColor] = useState<string>(brandColor);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.logoUrl !== undefined) setLogo(d.logoUrl);
+        if (d.brandColor) setColor(d.brandColor);
+      })
+      .catch((err) => console.error("Error loading settings:", err));
+  }, []);
+
+  const fieldsData = form.fields as unknown as {
+    items: FormFieldItem[];
     submitButtonText?: string;
   };
-  
-  const formFields = fieldsData.items || [];
-  const submitText = fieldsData.submitButtonText || "Send Request";
 
-  const [values, setValues] = useState<Record<string, any>>({});
+  const formFields = fieldsData?.items || [];
+  const submitText = fieldsData?.submitButtonText || "Send Request";
+
+  const [values, setValues] = useState<Record<string, string | string[]>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    formFields.forEach(field => {
-      if (field.required && !values[field.id]) {
+    formFields.forEach((field) => {
+      const val = values[field.id];
+      const isEmpty =
+        !val ||
+        (typeof val === "string" && val.trim().length === 0) ||
+        (Array.isArray(val) && val.length === 0);
+
+      if (field.required && isEmpty) {
         newErrors[field.id] = `${field.label} is required`;
       }
-      if (field.type === 'tel' && values[field.id] && values[field.id].length < 6) {
+      if (
+        field.type === "tel" &&
+        val &&
+        typeof val === "string" &&
+        val.replace(/\D/g, "").length < 6
+      ) {
         newErrors[field.id] = "Valid phone number required";
       }
     });
@@ -56,7 +91,7 @@ export function PublicForm({ form }: PublicFormProps) {
 
       if (!res.ok) throw new Error("Submission failed");
       setState("SUCCESS");
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -67,136 +102,28 @@ export function PublicForm({ form }: PublicFormProps) {
     return <FormSuccess />;
   }
 
-  const renderField = (field: any) => {
-    const isMulti = field.type === 'multiselect';
-    const isSelect = field.type === 'select' || isMulti;
-
-    if (isSelect) {
-      const selected = values[field.id] || (isMulti ? [] : "");
-      const displayText = isMulti 
-        ? (selected.length > 0 ? selected.join(', ') : (field.placeholder || "Select options..."))
-        : (selected || (field.placeholder || "Select an option"));
-
-      return (
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setActiveDropdown(activeDropdown === field.id ? null : field.id)}
-            className={`w-full flex items-center justify-between px-4 py-3 border rounded-xl text-sm bg-white transition-all text-left shadow-sm active:scale-[0.99] ${
-              errors[field.id] ? "border-red-200" : "border-gray-200 hover:border-gray-300"
-            }`}
-          >
-            <span className={`truncate ${selected.length > 0 || (!isMulti && selected) ? 'text-gray-900 font-medium' : 'text-gray-400 font-medium'}`}>
-              {displayText}
-            </span>
-            <ChevronDown size={14} className={`text-gray-400 shrink-0 transition-transform duration-200 ${activeDropdown === field.id ? 'rotate-180' : ''}`} />
-          </button>
-
-          {activeDropdown === field.id && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setActiveDropdown(null)} />
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="max-h-60 overflow-y-auto p-1.5">
-                  {field.options?.filter((opt: string) => opt.trim().length > 0).map((opt: string, i: number) => {
-                    const isActive = isMulti ? selected.includes(opt) : selected === opt;
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => {
-                          if (isMulti) {
-                            const next = selected.includes(opt) 
-                              ? selected.filter((o: string) => o !== opt)
-                              : [...selected, opt];
-                            setValues({ ...values, [field.id]: next });
-                          } else {
-                            setValues({ ...values, [field.id]: opt });
-                            setActiveDropdown(null);
-                          }
-                        }}
-                        className={`w-full text-left px-3 py-2.5 text-sm rounded-lg transition-colors font-medium flex items-center justify-between ${
-                          isActive ? 'bg-neutral-50 text-neutral-950' : 'hover:bg-gray-50 text-gray-700'
-                        }`}
-                      >
-                        {opt}
-                        {isActive && <div className="size-1.5 bg-neutral-950 rounded-full" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      );
-    }
-
-    if (field.type === 'textarea') {
-      return (
-        <textarea
-          value={values[field.id] || ""}
-          onChange={(e) => setValues({ ...values, [field.id]: e.target.value })}
-          placeholder={field.placeholder}
-          rows={4}
-          className={`w-full px-4 py-3 border rounded-xl text-sm bg-white focus:ring-4 focus:ring-neutral-50 focus:border-neutral-300 outline-none transition-all resize-none ${
-            errors[field.id] ? "border-red-200" : "border-gray-200 hover:border-gray-300"
-          }`}
-        />
-      );
-    }
-
-    if (field.type === 'checkbox' || field.type === 'radio') {
-      return (
-        <div className="flex flex-wrap gap-4 pt-1">
-          {field.options?.map((opt: string, i: number) => (
-            <label key={i} className="flex items-center gap-2 cursor-pointer group">
-              <input
-                type={field.type === 'checkbox' ? 'checkbox' : 'radio'}
-                name={`field-${field.id}`}
-                checked={field.type === 'checkbox' ? (values[field.id] || []).includes(opt) : values[field.id] === opt}
-                onChange={(e) => {
-                  if (field.type === 'checkbox') {
-                    const current = values[field.id] || [];
-                    const next = e.target.checked ? [...current, opt] : current.filter((o: string) => o !== opt);
-                    setValues({ ...values, [field.id]: next });
-                  } else {
-                    setValues({ ...values, [field.id]: opt });
-                  }
-                }}
-                className="size-4 rounded border-gray-300 text-neutral-950 focus:ring-neutral-900 transition-all cursor-pointer"
-              />
-              <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors font-medium">{opt}</span>
-            </label>
-          ))}
-        </div>
-      );
-    }
-
-    return (
-      <input
-        type={field.type === 'tel' ? 'tel' : 'text'}
-        value={values[field.id] || ""}
-        onChange={(e) => setValues({ ...values, [field.id]: e.target.value })}
-        placeholder={field.placeholder}
-        className={`w-full h-12 px-4 border rounded-xl text-sm bg-white focus:ring-4 focus:ring-neutral-50 focus:border-neutral-300 outline-none transition-all ${
-          errors[field.id] ? "border-red-200" : "border-gray-200 hover:border-gray-300"
-        }`}
-      />
-    );
-  };
-
   return (
     <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-md mx-auto">
       <div className="text-center mb-8">
-        <div className="relative h-24 w-full max-w-[200px] mx-auto mb-6">
-          <Image 
-            src="/Logo.svg" 
-            alt="Logo" 
-            fill 
-            className="object-contain opacity-90"
-            priority
+        {/* Header Logo */}
+        {logo ? (
+          <img
+            src={logo}
+            alt="Logo"
+            className="h-10 w-auto object-contain mx-auto mb-6 max-w-full"
           />
-        </div>
+        ) : (
+          <div className="relative h-24 w-full max-w-[200px] mx-auto mb-6">
+            <Image
+              src="/Logo.svg"
+              alt="Logo"
+              fill
+              className="object-contain opacity-90"
+              priority
+            />
+          </div>
+        )}
+
         <h1 className="text-2xl font-bold text-gray-900 mb-2">{form.name}</h1>
 
         {form.description && (
@@ -213,24 +140,34 @@ export function PublicForm({ form }: PublicFormProps) {
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
-            
-            {renderField(field)}
-            
+
+            <FormFieldRenderer
+              field={field}
+              values={values}
+              errors={errors}
+              setValues={setValues}
+              activeDropdown={activeDropdown}
+              setActiveDropdown={setActiveDropdown}
+            />
+
             {errors[field.id] && (
-              <p className="text-red-500 text-[11px] font-bold ml-1 animate-in fade-in duration-300 uppercase tracking-tight">{errors[field.id]}</p>
+              <p className="text-red-500 text-[11px] font-bold ml-1 animate-in fade-in duration-300 uppercase tracking-tight">
+                {errors[field.id]}
+              </p>
             )}
           </div>
         ))}
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={isSubmitting}
-          className="w-full mt-4 h-14 bg-neutral-950 text-white rounded-xl font-bold text-lg hover:bg-black transition-all shadow-lg shadow-neutral-100 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70"
+          style={{ backgroundColor: color }}
+          className="w-full mt-4 h-14 text-white rounded-xl font-bold text-lg transition-opacity hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 shadow-lg shadow-neutral-100"
         >
           {isSubmitting ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
-              Processing...
+              <span>Processing...</span>
             </>
           ) : (
             submitText

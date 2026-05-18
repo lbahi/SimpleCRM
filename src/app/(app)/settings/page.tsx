@@ -9,8 +9,14 @@ export default async function SettingsPage() {
 
   return (
     <div className="flex-1 p-8 overflow-y-auto bg-neutral-50">
-      <div className="mx-auto max-w-6xl">
-        <SettingsWorkspace />
+      <div className="mx-auto max-w-4xl">
+        <SettingsWorkspace
+          session={{
+            name: session.name ?? "User",
+            email: session.email ?? "",
+            role: session.role,
+          }}
+        />
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 import { notFound } from "next/navigation";
 import { getFormBySlug } from "@/modules/forms/forms.service";
 import { PublicForm } from "./components/public-form";
+import { prisma } from "@/lib/prisma";
 
 interface FormPageProps {
   params: Promise<{ slug: string }>;
@@ -11,6 +12,10 @@ export default async function FormPage({ params }: FormPageProps) {
   const { slug } = await params;
   const form = await getFormBySlug(slug);
   if (!form) notFound();
+
+  const settings = await prisma.appSettings.findUnique({
+    where: { id: "singleton" },
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] flex flex-col items-center justify-center py-16 px-4">
@@ -31,7 +36,11 @@ export default async function FormPage({ params }: FormPageProps) {
           </div>
         </div>
         
-        <PublicForm form={form} />
+        <PublicForm
+          form={form}
+          brandColor={settings?.brandColor ?? "#171717"}
+          logoUrl={settings?.logoUrl ?? null}
+        />
       </div>
     </div>
   );
