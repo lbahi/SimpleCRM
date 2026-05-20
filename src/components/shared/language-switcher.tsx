@@ -29,7 +29,6 @@ export function LanguageSwitcher() {
         body: JSON.stringify({ locale: newLocale }),
       });
       if (res.ok) {
-        document.cookie = `locale=${newLocale};path=/;max-age=31536000`;
         router.refresh();
       }
     } catch (err) {
