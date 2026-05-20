@@ -8,5 +8,59 @@
     "verifying": "Vérification...",
     "showPassword": "Afficher le mot de passe",
     "hidePassword": "Masquer le mot de passe"
+  },
+  "Sidebar": {
+    "dashboard": "Tableau de bord",
+    "inbox": "Boîte de réception",
+    "leads": "Prospects",
+    "reminders": "Rappels",
+    "analytics": "Analytique",
+    "forms": "Formulaires",
+    "team": "Équipe",
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
+    "collapse": "Réduire"
+  },
+  "AppHeader": {
+    "yourProfile": "Mon profil",
+    "signOut": "Se déconnecter"
+  },
+  "Settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérez vos préférences de compte, l'image de marque et les configurations de l'espace de travail.",
+    "profile": {
+      "title": "Profil",
+      "description": "Vos informations de profil personnel et comment vous apparaissez dans SimpleCRM.",
+      "fullName": "Nom complet",
+      "emailAddress": "Adresse e-mail"
+    },
+    "appearance": {
+      "title": "Apparence",
+      "description": "Personnalisez l'aspect et la convivialité de votre interface.",
+      "language": "Langue de l'interface",
+      "languageDescription": "Choisissez la langue utilisée dans l'application."
+    },
+    "password": {
+      "title": "Mot de passe",
+      "description": "Modifiez votre mot de passe pour assurer la sécurité de votre compte.",
+      "current": "Mot de passe actuel",
+      "new": "Nouveau mot de passe",
+      "confirm": "Confirmer le mot de passe",
+      "managedByAdmin": "Les mises à jour du mot de passe sont gérées par votre administrateur.",
+      "updateButton": "Mettre à jour le mot de passe"
+    },
+    "dangerZone": {
+      "title": "Zone de danger",
+      "description": "Actions irréversibles qui affectent l'ensemble de l'espace de travail.",
+      "resetTitle": "Réinitialiser les données de l'espace de travail",
+      "resetDescription": "Cela supprimera tous les prospects, membres de l'équipe, l'historique des activités et les formulaires de capture publics. Cette action est définitive.",
+      "resetButton": "Réinitialiser l'espace de travail",
+      "resetting": "Réinitialisation..."
+    }
+  },
+  "LanguageSwitcher": {
+    "label": "Langue",
+    "en": "Anglais",
+    "fr": "Français"
   }
 }

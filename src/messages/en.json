@@ -8,5 +8,59 @@
     "verifying": "Verifying...",
     "showPassword": "Show password",
     "hidePassword": "Hide password"
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "inbox": "Inbox",
+    "leads": "Leads",
+    "reminders": "Reminders",
+    "analytics": "Analytics",
+    "forms": "Forms",
+    "team": "Team",
+    "settings": "Settings",
+    "logout": "Logout",
+    "collapse": "Collapse"
+  },
+  "AppHeader": {
+    "yourProfile": "Your Profile",
+    "signOut": "Sign Out"
+  },
+  "Settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account preferences, branding, and workspace configurations.",
+    "profile": {
+      "title": "Profile",
+      "description": "Your personal profile details and how you appear in SimpleCRM.",
+      "fullName": "Full Name",
+      "emailAddress": "Email Address"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "description": "Customize the look and feel of your interface.",
+      "language": "Interface Language",
+      "languageDescription": "Choose the language used across the application."
+    },
+    "password": {
+      "title": "Password",
+      "description": "Change your password to ensure your account security.",
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm Password",
+      "managedByAdmin": "Password updates are managed by your administrator.",
+      "updateButton": "Update password"
+    },
+    "dangerZone": {
+      "title": "Danger zone",
+      "description": "Irreversible actions that affect the entire workspace.",
+      "resetTitle": "Reset Workspace Data",
+      "resetDescription": "This will delete all leads, team members, activity history, and public capture forms. This action is final.",
+      "resetButton": "Reset Workspace",
+      "resetting": "Resetting..."
+    }
+  },
+  "LanguageSwitcher": {
+    "label": "Language",
+    "en": "English",
+    "fr": "French"
   }
 }

@@ -3,8 +3,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ChevronDown, LogOut, Bell, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import {
   Popover,
   PopoverContent,
@@ -21,6 +23,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter();
+  const t = useTranslations("AppHeader");
   const [open, setOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -34,6 +37,8 @@ export function AppHeader({ user }: AppHeaderProps) {
       <div />
 
       <div className="flex items-center gap-6">
+        <LanguageSwitcher />
+
         {/* Simple Notification Button */}
         <button className="p-2 text-gray-400 hover:text-black transition-colors relative">
           <Bell className="h-5 w-5" />
@@ -61,7 +66,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             <div className="flex flex-col gap-1 p-2">
               <button className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-black rounded-xl transition-all">
                 <User className="h-4 w-4" />
-                Your Profile
+                {t("yourProfile")}
               </button>
               <div className="h-px bg-gray-100 my-1" />
               <button
@@ -69,7 +74,7 @@ export function AppHeader({ user }: AppHeaderProps) {
                 className="flex w-full items-center gap-3 px-3 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all"
               >
                 <LogOut className="h-4 w-4" />
-                Sign Out
+                {t("signOut")}
               </button>
             </div>
           </PopoverContent>

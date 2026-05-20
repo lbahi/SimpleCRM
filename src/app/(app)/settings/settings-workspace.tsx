@@ -3,14 +3,16 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { AppearanceSection } from "./components/appearance-section";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, ShieldAlert, KeyRound, AlertTriangle } from "lucide-react";
+import { User, ShieldAlert, KeyRound, AlertTriangle, Globe } from "lucide-react";
 import { Role } from "@prisma/client";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 
 interface SettingsWorkspaceProps {
   session: {
@@ -21,6 +23,7 @@ interface SettingsWorkspaceProps {
 }
 
 export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
+  const t = useTranslations("Settings");
   const [isResetting, setIsResetting] = useState(false);
 
   const handleResetWorkspace = async () => {
@@ -53,9 +56,9 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
   return (
     <div className="space-y-8 pb-12">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">Settings</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-neutral-900">{t("title")}</h1>
         <p className="text-sm text-neutral-500 mt-1">
-          Manage your account preferences, branding, and workspace configurations.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -66,9 +69,9 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
             <div className="flex items-center gap-2">
               <User className="h-5 w-5 text-neutral-600" />
               <div>
-                <CardTitle className="text-lg font-semibold text-neutral-900">Profile</CardTitle>
+                <CardTitle className="text-lg font-semibold text-neutral-900">{t("profile.title")}</CardTitle>
                 <CardDescription className="text-neutral-500">
-                  Your personal profile details and how you appear in SimpleCRM.
+                  {t("profile.description")}
                 </CardDescription>
               </div>
             </div>
@@ -93,14 +96,34 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
               {/* Readonly details */}
               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Full Name</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("profile.fullName")}</Label>
                   <Input value={session.name} readOnly className="bg-neutral-50 border-neutral-200 text-neutral-600 h-10 rounded-lg cursor-not-allowed select-none" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Email Address</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("profile.emailAddress")}</Label>
                   <Input value={session.email} readOnly className="bg-neutral-50 border-neutral-200 text-neutral-600 h-10 rounded-lg cursor-not-allowed select-none" />
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Language Section */}
+        <Card className="shadow-sm border border-neutral-200 bg-white rounded-xl">
+          <CardHeader className="border-b border-neutral-100 pb-4">
+            <div className="flex items-center gap-2">
+              <Globe className="h-5 w-5 text-neutral-600" />
+              <div>
+                <CardTitle className="text-lg font-semibold text-neutral-900">{t("appearance.language")}</CardTitle>
+                <CardDescription className="text-neutral-500">
+                  {t("appearance.languageDescription")}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="max-w-xs">
+              <LanguageSwitcher />
             </div>
           </CardContent>
         </Card>
@@ -114,9 +137,9 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
             <div className="flex items-center gap-2">
               <KeyRound className="h-5 w-5 text-neutral-600" />
               <div>
-                <CardTitle className="text-lg font-semibold text-neutral-900">Password</CardTitle>
+                <CardTitle className="text-lg font-semibold text-neutral-900">{t("password.title")}</CardTitle>
                 <CardDescription className="text-neutral-500">
-                  Change your password to ensure your account security.
+                  {t("password.description")}
                 </CardDescription>
               </div>
             </div>
@@ -124,22 +147,22 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
           <CardContent className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Current Password</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("password.current")}</Label>
                 <Input type="password" placeholder="••••••••" disabled className="bg-neutral-50 border-neutral-200 h-10 rounded-lg cursor-not-allowed" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">New Password</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("password.new")}</Label>
                 <Input type="password" placeholder="••••••••" disabled className="bg-neutral-50 border-neutral-200 h-10 rounded-lg cursor-not-allowed" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Confirm Password</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("password.confirm")}</Label>
                 <Input type="password" placeholder="••••••••" disabled className="bg-neutral-50 border-neutral-200 h-10 rounded-lg cursor-not-allowed" />
               </div>
             </div>
             <div className="flex items-center justify-between pt-2">
-              <p className="text-xs text-neutral-400">Password updates are managed by your administrator.</p>
+              <p className="text-xs text-neutral-400">{t("password.managedByAdmin")}</p>
               <Button disabled className="h-9 bg-neutral-900 text-white rounded-lg px-4 opacity-50 cursor-not-allowed">
-                Update password
+                {t("password.updateButton")}
               </Button>
             </div>
           </CardContent>
@@ -152,9 +175,9 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
               <div className="flex items-center gap-2">
                 <ShieldAlert className="h-5 w-5 text-red-600" />
                 <div>
-                  <CardTitle className="text-lg font-semibold text-red-900">Danger zone</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-red-900">{t("dangerZone.title")}</CardTitle>
                   <CardDescription className="text-red-500/80">
-                    Irreversible actions that affect the entire workspace.
+                    {t("dangerZone.description")}
                   </CardDescription>
                 </div>
               </div>
@@ -163,9 +186,9 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
               <div className="flex gap-3">
                 <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-[14px] font-semibold text-red-900">Reset Workspace Data</h4>
+                  <h4 className="text-[14px] font-semibold text-red-900">{t("dangerZone.resetTitle")}</h4>
                   <p className="text-xs text-red-700/70 mt-0.5">
-                    This will delete all leads, team members, activity history, and public capture forms. This action is final.
+                    {t("dangerZone.resetDescription")}
                   </p>
                 </div>
               </div>
@@ -175,7 +198,7 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
                 onClick={handleResetWorkspace}
                 className="border-red-200 hover:border-red-300 text-red-600 hover:text-red-700 hover:bg-red-50/50 rounded-lg h-9 shrink-0 transition-colors disabled:opacity-50"
               >
-                {isResetting ? "Resetting..." : "Reset Workspace"}
+                {isResetting ? t("dangerZone.resetting") : t("dangerZone.resetButton")}
               </Button>
             </CardContent>
           </Card>
