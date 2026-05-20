@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { LeadStatus } from "@prisma/client";
 import { DashboardStats } from "./dashboard-stats";
 import { RecentLeads } from "./recent-leads";
+import { getTranslations } from "next-intl/server";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -14,13 +15,14 @@ export default async function DashboardPage() {
 
   const analytics = await getAnalytics(session.userId, session.role);
   const leads = analytics.recentLeads; // For the "Recent Leads" section
+  const t = await getTranslations("dashboard");
 
   return (
     <div className="flex-1 overflow-auto bg-gray-50 -m-6 h-[calc(100vh-64px)]">
       <div className="p-10 space-y-10">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-900">Dashboard</h1>
-          <p className="text-neutral-500 mt-1">Welcome back. Here's what's happening with your leads today.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-neutral-900">{t("title")}</h1>
+          <p className="text-neutral-500 mt-1">{t("welcome")}</p>
         </div>
 
         {/* Stats Grid */}
@@ -33,12 +35,12 @@ export default async function DashboardPage() {
           {/* Lead Activity */}
           {session.role === "ADMIN" && (
             <div className="col-span-2 bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
-              <h2 className="text-lg font-bold text-neutral-900 mb-6">Lead Activity</h2>
+              <h2 className="text-lg font-bold text-neutral-900 mb-6">{t("leadActivity")}</h2>
               <div className="flex items-center justify-center h-80 text-gray-400">
                 <div className="text-center">
                   <BarChart3 size={48} className="mx-auto mb-4 opacity-20" />
-                  <p className="text-sm font-bold text-neutral-500">Activity Chart coming soon</p>
-                  <p className="text-xs text-neutral-400 mt-2">We're building a powerful visualization for your data.</p>
+                  <p className="text-sm font-bold text-neutral-500">{t("activityComingSoon")}</p>
+                  <p className="text-xs text-neutral-400 mt-2">{t("activityDescription")}</p>
                 </div>
               </div>
             </div>
@@ -53,4 +55,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-

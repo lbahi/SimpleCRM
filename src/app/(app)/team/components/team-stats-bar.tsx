@@ -1,4 +1,7 @@
 // SimpleCRM — team-stats-bar
+"use client";
+
+import { useTranslations } from "next-intl";
 import { MemberWithStats } from "@/modules/users/users.types";
 import { designTokens, StatCard } from "@/lib/design-system/tokens";
 
@@ -7,11 +10,12 @@ interface TeamStatsBarProps {
 }
 
 export function TeamStatsBar({ members }: TeamStatsBarProps) {
+  const t = useTranslations("team");
   const stats = [
-    { label: "Total members", value: members.length },
-    { label: "Active", value: members.filter(m => m.isActive).length },
-    { label: "Open leads", value: members.reduce((sum, m) => sum + m.openLeads, 0) },
-    { label: "Closed leads", value: members.reduce((sum, m) => sum + m.closedLeads, 0) },
+    { label: t("totalMembers"), value: members.length },
+    { label: t("activeMembers"), value: members.filter((m) => m.isActive).length },
+    { label: t("openLeads"), value: members.reduce((sum, m) => sum + m.openLeads, 0) },
+    { label: t("closedLeads"), value: members.reduce((sum, m) => sum + m.closedLeads, 0) },
   ];
 
   return (

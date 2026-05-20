@@ -7,6 +7,7 @@ import { Copy, ExternalLink, MoreHorizontal, Code } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import { CaptureFormWithCount } from "@/modules/forms/forms.types";
 import { cn } from "@/lib/utils";
 import {
@@ -24,17 +25,19 @@ interface FormRowProps {
   onRefresh: () => void;
 }
 
-const SOURCE_CONFIG: Record<string, { label: string; className: string }> = {
-  FACEBOOK_AD: { label: "Facebook Ad", className: "bg-blue-50 text-blue-700 border-blue-100" },
-  INSTAGRAM: { label: "Instagram", className: "bg-pink-50 text-pink-700 border-pink-100" },
-  WEBSITE: { label: "Website", className: "bg-green-50 text-green-700 border-green-100" },
-  REFERRAL: { label: "Referral", className: "bg-purple-50 text-purple-700 border-purple-100" },
-  COLD_OUTREACH: { label: "Cold Outreach", className: "bg-orange-50 text-orange-700 border-orange-100" },
-  WALK_IN: { label: "Walk-in", className: "bg-teal-50 text-teal-700 border-teal-100" },
-  OTHER: { label: "Other", className: "bg-neutral-100 text-neutral-600 border-neutral-200" },
+const SOURCE_CONFIG: Record<string, { className: string }> = {
+  FACEBOOK_AD: { className: "bg-blue-50 text-blue-700 border-blue-100" },
+  INSTAGRAM: { className: "bg-pink-50 text-pink-700 border-pink-100" },
+  WEBSITE: { className: "bg-green-50 text-green-700 border-green-100" },
+  REFERRAL: { className: "bg-purple-50 text-purple-700 border-purple-100" },
+  COLD_OUTREACH: { className: "bg-orange-50 text-orange-700 border-orange-100" },
+  WALK_IN: { className: "bg-teal-50 text-teal-700 border-teal-100" },
+  OTHER: { className: "bg-neutral-100 text-neutral-600 border-neutral-200" },
 };
 
 export function FormRow({ form, onRefresh }: FormRowProps) {
+  const t = useTranslations("forms");
+  const sources = useTranslations("sources");
   const [isActive, setIsActive] = useState(form.isActive);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -55,10 +58,10 @@ export function FormRow({ form, onRefresh }: FormRowProps) {
         body: JSON.stringify({ isActive: next }),
       });
       if (!res.ok) throw new Error();
-      toast.success(next ? "Form activated" : "Form deactivated");
+      toast.success(next ? t("activated") : t("deactivated"));
     } catch {
       setIsActive(!next);
-      toast.error("Failed to update status");
+      toast.error(t("statusUpdateFailed"));
     }
   };
 
@@ -72,16 +75,16 @@ export function FormRow({ form, onRefresh }: FormRowProps) {
     try {
       const res = await fetch(`/api/forms/${form.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
-      toast.success("Form deleted");
+      toast.success(t("deleted"));
       onRefresh();
     } catch {
-      toast.error("Failed to delete form");
+      toast.error(t("deleteFailed"));
     }
   };
 
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(publicUrl);
-    toast.success("Link copied");
+    toast.success(t("linkCopied"));
   };
 
   const source = SOURCE_CONFIG[form.sourceTag] || SOURCE_CONFIG.OTHER;
@@ -102,12 +105,12 @@ export function FormRow({ form, onRefresh }: FormRowProps) {
       </td>
       <td className="px-6 py-4">
         <Badge variant="outline" className={cn("rounded-md border font-medium", source.className)}>
-          {source.label}
+          {sources(form.sourceTag) || sources("OTHER")}
         </Badge>
       </td>
       <td className="px-6 py-4">
         <span className="text-[13px] text-neutral-600 font-medium">
-          {form._count.leadSources} <span className="text-neutral-400 font-normal ml-0.5">leads</span>
+          {form._count.leadSources} <span className="text-neutral-400 font-normal ms-0.5">{t("leads")}</span>
         </span>
       </td>
       <td className="px-6 py-4">
@@ -134,7 +137,7 @@ export function FormRow({ form, onRefresh }: FormRowProps) {
         </label>
       </td>
 
-      <td className="px-6 py-4 text-right">
+      <td className="px-6 py-4 text-end">
         <div className="flex items-center justify-end gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger className="h-8 w-8 text-neutral-400 hover:text-neutral-900 rounded-md hover:bg-neutral-100 flex items-center justify-center transition-colors outline-none">
@@ -142,12 +145,12 @@ export function FormRow({ form, onRefresh }: FormRowProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52 rounded-xl">
               <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
-                <MoreHorizontal className="mr-2 h-4 w-4 text-purple-500" />
-                Edit settings
+                <MoreHorizontal className="me-2 h-4 w-4 text-purple-500" />
+                {t("editSettings")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setIsEmbedOpen(true)}>
-                <Code className="mr-2 h-4 w-4 text-purple-500" />
-                Get embed code
+                <Code className="me-2 h-4 w-4 text-purple-500" />
+                {t("embedCode")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
@@ -158,7 +161,7 @@ export function FormRow({ form, onRefresh }: FormRowProps) {
                   <div className={cn("w-4 h-4 flex items-center justify-center", isDeleting ? "text-red-600" : "text-red-400")}>
                     {isDeleting ? "!" : "×"}
                   </div>
-                  {isDeleting ? "Confirm delete?" : "Delete form"}
+                  {isDeleting ? t("confirmDelete") : t("deleteForm")}
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>

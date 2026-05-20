@@ -4,10 +4,12 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Upload, Trash2, Palette, RotateCcw, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export function AppearanceSection() {
+  const t = useTranslations("settings");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [brandColor, setBrandColor] = useState<string>("#171717");
   const [isLoading, setIsLoading] = useState(true);
@@ -34,13 +36,13 @@ export function AppearanceSection() {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("File size exceeds 2MB limit");
+      toast.error(t("logoHelp"));
       return;
     }
 
     const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Invalid file type. Only PNG, JPEG, and SVG are allowed.");
+      toast.error(t("logoHelp"));
       return;
     }
 
@@ -67,9 +69,9 @@ export function AppearanceSection() {
       setLogoUrl(data.logoUrl);
       setSelectedFile(null);
       setPreviewUrl(null);
-      toast.success("Logo updated");
+      toast.success(t("logoUpdated"));
     } catch {
-      toast.error("Upload failed");
+      toast.error(t("uploadFailed"));
     } finally {
       setIsUploading(false);
     }
@@ -88,15 +90,15 @@ export function AppearanceSection() {
       setLogoUrl(null);
       setSelectedFile(null);
       setPreviewUrl(null);
-      toast.success("Logo removed");
+      toast.success(t("logoRemoved"));
     } catch {
-      toast.error("Failed to remove logo");
+      toast.error(t("removeLogoFailed"));
     }
   };
 
   const handleSaveColor = async () => {
     if (!/^#[0-9A-Fa-f]{6}$/.test(brandColor)) {
-      toast.error("Please enter a valid hex color code (e.g. #171717)");
+      toast.error(t("invalidColor"));
       return;
     }
 
@@ -110,9 +112,9 @@ export function AppearanceSection() {
 
       if (!res.ok) throw new Error();
 
-      toast.success("Brand color updated");
+      toast.success(t("brandColorUpdated"));
     } catch {
-      toast.error("Failed to update brand color");
+      toast.error(t("brandColorFailed"));
     } finally {
       setIsSavingColor(false);
     }
@@ -138,9 +140,9 @@ export function AppearanceSection() {
         <div className="flex items-center gap-2">
           <Palette className="h-5 w-5 text-neutral-600" />
           <div>
-            <CardTitle className="text-lg font-semibold text-neutral-900">Appearance</CardTitle>
+            <CardTitle className="text-lg font-semibold text-neutral-900">{t("appearance")}</CardTitle>
             <CardDescription className="text-neutral-500">
-              Customize the logo and brand identity of your SimpleCRM instance.
+              {t("appearanceDescription")}
             </CardDescription>
           </div>
         </div>
@@ -150,9 +152,9 @@ export function AppearanceSection() {
         {/* Subsection A: Logo */}
         <div className="space-y-4">
           <div>
-            <h4 className="text-[14px] font-semibold text-neutral-900">Logo</h4>
+            <h4 className="text-[14px] font-semibold text-neutral-900">{t("logoUpload")}</h4>
             <p className="text-xs text-neutral-500 mt-0.5">
-              Shown in the sidebar and on public capture forms.
+              {t("logoDescription")}
             </p>
           </div>
 
@@ -166,7 +168,7 @@ export function AppearanceSection() {
                 />
               ) : (
                 <div className="w-[120px] h-[64px] rounded-lg border border-dashed border-neutral-200 bg-neutral-50 flex items-center justify-center">
-                  <span className="text-xs text-neutral-400 font-medium">No logo</span>
+                  <span className="text-xs text-neutral-400 font-medium">{t("noLogo")}</span>
                 </div>
               )}
             </div>
@@ -175,7 +177,7 @@ export function AppearanceSection() {
               <div className="flex items-center gap-2">
                 <label className="cursor-pointer inline-flex items-center justify-center rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-neutral-50 hover:text-neutral-900 transition-colors h-9 gap-2 shadow-sm text-neutral-700">
                   <Upload className="h-3.5 w-3.5" />
-                  <span>Upload logo</span>
+                  <span>{t("uploadLogo")}</span>
                   <input
                     type="file"
                     accept=".png,.jpg,.jpeg,.svg"
@@ -192,19 +194,19 @@ export function AppearanceSection() {
                     className="h-9 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                    Remove
+                    {t("remove")}
                   </Button>
                 )}
               </div>
               <p className="text-[11px] text-neutral-400">
-                Supports PNG, JPG, or SVG. Maximum 2MB.
+                {t("logoHelp")}
               </p>
             </div>
           </div>
 
           {previewUrl && (
             <div className="flex items-center gap-3 bg-neutral-50 p-3 rounded-lg border border-neutral-200 max-w-md animate-in fade-in duration-200">
-              <span className="text-xs text-neutral-600 font-medium">New logo selected</span>
+              <span className="text-xs text-neutral-600 font-medium">{t("newLogoSelected")}</span>
               <Button
                 size="sm"
                 onClick={handleSaveLogo}
@@ -214,7 +216,7 @@ export function AppearanceSection() {
                 {isUploading ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
                 ) : null}
-                Save logo
+                {t("saveLogo")}
               </Button>
               <Button
                 variant="ghost"
@@ -226,7 +228,7 @@ export function AppearanceSection() {
                 }}
                 className="h-8 rounded-lg text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200/50 text-xs px-3"
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </div>
           )}
@@ -235,9 +237,9 @@ export function AppearanceSection() {
         {/* Subsection B: Brand Color */}
         <div className="pt-6 space-y-4">
           <div>
-            <h4 className="text-[14px] font-semibold text-neutral-900">Brand color</h4>
+            <h4 className="text-[14px] font-semibold text-neutral-900">{t("brandColor")}</h4>
             <p className="text-xs text-neutral-500 mt-0.5">
-              Used for the submit button on your capture forms.
+              {t("brandColorDescription")}
             </p>
           </div>
 
@@ -274,12 +276,12 @@ export function AppearanceSection() {
 
             {/* Live Button Preview */}
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs text-neutral-400 font-medium mr-1 select-none">Preview:</span>
+              <span className="text-xs text-neutral-400 font-medium me-1 select-none">{t("preview")}</span>
               <button
                 style={{ backgroundColor: brandColor }}
                 className="px-4 py-2 rounded-lg text-white text-[13px] font-semibold pointer-events-none shadow-sm transition-all duration-300"
               >
-                Submit
+                {t("submit")}
               </button>
             </div>
 
@@ -291,7 +293,7 @@ export function AppearanceSection() {
                 className="text-xs font-semibold text-neutral-500 hover:text-neutral-800 transition-colors flex items-center gap-1.5"
               >
                 <RotateCcw className="h-3 w-3" />
-                Reset to default
+                {t("resetDefault")}
               </button>
 
               <Button
@@ -303,7 +305,7 @@ export function AppearanceSection() {
                 {isSavingColor ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
                 ) : null}
-                Save color
+                {t("saveColor")}
               </Button>
             </div>
           </div>

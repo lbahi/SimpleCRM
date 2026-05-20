@@ -2,6 +2,7 @@ import { designTokens } from "@/lib/design-system/tokens";
 import { StatusBadge } from "@/components/ui/status-badge";
 import Link from "next/link";
 import { format } from "date-fns";
+import { getTranslations } from "next-intl/server";
 
 interface RecentLeadsProps {
   leads: Array<{
@@ -13,21 +14,22 @@ interface RecentLeadsProps {
   }>;
 }
 
-export function RecentLeads({ leads }: RecentLeadsProps) {
+export async function RecentLeads({ leads }: RecentLeadsProps) {
+  const t = await getTranslations("dashboard");
   return (
     <div className={designTokens.card.base + " " + designTokens.card.padding}>
       <div className="flex items-center justify-between mb-6">
-        <h3 className={designTokens.typography.sectionTitle}>Recent Leads</h3>
+        <h3 className={designTokens.typography.sectionTitle}>{t("recentLeads")}</h3>
         <Link 
           href="/leads" 
           className="text-xs font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
         >
-          View All
+          {t("viewAll")}
         </Link>
       </div>
       {leads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-neutral-400">
-          <p className="text-sm">No recent leads found</p>
+          <p className="text-sm">{t("noRecentLeads")}</p>
         </div>
       ) : (
         <div className="divide-y divide-neutral-100">

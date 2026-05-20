@@ -8,6 +8,7 @@ import { InboxRow } from "./inbox-row";
 import { LeadDetailModal } from "@/app/(app)/leads/pipeline/lead-detail/lead-detail-modal";
 import { DataTableWrapper } from "@/components/ui/data-table-wrapper";
 import { designTokens } from "@/lib/design-system/tokens";
+import { useTranslations } from "next-intl";
 
 interface InboxTableProps {
   leads: PipelineLead[];
@@ -18,6 +19,8 @@ interface InboxTableProps {
 }
 
 export function InboxTable({ leads, selectedIds, onToggle, onToggleAll, onRefresh }: InboxTableProps) {
+  const t = useTranslations("inbox");
+  const columns = useTranslations("columns");
   const [detailId, setDetailId] = useState<string | null>(null);
 
   const allSelected = leads.length > 0 && selectedIds.size === leads.length;
@@ -29,19 +32,19 @@ export function InboxTable({ leads, selectedIds, onToggle, onToggleAll, onRefres
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-neutral-100">
-              <th className="w-[48px] px-4 py-4 text-left">
+              <th className="w-[48px] px-4 py-4 text-start">
                 <Checkbox
                   checked={allSelected ? true : someSelected ? ("indeterminate" as any) : false}
                   onCheckedChange={onToggleAll}
-                  aria-label="Select all"
+                  aria-label={t("selectAll")}
                   className="rounded-md border-neutral-300 data-[state=checked]:bg-neutral-900 data-[state=checked]:border-neutral-900"
                 />
               </th>
-              <th className="px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Lead Details</th>
-              <th className="w-[250px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Phone</th>
-              <th className="w-[220px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Location</th>
-              <th className="w-[280px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Sources</th>
-              <th className="w-[220px] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-neutral-400">Received At</th>
+              <th className="px-4 py-4 text-start text-[11px] font-bold uppercase tracking-wider text-neutral-400">{t("leadDetails")}</th>
+              <th className="w-[250px] px-4 py-4 text-start text-[11px] font-bold uppercase tracking-wider text-neutral-400">{columns("phone")}</th>
+              <th className="w-[220px] px-4 py-4 text-start text-[11px] font-bold uppercase tracking-wider text-neutral-400">{columns("location")}</th>
+              <th className="w-[280px] px-4 py-4 text-start text-[11px] font-bold uppercase tracking-wider text-neutral-400">{columns("sources")}</th>
+              <th className="w-[220px] px-4 py-4 text-start text-[11px] font-bold uppercase tracking-wider text-neutral-400">{t("receivedAt")}</th>
               <th className="w-[40px] px-4 py-4"></th>
             </tr>
           </thead>
