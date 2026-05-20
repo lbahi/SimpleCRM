@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { Plus, FileText } from "lucide-react";
 import { CaptureFormWithCount } from "@/modules/forms/forms.types";
+import { useTranslations } from "next-intl";
 import { FormsList } from "./forms-list";
 import { CreateFormDialog } from "./dialogs/create-form-dialog";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ interface WorkspaceProps {
 }
 
 export function FormsWorkspace({ initialData }: WorkspaceProps) {
+  const t = useTranslations("forms");
   const [forms, setForms] = useState<CaptureFormWithCount[]>(initialData);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -24,12 +26,12 @@ export function FormsWorkspace({ initialData }: WorkspaceProps) {
         setForms(data);
       }
     } catch (err) {
-      toast.error("Failed to refresh forms");
+      toast.error(t("refreshFailed"));
     }
   };
 
   const handleCreateForm = async (formData: any) => {
-    const loadingToast = toast.loading("Creating form...");
+    const loadingToast = toast.loading(t("creating"));
     try {
       const res = await fetch("/api/forms", {
         method: "POST",
@@ -39,11 +41,11 @@ export function FormsWorkspace({ initialData }: WorkspaceProps) {
 
       if (!res.ok) throw new Error("Failed to create form");
 
-      toast.success("Form created successfully", { id: loadingToast });
+      toast.success(t("created"), { id: loadingToast });
       setIsCreateOpen(false);
       refetch();
     } catch (err) {
-      toast.error("Error creating form", { id: loadingToast });
+      toast.error(t("createFailed"), { id: loadingToast });
     }
   };
 
@@ -52,15 +54,15 @@ export function FormsWorkspace({ initialData }: WorkspaceProps) {
       <div className="p-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl mb-2 font-normal text-neutral-900">Capture Forms</h1>
-            <p className="text-gray-600">Manage your lead intake forms</p>
+            <h1 className="text-3xl mb-2 font-normal text-neutral-900">{t("title")}</h1>
+            <p className="text-gray-600">{t("subtitle")}</p>
           </div>
           <button
             onClick={() => setIsCreateOpen(true)}
             className="px-4 py-2 bg-black text-white rounded text-sm hover:bg-gray-800 flex items-center gap-2 font-medium"
           >
             <Plus size={16} />
-            New form
+            {t("newForm")}
           </button>
         </div>
 
@@ -75,14 +77,14 @@ export function FormsWorkspace({ initialData }: WorkspaceProps) {
                 <div className="size-24 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
                   <FileText size={40} className="text-gray-400" />
                 </div>
-                <h2 className="text-xl mb-2 font-semibold">No forms yet</h2>
-                <p className="text-gray-600 mb-4">Create your first form to start capturing leads.</p>
+                <h2 className="text-xl mb-2 font-semibold">{t("emptyTitle")}</h2>
+                <p className="text-gray-600 mb-4">{t("emptyDescription")}</p>
                 <button
                   onClick={() => setIsCreateOpen(true)}
                   className="px-4 py-2 bg-black text-white rounded text-sm hover:bg-gray-800 inline-flex items-center gap-2 font-medium"
                 >
                   <Plus size={16} />
-                  New form
+                  {t("newForm")}
                 </button>
               </div>
             </div>
@@ -98,4 +100,3 @@ export function FormsWorkspace({ initialData }: WorkspaceProps) {
     </div>
   );
 }
-

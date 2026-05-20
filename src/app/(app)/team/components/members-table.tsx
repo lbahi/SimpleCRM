@@ -2,6 +2,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { MemberWithStats } from "@/modules/users/users.types";
 import { MemberRow } from "./member-row";
@@ -23,24 +24,25 @@ export function MembersTable({
   onDeactivate, 
   onRefresh 
 }: MembersTableProps) {
+  const t = useTranslations("team");
   const headerActions = (
     <Button onClick={onInviteClick} size="sm" className="bg-black hover:bg-neutral-800 text-white gap-2">
       <Plus className="h-4 w-4" />
-      Invite Member
+      {t("inviteMember")}
     </Button>
   );
 
   return (
-    <DataTableWrapper title="Team Members" headerActions={headerActions}>
-      <table className="w-full text-left border-collapse">
+    <DataTableWrapper title={t("members")} headerActions={headerActions}>
+      <table className="w-full text-start border-collapse">
         <thead>
           <tr className="bg-neutral-50/50">
-            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Member</th>
-            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Open Leads</th>
-            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Closed Leads</th>
-            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Total</th>
-            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">Status</th>
-            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest text-right">Actions</th>
+            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">{t("member")}</th>
+            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">{t("openLeads")}</th>
+            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">{t("closedLeads")}</th>
+            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">{t("total")}</th>
+            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest">{t("status")}</th>
+            <th className="px-6 py-3 text-[11px] font-bold text-neutral-400 uppercase tracking-widest text-end">{t("actions")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-neutral-100">

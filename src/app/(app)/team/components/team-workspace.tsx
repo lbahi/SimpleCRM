@@ -10,12 +10,14 @@ import { EditMemberDialog } from "./dialogs/edit-member-dialog";
 import { DeactivateMemberDialog } from "./dialogs/deactivate-member-dialog";
 import { toast } from "sonner";
 import { designTokens } from "@/lib/design-system/tokens";
+import { useTranslations } from "next-intl";
 
 interface TeamWorkspaceProps {
   initialData: MemberWithStats[];
 }
 
 export function TeamWorkspace({ initialData }: TeamWorkspaceProps) {
+  const t = useTranslations("team");
   const [members, setMembers] = useState<MemberWithStats[]>(initialData);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<MemberWithStats | null>(null);
@@ -29,7 +31,7 @@ export function TeamWorkspace({ initialData }: TeamWorkspaceProps) {
         setMembers(data);
       }
     } catch (err) {
-      toast.error("Failed to refresh team data");
+      toast.error(t("refreshFailed"));
     }
   };
 
@@ -37,8 +39,8 @@ export function TeamWorkspace({ initialData }: TeamWorkspaceProps) {
     <div className={designTokens.spacing.pageTop}>
       <div className={designTokens.spacing.section}>
         <div>
-          <h1 className={designTokens.typography.pageTitle}>Team Management</h1>
-          <p className={designTokens.typography.body + ' mt-1'}>Manage your team members and their lead assignments</p>
+          <h1 className={designTokens.typography.pageTitle}>{t("management")}</h1>
+          <p className={designTokens.typography.body + ' mt-1'}>{t("subtitle")}</p>
         </div>
 
         <TeamStatsBar members={members} />

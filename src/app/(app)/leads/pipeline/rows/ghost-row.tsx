@@ -10,6 +10,7 @@ import { RatingCell } from "../cells/rating-cell";
 import { MemberCell } from "../cells/member-cell";
 import { SourceCell } from "../cells/source-cell";
 import { LeadStatus } from "@prisma/client";
+import { useTranslations } from "next-intl";
 
 interface GhostRowProps {
   columns: ColumnId[];
@@ -27,6 +28,8 @@ interface MemberValue {
 }
 
 export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOffsets, isAdmin = false }: GhostRowProps) {
+  const t = useTranslations("leads");
+  const columnsT = useTranslations("columns");
   const { isActive, values, activeCell, errors, activate, setValue, submit, cancel } = state;
 
   const handleKeyDown = (e: React.KeyboardEvent, columnId: ColumnId) => {
@@ -44,8 +47,8 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
       if (col === "name") {
         return (
           <div className="flex items-center text-neutral-400">
-            <Plus size={13} className="mr-1.5" />
-            <span className="text-[13px]">Add a lead...</span>
+            <Plus size={13} className="me-1.5" />
+            <span className="text-[13px]">{t("addLead")}</span>
           </div>
         );
       }
@@ -64,7 +67,7 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
               "placeholder:text-neutral-300 focus:border-b focus:border-neutral-400",
               hasError && "border-b border-red-500"
             )}
-            placeholder="Full name"
+            placeholder={columnsT("name")}
             value={values[col] || ""}
             onChange={(e) => setValue(col, e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, col)}
@@ -81,7 +84,7 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
               "placeholder:text-neutral-300 focus:border-b focus:border-neutral-400",
               hasError && "border-b border-red-500"
             )}
-            placeholder="Phone number"
+            placeholder={columnsT("phone")}
             value={values[col] || ""}
             onChange={(e) => setValue(col, e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, col)}
@@ -97,7 +100,7 @@ export function GhostRow({ columns, columnWidths, state, pinnedColumns, pinnedOf
               "w-full bg-transparent text-[13px] text-neutral-700 outline-none h-[44px]",
               "placeholder:text-neutral-300 focus:border-b focus:border-neutral-400"
             )}
-            placeholder="City / Region"
+            placeholder={columnsT("location")}
             value={values[col] || ""}
             onChange={(e) => setValue(col, e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, col)}

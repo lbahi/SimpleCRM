@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { MoreHorizontal, Edit2, ShieldAlert, ShieldCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ interface MemberRowProps {
 }
 
 export function MemberRow({ member, onEdit, onDeactivate, onRefresh }: MemberRowProps) {
+  const t = useTranslations("team");
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleReactivate = async () => {
@@ -37,10 +39,10 @@ export function MemberRow({ member, onEdit, onDeactivate, onRefresh }: MemberRow
 
       if (!res.ok) throw new Error();
 
-      toast.success(`${member.name} has been reactivated`);
+      toast.success(t("reactivated", { name: member.name }));
       onRefresh();
     } catch {
-      toast.error("Failed to reactivate member");
+      toast.error(t("reactivateFailed"));
     } finally {
       setIsUpdating(false);
     }
@@ -73,9 +75,9 @@ export function MemberRow({ member, onEdit, onDeactivate, onRefresh }: MemberRow
         </span>
       </td>
       <td className="px-6 py-4">
-        <StatusBadge status={member.isActive ? 'Active' : 'Inactive'} />
+        <StatusBadge status={member.isActive ? t("active") : t("inactive")} />
       </td>
-      <td className="px-6 py-4 text-right">
+      <td className="px-6 py-4 text-end">
         <DropdownMenu>
           <DropdownMenuTrigger className="h-8 w-8 text-neutral-400 hover:text-neutral-900 rounded-md hover:bg-neutral-100 flex items-center justify-center transition-colors outline-none focus:ring-0">
             <MoreHorizontal className="h-4 w-4" />
@@ -85,7 +87,7 @@ export function MemberRow({ member, onEdit, onDeactivate, onRefresh }: MemberRow
               <>
                 <DropdownMenuItem onClick={() => onEdit(member)} className="gap-2 rounded-lg">
                   <Edit2 className="h-3.5 w-3.5 text-neutral-400" />
-                  Edit profile
+                  {t("editProfile")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
@@ -93,7 +95,7 @@ export function MemberRow({ member, onEdit, onDeactivate, onRefresh }: MemberRow
                   className="gap-2 rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50"
                 >
                   <ShieldAlert className="h-3.5 w-3.5" />
-                  Deactivate member
+                  {t("deactivateMember")}
                 </DropdownMenuItem>
               </>
             ) : (
@@ -103,7 +105,7 @@ export function MemberRow({ member, onEdit, onDeactivate, onRefresh }: MemberRow
                 className="gap-2 rounded-lg text-green-600 focus:text-green-600 focus:bg-green-50"
               >
                 <ShieldCheck className="h-3.5 w-3.5" />
-                Reactivate member
+                {t("reactivateMember")}
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
