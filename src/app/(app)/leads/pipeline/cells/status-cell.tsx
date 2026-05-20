@@ -2,6 +2,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Popover,
   PopoverContent,
@@ -29,8 +30,10 @@ interface StatusCellProps {
 }
 
 export function StatusCell({ value, onChange, readOnly = false, usePortal = true }: StatusCellProps) {
+  const t = useTranslations("status");
   const currentStatus = (value as LeadStatus) || "NEW";
   const config = STATUS_CONFIG[currentStatus as LeadStatus] ?? STATUS_CONFIG.NEW;
+  const label = t(currentStatus);
 
   const pill = (
     <div
@@ -41,7 +44,7 @@ export function StatusCell({ value, onChange, readOnly = false, usePortal = true
         className="w-1.5 h-1.5 rounded-full"
         style={{ backgroundColor: config.dot }}
       />
-      {config.label}
+      {label}
     </div>
   );
 
@@ -67,7 +70,7 @@ export function StatusCell({ value, onChange, readOnly = false, usePortal = true
                   className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: config.dot }}
                 />
-                {config.label}
+                {t(key as LeadStatus)}
               </div>
               {key === currentStatus && <Check className="w-3.5 h-3.5 text-neutral-400" />}
             </button>

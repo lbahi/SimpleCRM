@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { 
@@ -32,6 +33,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProps) {
+  const t = useTranslations("nav");
   const router = useRouter();
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -51,17 +53,17 @@ export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProp
   };
 
   const menuItems = [
-    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },
     ...(user.role === "ADMIN" ? [
-      { label: "Inbox", href: "/inbox", icon: Inbox, badge: inboxCount },
+      { label: t("inbox"), href: "/inbox", icon: Inbox, badge: inboxCount },
     ] : []),
-    { label: "Leads", href: "/leads", icon: Users },
-    { label: "Reminders", href: "/reminders", icon: Bell },
+    { label: t("leads"), href: "/leads", icon: Users },
+    { label: t("reminders"), href: "/reminders", icon: Bell },
     ...(user.role === "ADMIN" ? [
-      { label: "Analytics", href: "/analytics", icon: BarChart3 },
-      { label: "Forms", href: "/forms", icon: FileText },
-      { label: "Team", href: "/team", icon: UserCog },
-      { label: "Settings", href: "/settings", icon: Settings },
+      { label: t("analytics"), href: "/analytics", icon: BarChart3 },
+      { label: t("forms"), href: "/forms", icon: FileText },
+      { label: t("team"), href: "/team", icon: UserCog },
+      { label: t("settings"), href: "/settings", icon: Settings },
     ] : [])
   ];
 

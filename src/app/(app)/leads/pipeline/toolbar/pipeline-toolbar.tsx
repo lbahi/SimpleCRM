@@ -1,8 +1,9 @@
 // SimpleCRM — pipeline-toolbar
 "use client";
 
-import { Search, Filter, Settings, Plus, RefreshCw, Sparkles } from 'lucide-react';
+import { Search, Filter, Settings, RefreshCw, Sparkles } from 'lucide-react';
 import { CustomDropdown } from '@/components/ui/custom-dropdown';
+import { useTranslations } from "next-intl";
 
 interface PipelineToolbarProps {
   tableState: any;
@@ -21,6 +22,7 @@ export function PipelineToolbar({
   onShowCustomize,
   onRefreshLeads,
 }: PipelineToolbarProps) {
+  const t = useTranslations("leads");
   const activeFiltersCount = [
     tableState.filters.status?.length > 0,
     tableState.filters.sources?.length > 0,
@@ -35,13 +37,13 @@ export function PipelineToolbar({
         <div className="flex items-center gap-3 flex-1">
           {/* Search */}
           <div className="relative w-64">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={tableState.quickSearch}
               onChange={(e) => tableState.setQuickSearch(e.target.value)}
-              placeholder="Search leads..."
-              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              placeholder={t("searchPlaceholder")}
+              className="w-full ps-9 pe-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-black"
             />
           </div>
 
@@ -51,9 +53,9 @@ export function PipelineToolbar({
             className="relative px-3 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 flex items-center gap-2"
           >
             <Filter size={16} />
-            Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+            {t("filters")} {activeFiltersCount > 0 && `(${activeFiltersCount})`}
             {activeFiltersCount > 0 && (
-              <span className="absolute -top-1 -right-1 size-5 bg-black text-white rounded-full text-xs flex items-center justify-center">
+              <span className="absolute -top-1 -end-1 size-5 bg-black text-white rounded-full text-xs flex items-center justify-center">
                 {activeFiltersCount}
               </span>
             )}
@@ -64,12 +66,12 @@ export function PipelineToolbar({
             value={tableState.groupBy || ''}
             onChange={(val) => tableState.setGroupBy(val || null)}
             options={[
-              { value: '', label: 'No grouping' },
-              { value: 'status', label: 'Group by Status' },
-              { value: 'rating', label: 'Group by Rating' },
-              { value: 'location', label: 'Group by Location' },
-              { value: 'sources', label: 'Group by Source' },
-              { value: 'assignedTo', label: 'Group by Assigned to' },
+              { value: '', label: t("groupBy") },
+              { value: 'status', label: t("groupByStatus") },
+              { value: 'rating', label: t("groupByRating") },
+              { value: 'location', label: t("groupByLocation") },
+              { value: 'sources', label: t("groupBySource") },
+              { value: 'assignedTo', label: t("groupByAssignedTo") },
             ]}
             className="w-48"
           />
@@ -80,7 +82,7 @@ export function PipelineToolbar({
             className="px-3 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 flex items-center gap-2"
           >
             <Settings size={16} />
-            Customize
+            {t("customize")}
           </button>
         </div>
 
@@ -89,13 +91,13 @@ export function PipelineToolbar({
           <button
             onClick={onRefreshLeads}
             className="p-2 border border-gray-300 rounded text-sm hover:bg-gray-50"
-            title="Refresh"
+            title={t("refresh")}
           >
             <RefreshCw size={16} />
           </button>
 
           {/* AI Button */}
-          <button className="p-2 border border-gray-300 rounded text-sm hover:bg-gray-50" title="AI Features">
+          <button className="p-2 border border-gray-300 rounded text-sm hover:bg-gray-50" title={t("aiFeatures")}>
             <Sparkles size={16} />
           </button>
         </div>

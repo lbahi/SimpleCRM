@@ -2,9 +2,8 @@
 "use client";
 
 import { Search, ArrowUpDown, Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { SectionHeader } from "@/components/ui/section-header";
-import { designTokens } from "@/lib/design-system/tokens";
 
 interface InboxToolbarProps {
   count: number;
@@ -27,6 +26,8 @@ export function InboxToolbar({
   onClearSelection,
   onAssignClick,
 }: InboxToolbarProps) {
+  const t = useTranslations("inbox");
+  const leads = useTranslations("leads");
   const isSelectionMode = selectedCount > 0;
 
   return (
@@ -34,13 +35,13 @@ export function InboxToolbar({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+            <Search className="absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
             <input
               type="text"
-              placeholder="Search leads..."
+              placeholder={leads("searchPlaceholder")}
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="h-10 w-full sm:w-64 rounded-xl border border-neutral-200 bg-white pl-10 pr-4 text-sm outline-none transition-all focus:border-neutral-900 focus:ring-4 focus:ring-neutral-900/5 placeholder:text-neutral-400"
+              className="h-10 w-full sm:w-64 rounded-xl border border-neutral-200 bg-white ps-10 pe-4 text-sm outline-none transition-all focus:border-neutral-900 focus:ring-4 focus:ring-neutral-900/5 placeholder:text-neutral-400"
             />
           </div>
           <Button
@@ -49,7 +50,7 @@ export function InboxToolbar({
             className="h-10 gap-2 rounded-xl border-neutral-200 px-4 text-sm font-medium text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
           >
             <ArrowUpDown className="h-4 w-4" />
-            {sortDir === "desc" ? "Newest" : "Oldest"}
+            {sortDir === "desc" ? t("newest") : t("oldest")}
           </Button>
         </div>
       </div>
@@ -68,21 +69,21 @@ export function InboxToolbar({
               <Check className="h-3.5 w-3.5 stroke-[3]" />
             </div>
             <span className="text-sm font-semibold text-white">
-              {selectedCount} lead{selectedCount === 1 ? "" : "s"} selected
+              {t("selected", { count: selectedCount })}
             </span>
             <div className="h-4 w-[1px] bg-white/20" />
             <button
               onClick={onClearSelection}
               className="text-sm font-medium text-white/70 transition-colors hover:text-white"
             >
-              Clear selection
+              {t("clearSelection")}
             </button>
           </div>
           <Button 
             onClick={onAssignClick} 
             className="h-9 rounded-lg bg-white px-5 text-sm font-bold text-neutral-900 hover:bg-neutral-100"
           >
-            Assign to member
+            {t("assignLeads")}
           </Button>
         </div>
       </div>
