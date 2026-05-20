@@ -23,7 +23,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter();
-  const t = useTranslations("AppHeader");
+  const t = useTranslations("auth");
   const [open, setOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -66,7 +66,7 @@ export function AppHeader({ user }: AppHeaderProps) {
             <div className="flex flex-col gap-1 p-2">
               <button className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-black rounded-xl transition-all">
                 <User className="h-4 w-4" />
-                {t("yourProfile")}
+                {t("profile")}
               </button>
               <div className="h-px bg-gray-100 my-1" />
               <button

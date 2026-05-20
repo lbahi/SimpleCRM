@@ -5,7 +5,9 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { CaptureForm } from "@prisma/client";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { FormSuccess } from "./form-success";
 import { FormFieldRenderer } from "./form-field-renderer";
 
@@ -25,6 +27,7 @@ interface PublicFormProps {
 }
 
 export function PublicForm({ form, brandColor, logoUrl }: PublicFormProps) {
+  const t = useTranslations("common");
   const [state, setState] = useState<"FORM" | "SUCCESS">("FORM");
   const [logo, setLogo] = useState<string | null>(logoUrl);
   const [color, setColor] = useState<string>(brandColor);
@@ -45,7 +48,7 @@ export function PublicForm({ form, brandColor, logoUrl }: PublicFormProps) {
   };
 
   const formFields = fieldsData?.items || [];
-  const submitText = fieldsData?.submitButtonText || "Send Request";
+  const submitText = fieldsData?.submitButtonText || t("sendRequest");
 
   const [values, setValues] = useState<Record<string, string | string[]>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -62,7 +65,7 @@ export function PublicForm({ form, brandColor, logoUrl }: PublicFormProps) {
         (Array.isArray(val) && val.length === 0);
 
       if (field.required && isEmpty) {
-        newErrors[field.id] = `${field.label} is required`;
+        newErrors[field.id] = t("required", { field: field.label });
       }
       if (
         field.type === "tel" &&
@@ -70,7 +73,7 @@ export function PublicForm({ form, brandColor, logoUrl }: PublicFormProps) {
         typeof val === "string" &&
         val.replace(/\D/g, "").length < 6
       ) {
-        newErrors[field.id] = "Valid phone number required";
+        newErrors[field.id] = t("validPhone");
       }
     });
     setErrors(newErrors);
@@ -92,7 +95,7 @@ export function PublicForm({ form, brandColor, logoUrl }: PublicFormProps) {
       if (!res.ok) throw new Error("Submission failed");
       setState("SUCCESS");
     } catch {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -103,7 +106,10 @@ export function PublicForm({ form, brandColor, logoUrl }: PublicFormProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-md mx-auto">
+    <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-md mx-auto">
+      <div className="absolute end-4 top-4">
+        <LanguageSwitcher />
+      </div>
       <div className="text-center mb-8">
         {/* Header Logo */}
         {logo ? (
@@ -138,7 +144,7 @@ export function PublicForm({ form, brandColor, logoUrl }: PublicFormProps) {
           <div key={field.id} className="space-y-2">
             <label className="block text-[11px] font-bold text-gray-700 uppercase tracking-widest px-1">
               {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
+              {field.required && <span className="text-red-500 ms-1">*</span>}
             </label>
 
             <FormFieldRenderer
@@ -167,7 +173,7 @@ export function PublicForm({ form, brandColor, logoUrl }: PublicFormProps) {
           {isSubmitting ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Processing...</span>
+              <span>{t("processing")}</span>
             </>
           ) : (
             submitText

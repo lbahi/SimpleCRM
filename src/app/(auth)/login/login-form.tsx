@@ -9,7 +9,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 export function LoginForm() {
   const router = useRouter();
-  const t = useTranslations("LoginForm");
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -28,13 +28,13 @@ export function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Login failed");
+        setError(data.error || t("loginFailed"));
         return;
       }
       router.push("/leads");
       router.refresh();
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(t("invalidCredentials"));
     } finally {
       setLoading(false);
     }
@@ -43,7 +43,7 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-8 shadow-xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">{t("welcome")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("welcomeBack")}</h1>
         <p className="text-sm text-gray-500 mt-1">{t("subtext")}</p>
       </div>
 
@@ -54,7 +54,7 @@ export function LoginForm() {
             htmlFor="email"
             className="text-xs font-bold uppercase tracking-wider text-gray-500"
           >
-            {t("emailLabel")}
+            {t("emailAddress")}
           </label>
           <Input
             id="email"
@@ -85,12 +85,12 @@ export function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
-              className="h-11 pr-10 border-gray-200 focus:border-black focus:ring-black transition-all"
+              className="h-11 pe-10 border-gray-200 focus:border-black focus:ring-black transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors focus:outline-none"
+              className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors focus:outline-none"
               aria-label={showPassword ? t("hidePassword") : t("showPassword")}
             >
               {showPassword ? (
@@ -113,7 +113,7 @@ export function LoginForm() {
           disabled={loading}
           className="w-full h-11 bg-black text-white rounded-lg font-bold hover:bg-gray-800 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-black/10"
         >
-          {loading ? t("verifying") : t("signInButton")}
+          {loading ? t("verifying") : t("signIn")}
         </button>
       </form>
     </div>

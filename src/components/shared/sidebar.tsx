@@ -33,7 +33,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProps) {
-  const t = useTranslations("Sidebar");
+  const t = useTranslations("nav");
   const router = useRouter();
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -182,7 +182,7 @@ export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProp
             <button
               onClick={handleLogout}
               className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-              title={t("logout")}
+              title="Logout"
             >
               <LogOut className="h-4 w-4" />
             </button>

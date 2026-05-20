@@ -23,7 +23,7 @@ interface SettingsWorkspaceProps {
 }
 
 export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
-  const t = useTranslations("Settings");
+  const t = useTranslations("settings");
   const [isResetting, setIsResetting] = useState(false);
 
   const handleResetWorkspace = async () => {
@@ -69,9 +69,9 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
             <div className="flex items-center gap-2">
               <User className="h-5 w-5 text-neutral-600" />
               <div>
-                <CardTitle className="text-lg font-semibold text-neutral-900">{t("profile.title")}</CardTitle>
+                <CardTitle className="text-lg font-semibold text-neutral-900">{t("profile")}</CardTitle>
                 <CardDescription className="text-neutral-500">
-                  {t("profile.description")}
+                  {t("fullName")}
                 </CardDescription>
               </div>
             </div>
@@ -96,11 +96,11 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
               {/* Readonly details */}
               <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("profile.fullName")}</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("fullName")}</Label>
                   <Input value={session.name} readOnly className="bg-neutral-50 border-neutral-200 text-neutral-600 h-10 rounded-lg cursor-not-allowed select-none" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("profile.emailAddress")}</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("email")}</Label>
                   <Input value={session.email} readOnly className="bg-neutral-50 border-neutral-200 text-neutral-600 h-10 rounded-lg cursor-not-allowed select-none" />
                 </div>
               </div>
@@ -114,9 +114,9 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
             <div className="flex items-center gap-2">
               <Globe className="h-5 w-5 text-neutral-600" />
               <div>
-                <CardTitle className="text-lg font-semibold text-neutral-900">{t("appearance.language")}</CardTitle>
+                <CardTitle className="text-lg font-semibold text-neutral-900">{t("language")}</CardTitle>
                 <CardDescription className="text-neutral-500">
-                  {t("appearance.languageDescription")}
+                  {t("languageDescription")}
                 </CardDescription>
               </div>
             </div>
@@ -137,9 +137,9 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
             <div className="flex items-center gap-2">
               <KeyRound className="h-5 w-5 text-neutral-600" />
               <div>
-                <CardTitle className="text-lg font-semibold text-neutral-900">{t("password.title")}</CardTitle>
+                <CardTitle className="text-lg font-semibold text-neutral-900">{t("password")}</CardTitle>
                 <CardDescription className="text-neutral-500">
-                  {t("password.description")}
+                  {t("passwordDescription")}
                 </CardDescription>
               </div>
             </div>
@@ -147,22 +147,22 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
           <CardContent className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("password.current")}</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("currentPassword")}</Label>
                 <Input type="password" placeholder="••••••••" disabled className="bg-neutral-50 border-neutral-200 h-10 rounded-lg cursor-not-allowed" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("password.new")}</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("newPassword")}</Label>
                 <Input type="password" placeholder="••••••••" disabled className="bg-neutral-50 border-neutral-200 h-10 rounded-lg cursor-not-allowed" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("password.confirm")}</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">{t("confirmPassword")}</Label>
                 <Input type="password" placeholder="••••••••" disabled className="bg-neutral-50 border-neutral-200 h-10 rounded-lg cursor-not-allowed" />
               </div>
             </div>
             <div className="flex items-center justify-between pt-2">
-              <p className="text-xs text-neutral-400">{t("password.managedByAdmin")}</p>
+              <p className="text-xs text-neutral-400">{t("passwordManagedByAdmin")}</p>
               <Button disabled className="h-9 bg-neutral-900 text-white rounded-lg px-4 opacity-50 cursor-not-allowed">
-                {t("password.updateButton")}
+                {t("updatePassword")}
               </Button>
             </div>
           </CardContent>
@@ -175,9 +175,9 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
               <div className="flex items-center gap-2">
                 <ShieldAlert className="h-5 w-5 text-red-600" />
                 <div>
-                  <CardTitle className="text-lg font-semibold text-red-900">{t("dangerZone.title")}</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-red-900">{t("dangerZone")}</CardTitle>
                   <CardDescription className="text-red-500/80">
-                    {t("dangerZone.description")}
+                    {t("dangerZoneDescription")}
                   </CardDescription>
                 </div>
               </div>
@@ -186,9 +186,9 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
               <div className="flex gap-3">
                 <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-[14px] font-semibold text-red-900">{t("dangerZone.resetTitle")}</h4>
+                  <h4 className="text-[14px] font-semibold text-red-900">{t("resetTitle")}</h4>
                   <p className="text-xs text-red-700/70 mt-0.5">
-                    {t("dangerZone.resetDescription")}
+                    {t("resetDescription")}
                   </p>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
                 onClick={handleResetWorkspace}
                 className="border-red-200 hover:border-red-300 text-red-600 hover:text-red-700 hover:bg-red-50/50 rounded-lg h-9 shrink-0 transition-colors disabled:opacity-50"
               >
-                {isResetting ? t("dangerZone.resetting") : t("dangerZone.resetButton")}
+                {isResetting ? t("resetting") : t("resetButton")}
               </Button>
             </CardContent>
           </Card>
