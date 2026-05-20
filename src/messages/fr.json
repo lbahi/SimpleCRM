@@ -1,0 +1,12 @@
+{
+  "LoginForm": {
+    "welcome": "Bon retour",
+    "subtext": "Veuillez saisir vos identifiants pour accéder à votre CRM.",
+    "emailLabel": "Adresse e-mail",
+    "passwordLabel": "Mot de passe",
+    "signInButton": "Se connecter",
+    "verifying": "Vérification...",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe"
+  }
+}

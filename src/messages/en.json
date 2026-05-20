@@ -1,0 +1,12 @@
+{
+  "LoginForm": {
+    "welcome": "Welcome Back",
+    "subtext": "Please enter your credentials to access your CRM.",
+    "emailLabel": "Email Address",
+    "passwordLabel": "Password",
+    "signInButton": "Sign In",
+    "verifying": "Verifying...",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  }
+}
