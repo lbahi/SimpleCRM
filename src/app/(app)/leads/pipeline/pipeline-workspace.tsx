@@ -70,7 +70,7 @@ function PipelineWorkspaceInner({
           onShowCustomize={() => setShowCustomize(true)}
           onRefreshLeads={refreshLeads}
         />
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 flex flex-col">
           <TableContainer
             leads={sortedLeads}
             columnState={columnState}
