@@ -19,7 +19,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-RUN npm install prisma
+COPY --from=builder /app/start.sh ./start.sh
+RUN npm install prisma && chmod +x start.sh
 
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+ENTRYPOINT ["./start.sh"]

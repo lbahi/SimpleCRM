@@ -68,6 +68,7 @@
     "signIn": "Sign In",
     "emailAddress": "Email Address",
     "password": "Password",
+    "passwordLabel": "Password",
     "invalidCredentials": "Invalid credentials",
     "subtext": "Please enter your credentials to access your CRM.",
     "verifying": "Verifying...",
