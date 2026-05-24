@@ -48,7 +48,7 @@ export function LanguageSwitcher() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none transition-all disabled:cursor-not-allowed disabled:opacity-70"
+        className="relative flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none transition-all disabled:cursor-not-allowed disabled:opacity-70"
         disabled={isPending}
       >
         {isPending ? (
