@@ -33,7 +33,7 @@ export function AppHeader({ user }: AppHeaderProps) {
   };
 
   return (
-    <header className="flex h-20 items-center justify-between border-b border-gray-100 bg-white px-8">
+    <header className="relative z-40 flex h-20 items-center justify-between border-b border-gray-100 bg-white px-8">
       <div />
 
       <div className="flex items-center gap-6">
