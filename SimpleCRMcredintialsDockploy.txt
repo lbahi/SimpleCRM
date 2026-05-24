@@ -1,0 +1,11 @@
+Database Name — simplecrm
+Database User — postgres
+Database Password - VKAB0vDFvZaKgsxp6pUH
+Internal URL - postgres://postgres:EoQlnDZ0imu6M8GAc5uvOgDqpDVhgNvHHVc69vVtvAxnoVCLSvscXC2xe2G0mtTg@ktuv5tuqa9zcphyrrlsa1l66:5432/postgres
+
+--- Environment Variables for Dokploy App ---
+
+DATABASE_URL=postgresql://postgres:VKAB0vDFvZaKgsxp6pUH@simplecrm-simplecrmdb-hb1gll:5432/simplecrm
+JWT_SECRET=dv0cgzmHvr/7fmJflfHgyXBNvYs+22EIJ0PJpqOelkk=
+RESEND_API_KEY=re_6HGB69hG_FZq8AyDXA3BR6uonqRHHwdDr
+NEXT_PUBLIC_APP_URL=https://crm.lbahi.digital
