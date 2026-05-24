@@ -1,6 +1,6 @@
 import { defineConfig } from "prisma/config";
 
-const dbUrl = process.env["DATABASE_URL"];
+let dbUrl = process.env["DATABASE_URL"];
 
 // Debug logging (will appear in Coolify deployment logs)
 console.error("[Prisma Config] DATABASE_URL present:", !!dbUrl);
@@ -14,9 +14,15 @@ if (dbUrl) {
   console.error("[Prisma Config] First 30 chars:", dbUrl.substring(0, 30));
 }
 
+// Prisma 7.x requires postgresql:// not postgres://
+if (dbUrl && dbUrl.startsWith("postgres://") && !dbUrl.startsWith("postgresql://")) {
+  dbUrl = dbUrl.replace("postgres://", "postgresql://");
+  console.error("[Prisma Config] Converted URL scheme from postgres:// to postgresql://");
+}
+
 // Validate URL has correct scheme
-if (!dbUrl || (!dbUrl.startsWith("postgresql://") && !dbUrl.startsWith("postgres://"))) {
-  console.error("[Prisma Config] ERROR: DATABASE_URL must start with postgresql:// or postgres://");
+if (!dbUrl || !dbUrl.startsWith("postgresql://")) {
+  console.error("[Prisma Config] ERROR: DATABASE_URL must start with postgresql://");
   console.error("[Prisma Config] Current value type:", typeof dbUrl);
 }
 
