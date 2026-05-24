@@ -3,9 +3,15 @@ import { hash } from 'bcryptjs';
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const connectionString = process.env.DATABASE_URL;
+let connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error("DATABASE_URL is required");
+}
+
+// Prisma 7.x requires postgresql:// not postgres://
+if (connectionString.startsWith("postgres://") && !connectionString.startsWith("postgresql://")) {
+  connectionString = connectionString.replace("postgres://", "postgresql://");
+  console.error("[Reset] Converted URL scheme from postgres:// to postgresql://");
 }
 
 const pool = new Pool({ connectionString });
