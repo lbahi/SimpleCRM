@@ -24,6 +24,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Reset users and create fresh admin
+echo "=== Resetting Users and Creating Admin ==="
+npx tsx prisma/reset-and-seed.ts
+
 # Start the application
 echo "=== Starting Next.js Server ==="
 exec node server.js
