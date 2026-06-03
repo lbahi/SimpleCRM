@@ -29,8 +29,11 @@ async function main() {
     console.log(`  - ${user.email} (${user.name}, ${user.role})`);
   }
 
-  // Delete all existing users
+  // Delete all existing users (clear activity logs first to avoid FK constraint)
   if (existingUsers.length > 0) {
+    console.log('\nClearing activity logs...');
+    await prisma.activityLog.deleteMany({});
+    console.log('Activity logs cleared.');
     console.log('\nDeleting all existing users...');
     await prisma.user.deleteMany({});
     console.log('All users deleted.');
