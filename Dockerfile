@@ -1,9 +1,9 @@
-FROM node:22-alpine AS deps
+FROM node:22 AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-FROM node:22-alpine AS builder
+FROM node:22 AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -12,7 +12,7 @@ RUN npx next build
 # Compile reset-and-seed for runtime
 RUN npx tsx prisma/reset-and-seed.ts --dry-run 2>/dev/null || npx tsc prisma/reset-and-seed.ts --outDir dist --esModuleInterop --module commonjs --target es2020 --moduleResolution node --skipLibCheck 2>/dev/null || echo "Script will run via tsx with full deps"
 
-FROM node:22-alpine AS runner
+FROM node:22-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/.next/standalone ./
