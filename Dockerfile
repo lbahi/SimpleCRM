@@ -35,6 +35,7 @@ COPY --from=builder /app/node_modules/@prisma/adapter-pg ./node_modules/@prisma/
 COPY --from=builder /app/start.sh ./start.sh
 COPY --from=builder /app/node_modules/tsx ./node_modules/tsx
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/.bin ./node_modules/.bin
 RUN chmod +x start.sh
 
 EXPOSE 3000

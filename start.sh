@@ -2,6 +2,9 @@
 # Startup script for Coolify deployment
 # Validates DATABASE_URL is available before running migrations
 
+# Add local bin to PATH
+export PATH="/app/node_modules/.bin:$PATH"
+
 echo "=== Container Startup ==="
 echo "NODE_ENV: $NODE_ENV"
 
