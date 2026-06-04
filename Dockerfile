@@ -32,6 +32,7 @@ COPY --from=builder /app/node_modules/postgres-date ./node_modules/postgres-date
 COPY --from=builder /app/node_modules/postgres-interval ./node_modules/postgres-interval
 COPY --from=builder /app/node_modules/xtend ./node_modules/xtend
 COPY --from=builder /app/node_modules/@prisma/adapter-pg ./node_modules/@prisma/adapter-pg
+COPY --from=builder /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
 COPY --from=builder /app/start.sh ./start.sh
 COPY --from=builder /app/node_modules/tsx ./node_modules/tsx
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
