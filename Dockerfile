@@ -33,7 +33,9 @@ COPY --from=builder /app/node_modules/postgres-interval ./node_modules/postgres-
 COPY --from=builder /app/node_modules/xtend ./node_modules/xtend
 COPY --from=builder /app/node_modules/@prisma/adapter-pg ./node_modules/@prisma/adapter-pg
 COPY --from=builder /app/start.sh ./start.sh
-RUN npm install prisma tsx && chmod +x start.sh
+COPY --from=builder /app/node_modules/tsx ./node_modules/tsx
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+RUN chmod +x start.sh
 
 EXPOSE 3000
 ENTRYPOINT ["./start.sh"]
