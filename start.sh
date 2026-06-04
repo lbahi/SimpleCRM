@@ -31,4 +31,5 @@ npx tsx prisma/reset-and-seed.ts
 # Start the application
 echo "=== Starting Next.js Server ==="
 export HOSTNAME=0.0.0.0
+export PORT=3000
 exec node server.js

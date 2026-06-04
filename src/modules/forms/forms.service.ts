@@ -90,30 +90,43 @@ export async function submitForm(slug: string, data: Record<string, any>): Promi
   let location: string | null = null;
   const customData: Record<string, any> = {};
 
+  // Find the first text field as a fallback for name
+  const firstTextField = formFields.find((f: any) => (f.type || '').toLowerCase() === 'text');
+
   formFields.forEach((field: any) => {
     const value = data[field.id];
     if (value === undefined) return;
 
-    const label = (field.label || "").toLowerCase();
+    const label = (field.label || "").toLowerCase().trim();
     const type = (field.type || "").toLowerCase();
 
     // Mapping priorities: Type first, then Label
-    if (type === 'tel' || label.includes('phone') || label.includes('téléphone') || label.includes('mobile')) {
+    // Phone: accepts 'tel', 'phone', or label containing phone keywords
+    if (type === 'tel' || type === 'phone' || label.includes('phone') || label.includes('téléphone') || label.includes('mobile') || label.includes('tel')) {
       if (!phone) phone = value;
       else customData[field.label] = value;
-    } else if (type === 'email' || label.includes('email') || label.includes('courriel')) {
+    } else if (type === 'email' || label.includes('email') || label.includes('courriel') || label.includes('e-mail')) {
       if (!email) email = value;
       else customData[field.label] = value;
-    } else if (label === 'name' || label === 'full name' || label === 'fullname' || label.includes('nom') || label.includes('prénom')) {
+    } else if (label === 'name' || label === 'full name' || label === 'fullname' || label === 'nom' || label.includes('nom') || label.includes('prénom') || label.includes('first name') || label.includes('last name') || label.includes('your name')) {
       if (name === "Anonymous Lead") name = value;
       else customData[field.label] = value;
-    } else if (label.includes('location') || label.includes('adresse') || label.includes('ville') || label.includes('localisation')) {
+    } else if (label.includes('location') || label.includes('adresse') || label.includes('ville') || label.includes('localisation') || label.includes('address') || label.includes('city')) {
       if (!location) location = value;
       else customData[field.label] = value;
     } else {
       customData[field.label || field.id] = value;
     }
   });
+
+  // Fallback: if no name matched and we have a first text field value, use it as name
+  if (name === "Anonymous Lead" && firstTextField && data[firstTextField.id]) {
+    const firstTextValue = data[firstTextField.id];
+    // Only use if it looks like a name (has letters, not just numbers)
+    if (/[a-zA-Z]/.test(firstTextValue) && firstTextValue.length > 1) {
+      name = firstTextValue;
+    }
+  }
 
   // Handle any leftover data not in formFields (though schema should catch this)
   Object.entries(data).forEach(([key, value]) => {
