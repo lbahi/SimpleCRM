@@ -85,9 +85,10 @@ export function PipelineCell({
       if (!customFields || Object.keys(customFields).length === 0) {
         return <span className="text-neutral-400">—</span>;
       }
+      const values = Object.values(customFields);
       return (
-        <span className="text-[11px] text-neutral-600 truncate max-w-[180px]" title={Object.entries(customFields).map(([k, v]) => `${k}: ${v}`).join(', ')}>
-          {Object.entries(customFields).map(([k, v]) => `${k}: ${v}`).join(', ')}
+        <span className="text-[11px] text-neutral-600 truncate max-w-[180px]" title={values.join(', ')}>
+          {values.join(', ')}
         </span>
       );
     case "lastContacted":

@@ -40,7 +40,12 @@ export async function updateLead(
   id: string,
   input: UpdateLeadInput
 ): Promise<LeadWithRelations> {
-  const oldLead = await prisma.lead.findUnique({ where: { id }, select: { status: true, rating: true } });
+  const oldLead = await prisma.lead.findUnique({ where: { id }, select: { status: true, rating: true, customFields: true } });
+
+  // Merge customFields with existing data instead of replacing
+  const mergedCustomFields = input.customFields !== undefined && oldLead?.customFields
+    ? { ...(oldLead.customFields as object), ...input.customFields }
+    : input.customFields;
 
   const updateData: Prisma.LeadUpdateInput = {
     ...(input.name !== undefined && { name: input.name }),
@@ -55,11 +60,11 @@ export async function updateLead(
           ? Prisma.JsonNull
           : (input.customData as Prisma.InputJsonValue),
     }),
-    ...(input.customFields !== undefined && {
+    ...(mergedCustomFields !== undefined && {
       customFields:
-        input.customFields === null
+        mergedCustomFields === null
           ? Prisma.JsonNull
-          : (input.customFields as Prisma.InputJsonValue),
+          : (mergedCustomFields as Prisma.InputJsonValue),
     }),
     ...(input.lastContacted !== undefined && { 
       lastContacted: input.lastContacted ? new Date(input.lastContacted) : null 

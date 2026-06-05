@@ -296,6 +296,27 @@ export function LeadDetailClient({ initialLead }: LeadDetailClientProps) {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span>Sources: {lead.sources?.length ? lead.sources.map((s: any) => s.form?.name || s.source).join(", ") : "Unknown"}</span>
               </div>
+              
+              {/* Custom Form Data Summary */}
+              {lead.customFields && Object.keys(lead.customFields as object).length > 0 && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Form Answers</p>
+                    {Object.entries(lead.customFields as object).slice(0, 3).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{key}:</span>
+                        <span className="font-medium">{String(value)}</span>
+                      </div>
+                    ))}
+                    {Object.keys(lead.customFields as object).length > 3 && (
+                      <p className="text-xs text-muted-foreground italic">
+                        +{Object.keys(lead.customFields as object).length - 3} more answers in Form Answers tab
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -551,7 +572,7 @@ export function LeadDetailClient({ initialLead }: LeadDetailClientProps) {
                 Custom Form Answers
               </h3>
 
-              {!lead.customData || Object.keys(lead.customData as object).length === 0 ? (
+              {!lead.customFields || Object.keys(lead.customFields as object).length === 0 ? (
                 <Card>
                   <CardContent className="py-8 text-center text-muted-foreground italic">
                     <p>No custom form answers available for this lead.</p>
@@ -560,13 +581,13 @@ export function LeadDetailClient({ initialLead }: LeadDetailClientProps) {
               ) : (
                 <Card>
                   <CardContent className="pt-6 space-y-4">
-                    {Object.entries(lead.customData as object).map(([question, answer], index) => (
+                    {Object.entries(lead.customFields as object).map(([question, answer], index, arr) => (
                       <div key={index} className="space-y-1">
                         <p className="text-sm font-medium text-muted-foreground">{question}</p>
                         <p className="text-base">
                           {Array.isArray(answer) ? answer.join(", ") : (answer === true ? "Yes" : answer === false ? "No" : String(answer))}
                         </p>
-                        {index < Object.keys(lead.customData as object).length - 1 && <Separator className="mt-4" />}
+                        {index < arr.length - 1 && <Separator className="mt-4" />}
                       </div>
                     ))}
                   </CardContent>
