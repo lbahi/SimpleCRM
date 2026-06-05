@@ -25,6 +25,7 @@ export type LeadListItem = Pick<
     dueAt: Date;
     status: ReminderStatus;
   }[];
+  notes: { body: string }[];
 };
 
 /** Full lead with relations — used in detail view */

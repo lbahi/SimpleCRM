@@ -39,6 +39,7 @@ export type PipelineLead = {
   reminders: { id: string; dueAt: Date; status: string }[];
   notes: { body: string }[];
   customFields: Record<string, unknown> | null;
+  customData: Record<string, unknown> | null;
   order: number;
   updatedAt: Date;
 };
