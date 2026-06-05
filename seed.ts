@@ -1,12 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { hash } from 'bcryptjs';
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
 
-const connectionString = process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/simplecrm";
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter, log: ['info', 'warn', 'error'] });
+const prisma = new PrismaClient({ log: ['info', 'warn', 'error'] });
 
 async function main() {
   const count = await prisma.user.count();
