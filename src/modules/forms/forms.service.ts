@@ -114,6 +114,9 @@ export async function submitForm(slug: string, data: Record<string, any>): Promi
     } else if (label.includes('location') || label.includes('adresse') || label.includes('ville') || label.includes('localisation') || label.includes('address') || label.includes('city')) {
       if (!location) location = value;
       else customData[field.label] = value;
+    } else if (type === 'select' || type === 'dropdown' || type === 'radio' || type === 'checkbox') {
+      // Explicitly capture dropdown/select/radio/checkbox fields
+      customData[field.label || field.id] = value;
     } else {
       customData[field.label || field.id] = value;
     }
