@@ -78,6 +78,7 @@ export function WorkspaceModals({
         onReorderColumns={columnState.reorderColumns}
         onDeleteCustomColumn={columnState.deleteCustomColumn}
         onShowCreateAttr={() => modals.setShowCreateAttr(true)}
+        onResetDefaults={columnState.resetToDefaults}
       />
       <CreateAttributeDialog
         open={modals.showCreateAttr}

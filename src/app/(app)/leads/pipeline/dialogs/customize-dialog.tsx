@@ -33,6 +33,7 @@ interface CustomizeDialogProps {
   onReorderColumns: (order: ColumnId[]) => void;
   onDeleteCustomColumn?: (id: string) => void;
   onShowCreateAttr?: () => void;
+  onResetDefaults?: () => void;
 }
 
 function SortableColumn({
@@ -85,7 +86,8 @@ export function CustomizeDialog({
   onToggleVisibility, 
   onReorderColumns,
   onDeleteCustomColumn,
-  onShowCreateAttr
+  onShowCreateAttr,
+  onResetDefaults
 }: CustomizeDialogProps) {
   const customColumns = visibleColumns.filter((c: any) => c.id.startsWith("custom_"));
 
@@ -193,6 +195,17 @@ export function CustomizeDialog({
         </div>
 
         <div className="flex gap-2 p-4 border-t border-gray-200 bg-gray-50">
+          <button
+            onClick={() => {
+              if (onResetDefaults) {
+                onResetDefaults();
+                toast.success("Columns reset to defaults");
+              }
+            }}
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded text-sm font-medium hover:bg-gray-100 transition-all"
+          >
+            Reset to Defaults
+          </button>
           <button
             onClick={() => onOpenChange(false)}
             className="flex-1 px-4 py-2 bg-black text-white rounded text-sm font-bold hover:bg-gray-800 transition-all active:scale-95"

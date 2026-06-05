@@ -68,7 +68,7 @@ export function useColumnState() {
     // ─── LocalStorage Cleanup & Sanitization ───
     const VALID_IDS = new Set([
       "name", "phone", "location", "status", "rating",
-      "assignedTo", "sources", "lastContacted", "createdAt", 
+      "assignedTo", "sources", "customFields", "lastContacted", "createdAt", 
       ...parsedCustomColumns.map((c: any) => c.id)
     ]);
     
@@ -174,6 +174,22 @@ export function useColumnState() {
     localStorage.setItem("simpleCRM_pinnedColumns", JSON.stringify(next));
   };
 
+  const resetToDefaults = () => {
+    // Reset to default column order and visibility
+    setColumnOrder(COLUMN_DEFS.map(c => c.id));
+    setVisibleColumns(DEFAULT_VISIBLE_COLUMNS);
+    setColumnWidths(DEFAULT_WIDTHS);
+    setColumnLabels({});
+    setPinnedColumns([]);
+    
+    // Clear localStorage
+    localStorage.removeItem("simpleCRM_columnOrder");
+    localStorage.removeItem("simpleCRM_columnVisibility");
+    localStorage.removeItem("simpleCRM_columnWidths");
+    localStorage.removeItem("simpleCRM_columnLabels");
+    localStorage.removeItem("simpleCRM_pinnedColumns");
+  };
+
   return {
     visibleColumns,
     setVisibleColumns,
@@ -190,6 +206,7 @@ export function useColumnState() {
     setLabel,
     addCustomColumn,
     deleteCustomColumn,
+    resetToDefaults,
     isHydrated,
   };
 }
