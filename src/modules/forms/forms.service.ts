@@ -170,7 +170,7 @@ export async function submitForm(slug: string, data: Record<string, any>): Promi
             formId: form.id,
           },
         },
-        customData: customData as Prisma.InputJsonValue,
+        customFields: customData as Prisma.InputJsonValue,
       },
     });
 
