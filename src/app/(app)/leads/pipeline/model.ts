@@ -7,7 +7,8 @@ import {
   Star, 
   User, 
   List, 
-  Calendar 
+  Calendar,
+  Tag
 } from "lucide-react";
 import { LeadWithRelations } from "@/modules/leads/leads.types";
 import { 
@@ -79,6 +80,7 @@ export const COLUMN_DEFS: ColumnDef[] = [
   { id: "rating", label: "Rating", icon: Star, width: "min-w-[120px]" },
   { id: "assignedTo", label: "Assigned To", icon: User, width: "min-w-[140px]" },
   { id: "sources", label: "Sources", icon: List, width: "min-w-[160px]" },
+  { id: "customFields", label: "Custom Data", icon: Tag, width: "min-w-[200px]" },
   { id: "lastContacted", label: "Last Contacted", icon: Calendar, width: "min-w-[160px]" },
   { id: "createdAt", label: "Created At", icon: Calendar, width: "min-w-[160px]" },
 ];
@@ -91,6 +93,7 @@ export const DEFAULT_VISIBLE_COLUMNS: ColumnId[] = [
   "rating",
   "assignedTo",
   "sources",
+  "customFields",
   "lastContacted",
   "createdAt",
 ];

@@ -42,6 +42,8 @@ export function getFieldValue(lead: PipelineLead, column: ColumnId): unknown {
       return lead.assignedTo?.name ?? "";
     case "sources":
       return lead.sources;
+    case "customFields":
+      return formatCustomFields(lead.customFields);
     case "lastContacted":
       return lead.lastContacted;
     case "createdAt":
@@ -49,6 +51,13 @@ export function getFieldValue(lead: PipelineLead, column: ColumnId): unknown {
     default:
       return "";
   }
+}
+
+function formatCustomFields(customFields: Record<string, unknown> | null): string {
+  if (!customFields || Object.keys(customFields).length === 0) return "";
+  return Object.entries(customFields)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ");
 }
 
 export function applyFieldChange(lead: PipelineLead, column: ColumnId, value: unknown): PipelineLead {

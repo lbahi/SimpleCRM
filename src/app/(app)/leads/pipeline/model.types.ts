@@ -19,6 +19,7 @@ export type ColumnId =
   | "rating"
   | "assignedTo"
   | "sources"
+  | "customFields"
   | "lastContacted"
   | "createdAt"
   | (string & {});
