@@ -80,6 +80,16 @@ export function PipelineCell({
           onChange={(newVal) => onUpdateField(lead, column, newVal)}
         />
       );
+    case "customFields":
+      const customFields = lead.customFields;
+      if (!customFields || Object.keys(customFields).length === 0) {
+        return <span className="text-neutral-400">—</span>;
+      }
+      return (
+        <span className="text-[11px] text-neutral-600 truncate max-w-[180px]" title={Object.entries(customFields).map(([k, v]) => `${k}: ${v}`).join(', ')}>
+          {Object.entries(customFields).map(([k, v]) => `${k}: ${v}`).join(', ')}
+        </span>
+      );
     case "lastContacted":
       return (
         <div className="flex flex-col gap-0.5 w-full">
