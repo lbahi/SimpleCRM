@@ -83,6 +83,12 @@ export async function submitForm(slug: string, data: Record<string, any>): Promi
   const fieldsData = (form.fields as any) || { items: [] };
   const formFields = fieldsData.items || [];
 
+  // DEBUG: Log what we received
+  console.log("[DEBUG] Form submission received:");
+  console.log("[DEBUG] Form fields:", JSON.stringify(formFields.map((f: any) => ({ id: f.id, label: f.label, type: f.type })), null, 2));
+  console.log("[DEBUG] Submitted data keys:", Object.keys(data));
+  console.log("[DEBUG] Submitted data:", JSON.stringify(data, null, 2));
+
   // Intelligent mapping: Map dynamic IDs to Lead properties
   let name = "Anonymous Lead";
   let phone = "";
@@ -95,7 +101,11 @@ export async function submitForm(slug: string, data: Record<string, any>): Promi
 
   formFields.forEach((field: any) => {
     const value = data[field.id];
-    if (value === undefined) return;
+    console.log(`[DEBUG] Processing field: id="${field.id}", label="${field.label}", type="${field.type}", value="${value}"`);
+    if (value === undefined) {
+      console.log(`[DEBUG] -> Value is undefined, skipping`);
+      return;
+    }
 
     const label = (field.label || "").toLowerCase().trim();
     const type = (field.type || "").toLowerCase();
@@ -138,6 +148,10 @@ export async function submitForm(slug: string, data: Record<string, any>): Promi
       customData[key] = value;
     }
   });
+
+  // DEBUG: Log final customData before saving
+  console.log("[DEBUG] Final customData to be saved:", JSON.stringify(customData, null, 2));
+  console.log("[DEBUG] Name:", name, "Phone:", phone, "Email:", email, "Location:", location);
 
   const existingLead = await prisma.lead.findFirst({
     where: { phone: phone as string },
