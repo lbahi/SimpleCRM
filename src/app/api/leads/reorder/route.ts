@@ -1,16 +1,46 @@
 // SimpleCRM — api/leads/reorder/route.ts
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/session";
+import { z } from "zod";
 
-export async function PATCH(request: Request) {
+const reorderSchema = z.object({
+  orderedIds: z.array(z.string().min(1)).max(1000),
+});
+
+export async function PATCH(request: NextRequest) {
   try {
-    const { orderedIds } = await request.json();
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (!Array.isArray(orderedIds)) {
+    const json = await request.json();
+    const parsed = reorderSchema.safeParse(json);
+    if (!parsed.success) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    // Update each lead's order in a transaction
+    const { orderedIds } = parsed.data;
+
+    if (session.role !== "ADMIN") {
+      const owned = await prisma.lead.findMany({
+        where: { id: { in: orderedIds } },
+        select: { id: true, assignedToId: true },
+      });
+      const ownedIds = new Set(
+        owned
+          .filter((l) => l.assignedToId === session.userId)
+          .map((l) => l.id)
+      );
+      if (ownedIds.size !== orderedIds.length) {
+        return NextResponse.json(
+          { error: "Forbidden: cannot reorder leads you do not own" },
+          { status: 403 }
+        );
+      }
+    }
+
     await prisma.$transaction(
       orderedIds.map((id, index) =>
         prisma.lead.update({

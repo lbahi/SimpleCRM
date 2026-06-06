@@ -8,7 +8,7 @@ import path from "path";
 
 export const dynamic = "force-dynamic";
 
-const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml"];
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 const MAX_SIZE = 2 * 1024 * 1024; // 2MB
 
 export async function POST(request: NextRequest) {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: "Invalid file type. Only PNG, JPEG, and SVG are allowed." },
+        { error: "Invalid file type. Only PNG and JPEG are allowed." },
         { status: 400 }
       );
     }
@@ -47,9 +47,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     let ext = file.type.split("/")[1];
-    if (ext === "svg+xml") {
-      ext = "svg";
-    } else if (ext === "jpeg") {
+    if (ext === "jpeg") {
       ext = "jpg";
     }
 

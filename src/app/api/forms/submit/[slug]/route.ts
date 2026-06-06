@@ -2,6 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { submitFormSchema } from "@/modules/forms/forms.schema";
 import { submitForm } from "@/modules/forms/forms.service";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 interface RouteParams {
   params: Promise<{ slug: string }>;
@@ -10,6 +11,17 @@ interface RouteParams {
 export async function POST(request: NextRequest, { params }: RouteParams) {
   const { slug } = await params;
   try {
+    const rl = checkRateLimit(request, { key: `form:submit:${slug}`, limit: 10 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Too many submissions. Try again later." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rl.retryAfterSeconds) },
+        }
+      );
+    }
+
     const body = await request.json();
     const parsed = submitFormSchema.safeParse(body);
     if (!parsed.success) {

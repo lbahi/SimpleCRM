@@ -1,18 +1,30 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { getLeadMessages, sendOutboundEmail } from "@/modules/inbox/inbox.service";
 import { sendMessageSchema } from "@/modules/inbox/inbox.service";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+type Params = { params: Promise<{ id: string }> };
+
+async function assertLeadAccess(leadId: string, session: { userId: string; role: string }) {
+  if (session.role === "ADMIN") return true;
+  const lead = await prisma.lead.findUnique({
+    where: { id: leadId },
+    select: { assignedToId: true },
+  });
+  return lead?.assignedToId === session.userId;
+}
+
+export async function GET(_req: NextRequest, { params }: Params) {
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { id } = await params;
+  if (!(await assertLeadAccess(id, session))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   try {
     const messages = await getLeadMessages(id);
@@ -22,16 +34,17 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest, { params }: Params) {
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { id } = await params;
+  if (!(await assertLeadAccess(id, session))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const body = await req.json();
   const parsed = sendMessageSchema.safeParse(body);
 
@@ -42,7 +55,8 @@ export async function POST(
   try {
     const message = await sendOutboundEmail(id, session.userId, parsed.data);
     return NextResponse.json(message);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to send message" }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to send message";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

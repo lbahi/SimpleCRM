@@ -37,7 +37,16 @@ const detailSelect = {
 
 export async function listLeads(input: ListLeadsInput): Promise<PaginatedLeads> {
   const { page, limit, search, status, assignedToId, sortBy, sortDir, view, userId, role } = input;
-  const roleWhere: Prisma.LeadWhereInput = view === "team" ? { assignedToId: { not: null } } : role === "MEMBER" && userId ? { assignedToId: userId } : {};
+
+  let roleWhere: Prisma.LeadWhereInput = {};
+  if (role === "MEMBER" && userId) {
+    roleWhere = view === "team"
+      ? { assignedToId: userId }
+      : { assignedToId: userId };
+  } else if (role === "ADMIN" && view === "team") {
+    roleWhere = { assignedToId: { not: null } };
+  }
+
   const where: Prisma.LeadWhereInput = {
     ...roleWhere,
     ...(search && { OR: [{ name: { contains: search, mode: "insensitive" } }, { phone: { contains: search } }, { email: { contains: search, mode: "insensitive" } }] }),

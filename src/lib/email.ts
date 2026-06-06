@@ -6,51 +6,65 @@ interface SendEmailOptions {
   body: string;
 }
 
-export async function sendEmail({ to, subject, body }: SendEmailOptions) {
-  // Use Ethereal for testing if no environment variables are set
+function readSmtpConfig() {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
   const isProd = process.env.NODE_ENV === "production";
-  
-  // Create a reusable transporter
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.ethereal.email",
-    port: parseInt(process.env.SMTP_PORT || "587"),
-    secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER || "test@ethereal.email", // Replace with actual default or let it fail if missing in prod
-      pass: process.env.SMTP_PASS || "testpass",
-    },
-  });
 
-  // If using Ethereal without explicit config, generate a test account
-  if (!process.env.SMTP_HOST && !isProd) {
+  if (isProd && (!host || !user || !pass)) {
+    throw new Error(
+      "SMTP_HOST, SMTP_USER and SMTP_PASS must be set in production"
+    );
+  }
+
+  if (!host || !user || !pass) {
+    return null;
+  }
+
+  return {
+    host,
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_SECURE === "true",
+    auth: { user, pass },
+  };
+}
+
+export async function sendEmail({ to, subject, body }: SendEmailOptions) {
+  const smtpConfig = readSmtpConfig();
+  const isProd = process.env.NODE_ENV === "production";
+
+  let transporter: nodemailer.Transporter;
+
+  if (smtpConfig) {
+    transporter = nodemailer.createTransport(smtpConfig);
+  } else {
+    if (isProd) {
+      throw new Error("SMTP not configured for production");
+    }
     const testAccount = await nodemailer.createTestAccount();
-    const options = transporter.options as any;
-    options.host = "smtp.ethereal.email";
-    options.port = 587;
-    options.secure = false;
-    options.auth = {
-      user: testAccount.user,
-      pass: testAccount.pass,
-    };
+    transporter = nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false,
+      auth: { user: testAccount.user, pass: testAccount.pass },
+    });
   }
 
   const mailOptions = {
     from: process.env.SMTP_FROM || '"SimpleCRM" <noreply@simplecrm.local>',
     to,
     subject,
-    text: body, // plaintext body
-    // html: body // could parse markdown to HTML here
+    text: body,
   };
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent: %s", info.messageId);
-    
-    // Preview only available when sending through an Ethereal account
-    if (!process.env.SMTP_HOST && !isProd) {
-      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+
+    if (!smtpConfig && !isProd) {
+      console.log("Email sent (test): %s", nodemailer.getTestMessageUrl(info));
     }
-    
+
     return true;
   } catch (error) {
     console.error("Error sending email:", error);

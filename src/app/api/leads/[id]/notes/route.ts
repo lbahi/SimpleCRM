@@ -5,16 +5,29 @@ import { z } from "zod";
 import { getSession } from "@/lib/session";
 
 const noteSchema = z.object({
-  body: z.string().min(1, "Note content is required"),
+  body: z.string().min(1, "Note content is required").max(10000),
 });
 
 type Params = { params: Promise<{ id: string }> };
+
+async function assertLeadAccess(leadId: string, session: { userId: string; role: string }) {
+  if (session.role === "ADMIN") return true;
+  const lead = await prisma.lead.findUnique({
+    where: { id: leadId },
+    select: { assignedToId: true },
+  });
+  return lead?.assignedToId === session.userId;
+}
 
 export async function GET(req: NextRequest, { params }: Params) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
+  if (!(await assertLeadAccess(id, session))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const notes = await prisma.note.findMany({
       where: { leadId: id },
@@ -36,9 +49,13 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
+  if (!(await assertLeadAccess(id, session))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const rawBody = await req.json();
-    
+
     const parsed = noteSchema.safeParse({ body: rawBody.body || rawBody.content });
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });

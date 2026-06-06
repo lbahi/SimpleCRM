@@ -34,7 +34,11 @@ export function SettingsWorkspace({ session }: SettingsWorkspaceProps) {
 
     setIsResetting(true);
     try {
-      const res = await fetch("/api/settings/reset", { method: "POST" });
+      const res = await fetch("/api/settings/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmation: "RESET_WORKSPACE" }),
+      });
       if (!res.ok) throw new Error("Failed to reset workspace");
       toast.success("Workspace has been successfully reset!");
       window.location.reload();

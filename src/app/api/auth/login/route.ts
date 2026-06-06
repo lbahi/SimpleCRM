@@ -1,13 +1,24 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { loginSchema } from "@/modules/users/users.schema";
 import { authenticate } from "@/modules/users/users.service";
 import { setSession } from "@/lib/session";
+import { checkRateLimit } from "@/lib/rate-limit";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const rl = checkRateLimit(request, { key: "auth:login", limit: 5 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Too many login attempts. Try again later." },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rl.retryAfterSeconds) },
+        }
+      );
+    }
+
     const body = await request.json();
 
-    // Validate input
     const result = loginSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
@@ -16,7 +27,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Authenticate
     const user = await authenticate(result.data.email, result.data.password);
     if (!user) {
       return NextResponse.json(
@@ -25,7 +35,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Set session cookie
     await setSession({
       userId: user.id,
       email: user.email,

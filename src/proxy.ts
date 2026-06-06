@@ -1,6 +1,7 @@
-// SimpleCRM — middleware
+// SimpleCRM — proxy (Next.js 16 middleware)
 import { NextResponse, type NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
+import { SESSION_COOKIE } from "@/lib/session";
 
 const PUBLIC_PATHS = ["/login", "/form", "/api/seed", "/api/health", "/api/auth/login", "/api/auth/logout"];
 
@@ -25,7 +26,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get("simplecrm_session")?.value;
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
   if (!token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }

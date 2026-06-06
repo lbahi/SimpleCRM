@@ -1,11 +1,17 @@
 // SimpleCRM — users.service.ts
 import { prisma } from "@/lib/prisma";
 import { hashPassword, comparePassword } from "@/lib/auth";
+import bcrypt from "bcryptjs";
 import { User, Role, LeadStatus, ActivityAction } from "@prisma/client";
 import { SafeUser, MemberWithStats } from "./users.types";
 import { InviteMemberInput, UpdateMemberInput } from "./users.schema";
 
 const CLOSED_STATUSES: LeadStatus[] = [LeadStatus.CONVERTED, LeadStatus.LOST];
+
+const TIMING_SAFE_DUMMY_HASH = bcrypt.hashSync(
+  "timing-safe-dummy-password-do-not-use",
+  12
+);
 
 function toSafeUser(user: User): SafeUser {
   const { passwordHash: _, ...safe } = user;
@@ -17,7 +23,11 @@ export async function authenticate(
   password: string
 ): Promise<SafeUser | null> {
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user || !user.isActive) return null;
+
+  if (!user || !user.isActive) {
+    await comparePassword(password, TIMING_SAFE_DUMMY_HASH);
+    return null;
+  }
 
   const valid = await comparePassword(password, user.passwordHash);
   if (!valid) return null;
@@ -125,7 +135,8 @@ export async function deactivateMember(
           action: ActivityAction.REASSIGNED,
           leadId,
           actorId,
-          content: reassignToId ? "Lead reassigned due to member deactivation" : "Lead returned to inbox due to member deactivation"
+          fromValue: id,
+          toValue: reassignToId,
         }))
       });
     }

@@ -2,8 +2,11 @@ import { cookies } from "next/headers";
 import { verifyToken, signToken, type TokenPayload } from "./auth";
 import { prisma } from "./prisma";
 
-const SESSION_COOKIE = "simplecrm_session";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+const isProd = process.env.NODE_ENV === "production";
+const SESSION_COOKIE = isProd ? "__Host-simplecrm_session" : "simplecrm_session";
+const COOKIE_MAX_AGE = 60 * 60 * 24; // 1 day
+
+export { SESSION_COOKIE };
 
 // ─── Read session from cookie ────────────────────────────────
 
@@ -11,7 +14,7 @@ export async function getSession(): Promise<TokenPayload | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  
+
   const payload = await verifyToken(token);
   if (!payload) return null;
 
@@ -21,7 +24,6 @@ export async function getSession(): Promise<TokenPayload | null> {
   });
 
   if (!user || !user.isActive) {
-    // User doesn't exist or is deactivated → invalid session
     return null;
   }
 
@@ -40,7 +42,7 @@ export async function setSession(payload: TokenPayload): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isProd,
     sameSite: "lax",
     path: "/",
     maxAge: COOKIE_MAX_AGE,

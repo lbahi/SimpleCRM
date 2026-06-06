@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSession } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import { updateLeadSchema, assignLeadSchema } from "@/modules/leads/leads.schema";
 import {
   getLeadById,
@@ -21,6 +22,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const lead = await getLeadById(id);
   if (!lead) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  if (session.role !== "ADMIN" && lead.assignedToId !== session.userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   return NextResponse.json(lead);
 }
 
@@ -30,10 +35,26 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
+
+  if (session.role !== "ADMIN") {
+    const lead = await prisma.lead.findUnique({
+      where: { id },
+      select: { assignedToId: true },
+    });
+    if (!lead || lead.assignedToId !== session.userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   const body = await req.json();
 
-  // Support both update and assign payloads
   if ("assignedToId" in body) {
+    if (session.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Only admins can assign or reassign leads" },
+        { status: 403 }
+      );
+    }
     const parsed = assignLeadSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
