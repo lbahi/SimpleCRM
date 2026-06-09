@@ -27,9 +27,13 @@ export function AppHeader({ user }: AppHeaderProps) {
   const [open, setOpen] = useState(false);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore errors, clear cookie anyway
+    } finally {
+      window.location.href = "/login";
+    }
   };
 
   return (
@@ -64,7 +68,10 @@ export function AppHeader({ user }: AppHeaderProps) {
 
           <PopoverContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-gray-100 bg-white">
             <div className="flex flex-col gap-1 p-2">
-              <button className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-black rounded-xl transition-all">
+              <button
+                onClick={() => router.push("/settings")}
+                className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-black rounded-xl transition-all"
+              >
                 <User className="h-4 w-4" />
                 {t("profile")}
               </button>
