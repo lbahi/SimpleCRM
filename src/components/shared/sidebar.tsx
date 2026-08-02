@@ -16,7 +16,8 @@ import {
   BarChart3,
   FileText,
   UserCog,
-  Settings
+  Settings,
+  Plug
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -63,6 +64,7 @@ export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProp
       { label: t("analytics"), href: "/analytics", icon: BarChart3 },
       { label: t("forms"), href: "/forms", icon: FileText },
       { label: t("team"), href: "/team", icon: UserCog },
+      { label: t("integrations"), href: "/integrations", icon: Plug },
       { label: t("settings"), href: "/settings", icon: Settings },
     ] : [])
   ];

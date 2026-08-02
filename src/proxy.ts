@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { verifyToken } from "@/lib/auth";
 import { SESSION_COOKIE } from "@/lib/session";
 
-const PUBLIC_PATHS = ["/login", "/form", "/api/seed", "/api/health", "/api/auth/login", "/api/auth/logout"];
+const PUBLIC_PATHS = ["/login", "/form", "/api/health", "/api/auth/login", "/api/auth/logout", "/api/leads/ingest", "/api/integrations"];
 
 const ADMIN_ONLY_PATHS = ["/inbox", "/analytics", "/forms", "/team"];
 

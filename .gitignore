@@ -54,3 +54,9 @@ start.sh
 prisma.config.ts
 .npmrc
 
+# credentials — NEVER commit these
+*credintials*
+*credentials*
+
+# scratch / temp working files
+scratch/
