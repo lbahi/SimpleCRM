@@ -41,6 +41,15 @@ const STATUS_COLORS: Record<string, string> = {
   LOST: "#ef4444",
 };
 
+const SCHEMA_LEAD_STATUSES = [
+  "NEW",
+  "CONTACTED",
+  "NO_RESPOND",
+  "CONVERTED",
+  "LOST",
+] as const;
+
+
 const RADIAN = Math.PI / 180;
 const renderCustomLabel = ({
   cx, cy, midAngle, innerRadius, outerRadius, percent, name
@@ -236,16 +245,23 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
               <thead>
                 <tr className="bg-neutral-50/75 border-b border-gray-100 text-neutral-500 font-medium text-xs uppercase tracking-wider">
                   <th className="py-3.5 px-6">{t("member")}</th>
-                  <th className="py-3.5 px-6 text-center">{t("total")}</th>
-                  <th className="py-3.5 px-6 text-center">{t("open")}</th>
-                  <th className="py-3.5 px-6 text-center">{t("closed")}</th>
+                  <th className="py-3.5 px-4 text-center">{t("total")}</th>
+                  {SCHEMA_LEAD_STATUSES.map(st => (
+                    <th key={st} className="py-3.5 px-4 text-center whitespace-nowrap">
+                      <div className="inline-flex items-center gap-1.5 justify-center">
+                        <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ backgroundColor: STATUS_COLORS[st] }} />
+                        <span>{status.has(st) ? status(st) : st}</span>
+                      </div>
+                    </th>
+                  ))}
+                  <th className="py-3.5 px-4 text-center whitespace-nowrap">{t("leadsByStatus")}</th>
                   <th className="py-3.5 px-6 text-end">{t("conversion")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-neutral-700 font-medium">
                 {byMember.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-neutral-400 text-sm">
+                    <td colSpan={9} className="py-10 text-center text-neutral-400 text-sm">
                       {t("noActiveMembers")}
                     </td>
                   </tr>
@@ -264,9 +280,40 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
                           </div>
                           {member.memberName}
                         </td>
-                        <td className="py-4 px-6 text-center text-neutral-600">{member.total}</td>
-                        <td className="py-4 px-6 text-center text-neutral-600">{member.open}</td>
-                        <td className="py-4 px-6 text-center text-neutral-600">{member.closed}</td>
+                        <td className="py-4 px-4 text-center font-bold text-neutral-900">{member.total}</td>
+                        {SCHEMA_LEAD_STATUSES.map(st => {
+                          const count = member.statusCounts?.[st] ?? 0;
+                          return (
+                            <td key={st} className="py-4 px-4 text-center">
+                              <span className={count > 0 ? "font-semibold text-neutral-800" : "text-neutral-300"}>
+                                {count}
+                              </span>
+                            </td>
+                          );
+                        })}
+                        <td className="py-4 px-4 text-center">
+                          <div className="flex items-center justify-center">
+                            <div className="flex h-2 w-28 overflow-hidden rounded-full bg-neutral-100">
+                              {member.total === 0 ? (
+                                <div className="w-full bg-neutral-100" />
+                              ) : (
+                                SCHEMA_LEAD_STATUSES.map(st => {
+                                  const count = member.statusCounts?.[st] ?? 0;
+                                  if (count === 0) return null;
+                                  const widthPct = (count / member.total) * 100;
+                                  const stLabel = status.has(st) ? status(st) : st;
+                                  return (
+                                    <div
+                                      key={st}
+                                      style={{ width: `${widthPct}%`, backgroundColor: STATUS_COLORS[st] }}
+                                      title={`${stLabel}: ${count} (${widthPct.toFixed(0)}%)`}
+                                    />
+                                  );
+                                })
+                              )}
+                            </div>
+                          </div>
+                        </td>
                         <td className={`py-4 px-6 text-end ${convColor}`}>
                           {member.conversionRate}%
                         </td>
