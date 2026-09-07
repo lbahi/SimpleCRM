@@ -49,11 +49,16 @@ export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProp
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } catch {
-      // ignore errors, clear session anyway
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
+    } catch (err) {
+      console.error("Logout error:", err);
     } finally {
-      window.location.href = "/login";
+      document.cookie = "simplecrm_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0";
+      window.location.replace("/login");
     }
   };
 

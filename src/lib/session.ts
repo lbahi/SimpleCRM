@@ -12,7 +12,10 @@ export { SESSION_COOKIE };
 
 export async function getSession(): Promise<TokenPayload | null> {
   const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  const token = 
+    cookieStore.get(SESSION_COOKIE)?.value ||
+    cookieStore.get("__Host-simplecrm_session")?.value ||
+    cookieStore.get("simplecrm_session")?.value;
   if (!token) return null;
 
   const payload = await verifyToken(token);
@@ -51,29 +54,23 @@ export async function setSession(payload: TokenPayload): Promise<void> {
 
 export async function clearSession(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, "", {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 0,
-    expires: new Date(0),
-  });
-  cookieStore.delete(SESSION_COOKIE);
-
-  // Clear alternate cookie name in case of dev/prod transition
-  if (isProd) {
-    cookieStore.delete("simplecrm_session");
-  } else {
-    cookieStore.set("__Host-simplecrm_session", "", {
+  // Expire all possible cookie names and security flags.
+  // NEVER use cookieStore.delete() on __Host- cookies as Next.js delete()
+  // emits Set-Cookie without Secure attribute, which browsers reject under RFC 6265bis.
+  const variants = [
+    { name: "__Host-simplecrm_session", secure: true },
+    { name: "simplecrm_session", secure: true },
+    { name: "simplecrm_session", secure: false },
+  ];
+  for (const { name, secure } of variants) {
+    cookieStore.set(name, "", {
       httpOnly: true,
-      secure: true,
+      secure,
       sameSite: "lax",
       path: "/",
       maxAge: 0,
       expires: new Date(0),
     });
-    cookieStore.delete("__Host-simplecrm_session");
   }
 }
 

@@ -26,7 +26,10 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  const token = 
+    request.cookies.get(SESSION_COOKIE)?.value ||
+    request.cookies.get("__Host-simplecrm_session")?.value ||
+    request.cookies.get("simplecrm_session")?.value;
   if (!token) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
@@ -53,3 +56,6 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
+
+export { proxy as middleware };
+
