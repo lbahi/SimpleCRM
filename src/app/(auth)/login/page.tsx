@@ -4,6 +4,9 @@ import { getSession } from "@/lib/session";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { LoginForm } from "./login-form";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function LoginPage() {
   const session = await getSession();
   if (session) redirect("/leads");
