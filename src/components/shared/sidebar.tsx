@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
@@ -35,8 +35,8 @@ interface SidebarProps {
 
 export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProps) {
   const t = useTranslations("nav");
-  const router = useRouter();
   const pathname = usePathname();
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [logo, setLogo] = useState<string | null>(null);
 
@@ -48,10 +48,15 @@ export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProp
   }, []);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore errors, clear session anyway
+    } finally {
+      window.location.href = "/login";
+    }
   };
+
 
   const menuItems = [
     { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },

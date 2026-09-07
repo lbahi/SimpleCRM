@@ -49,9 +49,31 @@ export async function setSession(payload: TokenPayload): Promise<void> {
   });
 }
 
-// ─── Clear session cookie ────────────────────────────────────
-
 export async function clearSession(): Promise<void> {
   const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE, "", {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+    expires: new Date(0),
+  });
   cookieStore.delete(SESSION_COOKIE);
+
+  // Clear alternate cookie name in case of dev/prod transition
+  if (isProd) {
+    cookieStore.delete("simplecrm_session");
+  } else {
+    cookieStore.set("__Host-simplecrm_session", "", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+      expires: new Date(0),
+    });
+    cookieStore.delete("__Host-simplecrm_session");
+  }
 }
+

@@ -22,6 +22,7 @@ export interface MemberStat {
   open: number;
   closed: number;
   conversionRate: number;
+  statusCounts: Record<LeadStatus, number>;
 }
 
 export interface AnalyticsData {
@@ -149,24 +150,44 @@ export async function getAnalytics(userId: string, role: string): Promise<Analyt
   const leadsOverTime = Array.from(countByDate.entries())
     .map(([date, count]) => ({ date, count }));
 
-  // Get team performance
-  const members = await prisma.user.findMany({
-    where: { role: "MEMBER", isActive: true },
-    select: {
-      id: true,
-      name: true,
-      avatarInitials: true,
-      assignedLeads: {
-        select: { status: true }
+  // Get team performance and status breakdown
+  const [members, statusGroupBy] = await Promise.all([
+    prisma.user.findMany({
+      where: { role: "MEMBER", isActive: true },
+      select: {
+        id: true,
+        name: true,
+        avatarInitials: true,
+        assignedLeads: {
+          select: { status: true }
+        }
       }
+    }),
+    prisma.lead.groupBy({
+      by: ["assignedToId", "status"],
+      where: { assignedToId: { not: null } },
+      _count: { status: true }
+    })
+  ]);
+
+  const statusCountMap = new Map<string, number>();
+  for (const item of statusGroupBy) {
+    if (item.assignedToId) {
+      statusCountMap.set(`${item.assignedToId}:${item.status}`, item._count.status);
     }
-  });
+  }
 
   const byMember: MemberStat[] = members.map(member => {
-    const total = member.assignedLeads.length;
-    const closed = member.assignedLeads.filter(
-      l => l.status === "CONVERTED" || (l.status as string) === "CLOSED"
-    ).length;
+    const statusCounts: Record<LeadStatus, number> = {
+      [LeadStatus.NEW]: statusCountMap.get(`${member.id}:${LeadStatus.NEW}`) ?? 0,
+      [LeadStatus.CONTACTED]: statusCountMap.get(`${member.id}:${LeadStatus.CONTACTED}`) ?? 0,
+      [LeadStatus.NO_RESPOND]: statusCountMap.get(`${member.id}:${LeadStatus.NO_RESPOND}`) ?? 0,
+      [LeadStatus.CONVERTED]: statusCountMap.get(`${member.id}:${LeadStatus.CONVERTED}`) ?? 0,
+      [LeadStatus.LOST]: statusCountMap.get(`${member.id}:${LeadStatus.LOST}`) ?? 0,
+    };
+
+    const total = Object.values(statusCounts).reduce((acc, count) => acc + count, 0);
+    const closed = statusCounts[LeadStatus.CONVERTED];
     const open = total - closed;
     const conversionRate = total > 0
       ? Number(((closed / total) * 100).toFixed(1))
@@ -180,8 +201,10 @@ export async function getAnalytics(userId: string, role: string): Promise<Analyt
       open,
       closed,
       conversionRate,
+      statusCounts,
     };
   }).sort((a, b) => b.total - a.total);
+
 
   return {
     totalLeads,
