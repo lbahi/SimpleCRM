@@ -28,7 +28,6 @@ enum LeadStatus {
   LOST
 }
 
-
 enum ReminderStatus {
   PENDING
   DISMISSED
@@ -47,6 +46,10 @@ enum ActivityAction {
   REMINDER_DISMISSED
 }
 
+enum NotificationType {
+  NOTE_COMMENT_REPLY
+}
+
 // ─────────────────────────────────────────────
 // USER
 // ─────────────────────────────────────────────
@@ -63,11 +66,14 @@ model User {
   updatedAt      DateTime @updatedAt
 
   // Relations
-  assignedLeads  Lead[]         @relation("AssignedLeads")
-  notes          Note[]
-  reminders      Reminder[]
-  activityLogs   ActivityLog[]
-  emailMessages  EmailMessage[]
+  assignedLeads         Lead[]         @relation("AssignedLeads")
+  notes                 Note[]
+  noteComments          NoteComment[]
+  reminders             Reminder[]
+  activityLogs          ActivityLog[]
+  emailMessages         EmailMessage[]
+  notificationsReceived Notification[] @relation("NotificationRecipient")
+  notificationsSent     Notification[] @relation("NotificationActor")
 
   @@map("users")
 }
@@ -85,15 +91,15 @@ model Lead {
   customFields  Json?      @default("{}")
   location      String?
   status        LeadStatus @default(NEW)
-  rating        Int        @default(0)   // 0 = unrated, 1–5 stars
+  rating        Int        @default(0) // 0 = unrated, 1–5 stars
   lastContacted DateTime?
   order         Int        @default(0)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
   // Assignment — null means unassigned (inbox)
-  assignedToId  String?
-  assignedTo    User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedLeads", fields: [assignedToId], references: [id])
 
   // Relations
   sources       LeadSource[]
@@ -101,6 +107,7 @@ model Lead {
   reminders     Reminder[]
   activityLogs  ActivityLog[]
   emailMessages EmailMessage[]
+  notifications Notification[]
 
   @@index([assignedToId])
   @@index([status])
@@ -119,12 +126,12 @@ model LeadSource {
   source    String
   createdAt DateTime @default(now())
 
-  leadId    String
-  lead      Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   // Which capture form produced this source (null = manually added)
-  formId    String?
-  form      CaptureForm? @relation(fields: [formId], references: [id])
+  formId String?
+  form   CaptureForm? @relation(fields: [formId], references: [id])
 
   @@index([leadId])
   @@map("lead_sources")
@@ -140,14 +147,59 @@ model Note {
   body      String
   createdAt DateTime @default(now())
 
-  leadId    String
-  lead      Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
-  authorId  String
-  author    User   @relation(fields: [authorId], references: [id])
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  comments NoteComment[]
 
   @@index([leadId])
   @@map("notes")
+}
+
+// ─────────────────────────────────────────────
+// NOTE COMMENT
+// Threaded replies on a Note, also append-only
+// ─────────────────────────────────────────────
+
+model NoteComment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+
+  noteId String
+  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  @@index([noteId])
+  @@map("note_comments")
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATION
+// In-app notifications for comment replies
+// ─────────────────────────────────────────────
+
+model Notification {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  recipientId String
+  recipient   User             @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  actorId     String
+  actor       User             @relation("NotificationActor", fields: [actorId], references: [id])
+  leadId      String
+  lead        Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  noteId      String?
+  message     String
+  read        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  @@index([recipientId, read])
+  @@map("notifications")
 }
 
 // ─────────────────────────────────────────────
@@ -155,15 +207,15 @@ model Note {
 // ─────────────────────────────────────────────
 
 model Reminder {
-  id          String         @id @default(cuid())
-  dueAt       DateTime
-  note        String?        // optional context: "call after board meeting"
-  status      ReminderStatus @default(PENDING)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id        String         @id @default(cuid())
+  dueAt     DateTime
+  note      String? // optional context: "call after board meeting"
+  status    ReminderStatus @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 
-  leadId      String
-  lead        Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
@@ -180,17 +232,17 @@ model Reminder {
 // ─────────────────────────────────────────────
 
 model ActivityLog {
-  id         String         @id @default(cuid())
-  action     ActivityAction
-  fromValue  String?        // previous value (e.g. "FRESH")
-  toValue    String?        // new value     (e.g. "INTERESTED")
-  createdAt  DateTime       @default(now())
+  id        String         @id @default(cuid())
+  action    ActivityAction
+  fromValue String? // previous value (e.g. "FRESH")
+  toValue   String? // new value     (e.g. "INTERESTED")
+  createdAt DateTime       @default(now())
 
-  leadId     String
-  lead       Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
-  actorId    String
-  actor      User   @relation(fields: [actorId], references: [id])
+  actorId String
+  actor   User   @relation(fields: [actorId], references: [id])
 
   @@index([leadId])
   @@index([actorId])
@@ -204,16 +256,16 @@ model ActivityLog {
 // ─────────────────────────────────────────────
 
 model CaptureForm {
-  id        String  @id @default(cuid())
-  name        String  // internal label: "Facebook Landing Page Q2"
+  id          String  @id @default(cuid())
+  name        String // internal label: "Facebook Landing Page Q2"
   description String? // optional description of the form's purpose
-  slug        String  @unique  // public URL: /form/:slug
-  sourceTag String  @default("Website") // auto-applied to leads from this form
+  slug        String  @unique // public URL: /form/:slug
+  sourceTag   String  @default("Website") // auto-applied to leads from this form
 
   // Which optional fields are visible on this form
   // { location: true, message: false }
-  submitButtonText String  @default("Send Request")
-  fields    Json
+  submitButtonText String @default("Send Request")
+  fields           Json
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -236,20 +288,20 @@ enum EmailDirection {
 }
 
 model EmailMessage {
-  id        String       @id @default(cuid())
+  id        String         @id @default(cuid())
   subject   String
   body      String
   direction EmailDirection
-  isRead    Boolean      @default(false)
-  createdAt DateTime     @default(now())
+  isRead    Boolean        @default(false)
+  createdAt DateTime       @default(now())
 
   // The lead this email belongs to
-  leadId    String
-  lead      Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   // For outbound emails, who sent it
-  senderId  String?
-  sender    User?        @relation(fields: [senderId], references: [id])
+  senderId String?
+  sender   User?   @relation(fields: [senderId], references: [id])
 
   @@index([leadId])
   @@index([isRead])
@@ -261,10 +313,10 @@ model EmailMessage {
 // ─────────────────────────────────────────────
 
 model AppSettings {
-  id              String   @id @default("singleton")
-  logoUrl         String?
-  brandColor      String   @default("#171717")
-  updatedAt       DateTime @updatedAt
+  id         String   @id @default("singleton")
+  logoUrl    String?
+  brandColor String   @default("#171717")
+  updatedAt  DateTime @updatedAt
 }
 
 // ─────────────────────────────────────────────
@@ -274,13 +326,13 @@ model AppSettings {
 
 model IntegrationAgent {
   id                 String   @id @default(cuid())
-  key                String   @unique  // e.g. "facebook-messenger-primary"
-  label              String            // e.g. "Facebook Messenger" — shown on card
-  agentName          String            // e.g. "Amir"
-  businessName       String            // e.g. "lbahi digital Agency"
+  key                String   @unique // e.g. "facebook-messenger-primary"
+  label              String // e.g. "Facebook Messenger" — shown on card
+  agentName          String // e.g. "Amir"
+  businessName       String // e.g. "lbahi digital Agency"
   serviceDescription String   @db.Text
-  requiredFields     Json              // string[]
-  niceToHaveFields   Json              // string[]
+  requiredFields     Json // string[]
+  niceToHaveFields   Json // string[]
   toneInstructions   String   @db.Text
   isActive           Boolean  @default(false)
   createdAt          DateTime @default(now())

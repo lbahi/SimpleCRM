@@ -93,6 +93,7 @@ export function LeadDetailTabPanel({
 
         {activeTab === "notes" && (
           <LeadNotesSection
+            leadId={lead.id}
             notes={notes}
             onAddNote={onAddNote}
             isSample={isSample}

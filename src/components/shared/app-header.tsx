@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ChevronDown, LogOut, Bell, User } from "lucide-react";
+import { ChevronDown, LogOut, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import {
@@ -12,6 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { CommentNotificationsDropdown } from "@/components/shared/comment-notifications-dropdown";
 
 interface AppHeaderProps {
   user: {
@@ -48,11 +49,7 @@ export function AppHeader({ user }: AppHeaderProps) {
       <div className="flex items-center gap-6">
         <LanguageSwitcher />
 
-        {/* Simple Notification Button */}
-        <button className="p-2 text-gray-400 hover:text-black transition-colors relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-2 right-2 h-2 w-2 bg-black rounded-full border-2 border-white" />
-        </button>
+        <CommentNotificationsDropdown />
 
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger
