@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ interface LeadNotesSectionProps {
   isSample?: boolean;
 }
 
-export function LeadNotesSection({ notes, onAddNote, isSample }: LeadNotesSectionProps) {
+export const LeadNotesSection = React.memo(function LeadNotesSection({ notes, onAddNote, isSample }: LeadNotesSectionProps) {
   const [body, setBody] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -109,4 +109,4 @@ export function LeadNotesSection({ notes, onAddNote, isSample }: LeadNotesSectio
       </div>
     </div>
   );
-}
+});

@@ -45,16 +45,14 @@ export function useLeadDetail(leadId?: string, isSample?: boolean) {
     if (!leadId || isSample) return;
     setIsLoading(true);
     try {
-      const [leadRes, notesRes, activityRes, remindersRes] = await Promise.all([
+      const [leadRes, activityRes] = await Promise.all([
         fetch(`/api/leads/${leadId}`).then(checkResponse).then(r => r.json()),
-        fetch(`/api/leads/${leadId}/notes`).then(checkResponse).then(r => r.json()),
         fetch(`/api/leads/${leadId}/activity`).then(checkResponse).then(r => r.json()),
-        fetch(`/api/leads/${leadId}/reminders?status=PENDING`).then(checkResponse).then(r => r.json()),
       ]);
       setLead(leadRes);
-      setNotes(notesRes);
+      setNotes(leadRes.notes || []);
       setActivityLogs(activityRes);
-      setReminders(remindersRes);
+      setReminders(leadRes.reminders || []);
     } catch (error) {
       toast.error("Failed to load lead details");
     } finally {

@@ -1,6 +1,7 @@
 // SimpleCRM — lead-detail-reminders.tsx
 "use client";
 
+import React from "react";
 import { format, isPast, formatDistanceToNow } from "date-fns";
 import { Bell, Check, Calendar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,7 @@ interface LeadDetailRemindersProps {
   leadId: string;
 }
 
-export function LeadDetailReminders({
+export const LeadDetailReminders = React.memo(function LeadDetailReminders({
   reminders,
   onRefresh,
   leadId,
@@ -148,4 +149,4 @@ export function LeadDetailReminders({
       )}
     </div>
   );
-}
+});

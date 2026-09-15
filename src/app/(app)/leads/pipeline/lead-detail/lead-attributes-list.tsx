@@ -1,7 +1,7 @@
 // SimpleCRM — lead-attributes-list
 "use client";
 
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useColumnStateContext } from "../context/column-state-context";
 import { COLUMN_DEFS, type ColumnId, type PipelineLead } from "../model";
 import { AttributeRow, type AttributeColumn } from "./attribute-row";
@@ -40,9 +40,15 @@ interface LeadAttributesListProps {
   onUpdate: (field: ColumnId, value: unknown) => void;
 }
 
-export function LeadAttributesList({ lead, onUpdate }: LeadAttributesListProps) {
-  const { columnOrder, allAvailableColumns } = useColumnStateContext();
-
+const LeadAttributesListUI = React.memo(function LeadAttributesListUI({
+  lead,
+  onUpdate,
+  columnOrder,
+  allAvailableColumns,
+}: LeadAttributesListProps & {
+  columnOrder: (ColumnId | string)[];
+  allAvailableColumns: { id: string; label: string }[];
+}) {
   const orderedCols = useMemo<AttributeColumn[]>(() => {
     // Built-in fields in canonical order
     const builtIn: AttributeColumn[] = ORDERED_ATTR_COLUMNS.map((id) => ({
@@ -77,5 +83,16 @@ export function LeadAttributesList({ lead, onUpdate }: LeadAttributesListProps) 
         ))}
       </div>
     </div>
+  );
+});
+
+export function LeadAttributesList(props: LeadAttributesListProps) {
+  const { columnOrder, allAvailableColumns } = useColumnStateContext();
+  return (
+    <LeadAttributesListUI
+      {...props}
+      columnOrder={columnOrder}
+      allAvailableColumns={allAvailableColumns}
+    />
   );
 }
