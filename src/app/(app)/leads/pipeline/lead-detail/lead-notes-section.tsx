@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Send } from "lucide-react";
+import { NoteCommentThread } from "./note-comment-thread";
 
 interface NoteAuthor {
   avatarInitials: string;
@@ -18,12 +19,13 @@ interface NoteItem {
 }
 
 interface LeadNotesSectionProps {
+  leadId: string;
   notes: NoteItem[];
   onAddNote: (body: string) => Promise<void>;
   isSample?: boolean;
 }
 
-export function LeadNotesSection({ notes, onAddNote, isSample }: LeadNotesSectionProps) {
+export const LeadNotesSection = React.memo(function LeadNotesSection({ leadId, notes, onAddNote, isSample }: LeadNotesSectionProps) {
   const [body, setBody] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -102,6 +104,11 @@ export function LeadNotesSection({ notes, onAddNote, isSample }: LeadNotesSectio
                 <div className="text-[13px] text-neutral-700 leading-relaxed bg-white border border-neutral-100 rounded-2xl px-4 py-3 shadow-sm group-hover:border-neutral-200 transition-colors">
                   {note.body ?? note.content}
                 </div>
+                <NoteCommentThread
+                  leadId={leadId}
+                  noteId={note.id}
+                  isSample={isSample}
+                />
               </div>
             </div>
           ))
@@ -109,4 +116,4 @@ export function LeadNotesSection({ notes, onAddNote, isSample }: LeadNotesSectio
       </div>
     </div>
   );
-}
+});

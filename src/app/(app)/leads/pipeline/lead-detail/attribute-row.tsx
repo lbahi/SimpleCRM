@@ -1,6 +1,7 @@
 // SimpleCRM — attribute-row
 "use client";
 
+import React from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { StatusCell } from "../cells/status-cell";
@@ -123,7 +124,7 @@ function AttributeValue({
   }
 }
 
-export function AttributeRow({ col, lead, onUpdate }: AttributeRowProps) {
+export const AttributeRow = React.memo(function AttributeRow({ col, lead, onUpdate }: AttributeRowProps) {
   return (
     <div className="flex items-center min-h-[44px] px-6 border-b border-neutral-50 group">
       <span className="w-[160px] flex-shrink-0 text-[12px] font-medium text-neutral-400">
@@ -134,4 +135,15 @@ export function AttributeRow({ col, lead, onUpdate }: AttributeRowProps) {
       </div>
     </div>
   );
-}
+}, (prev, next) => {
+  if (prev.col.id !== next.col.id) return false;
+  if (prev.onUpdate !== next.onUpdate) return false;
+
+  if (typeof prev.col.id === "string" && prev.col.id.startsWith("custom_")) {
+    const prevFields = prev.lead.customFields as Record<string, unknown> | null;
+    const nextFields = next.lead.customFields as Record<string, unknown> | null;
+    return prevFields?.[prev.col.id] === nextFields?.[next.col.id];
+  }
+
+  return prev.lead[prev.col.id as keyof PipelineLead] === next.lead[next.col.id as keyof PipelineLead];
+});

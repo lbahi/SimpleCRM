@@ -1,3 +1,4 @@
+import React from "react";
 import { formatDistanceToNow } from "date-fns";
 import type { ActivityItem } from "./hooks/use-lead-detail";
 import { cn } from "@/lib/utils";
@@ -6,7 +7,7 @@ interface LeadActivityLogProps {
   activityLogs: ActivityItem[];
 }
 
-export function LeadActivityLog({ activityLogs }: LeadActivityLogProps) {
+export const LeadActivityLog = React.memo(function LeadActivityLog({ activityLogs }: LeadActivityLogProps) {
   const getActionDetails = (item: ActivityItem) => {
     const actor = item.actor?.name || "System";
     const from = item.fromValue;
@@ -59,4 +60,4 @@ export function LeadActivityLog({ activityLogs }: LeadActivityLogProps) {
       </div>
     </div>
   );
-}
+});

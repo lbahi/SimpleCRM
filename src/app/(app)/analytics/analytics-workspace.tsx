@@ -3,12 +3,14 @@
 
 import { 
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, 
-  CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend 
+  CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { format } from 'date-fns';
 import { Users } from 'lucide-react';
 import { useTranslations } from "next-intl";
 import type { AnalyticsData } from '@/modules/analytics/analytics.service';
+import { AnalyticsDateRangePicker } from "./components/analytics-date-range-picker";
+import { LeadsTrendChart, STATUS_COLORS } from "./components/leads-trend-chart";
+import { MemberBreakdownTable } from "./components/member-breakdown-table";
 
 interface AnalyticsWorkspaceProps {
   analytics: AnalyticsData;
@@ -23,32 +25,6 @@ interface PieLabelProps {
   percent?: number;
   name?: string;
 }
-
-interface TooltipPayloadItem {
-  payload: {
-    date: string;
-    count: number;
-  };
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  NEW: "#3b82f6",
-  FRESH: "#10b981",
-  CONTACTED: "#a855f7",
-  QUALIFIED: "#f59e0b",
-  CONVERTED: "#059669",
-  NO_RESPOND: "#6b7280",
-  LOST: "#ef4444",
-};
-
-const SCHEMA_LEAD_STATUSES = [
-  "NEW",
-  "CONTACTED",
-  "NO_RESPOND",
-  "CONVERTED",
-  "LOST",
-] as const;
-
 
 const RADIAN = Math.PI / 180;
 const renderCustomLabel = ({
@@ -77,6 +53,7 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
   const t = useTranslations("analytics");
   const status = useTranslations("status");
   const common = useTranslations("common");
+
   const statusData = analytics.leadsByStatus.map(s => ({
     name: status.has(s.status) ? status(s.status) : s.status,
     value: s.count,
@@ -84,11 +61,7 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
   }));
 
   const nonZeroStatusData = statusData.filter(item => item.value > 0);
-
   const sourceData = analytics.leadsBySource;
-
-  const leadsOverTimeData = analytics.leadsOverTime;
-
   const byMember = analytics.teamPerformance;
   const hasMemberData = byMember.length > 0 && byMember.some(m => m.total > 0);
 
@@ -101,9 +74,14 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
   return (
     <div className="flex-1 overflow-auto bg-gray-50 -m-6 h-[calc(100vh-64px)]">
       <div className="p-8 pb-16">
-        <div className="mb-8">
-          <h1 className="text-3xl mb-2 font-normal text-neutral-900">{t("title")}</h1>
-          <p className="text-gray-600">{t("subtitle")}</p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl mb-2 font-normal text-neutral-900">{t("title")}</h1>
+            <p className="text-gray-600">{t("subtitle")}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <AnalyticsDateRangePicker />
+          </div>
         </div>
 
         {/* Charts Grid */}
@@ -169,46 +147,8 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-6">
-          {/* Leads Over Time */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg mb-4 font-semibold">{t("newLeadsLast30")}</h2>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={leadsOverTimeData}>
-                <defs>
-                  <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#378ADD" stopOpacity={0.08}/>
-                    <stop offset="95%" stopColor="#378ADD" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis 
-                  dataKey="date" 
-                  fontSize={12} 
-                  tickFormatter={(dateStr, index) => 
-                    index % 5 === 0 ? format(new Date(dateStr), "MMM d") : ""
-                  }
-                />
-                <YAxis fontSize={12} allowDecimals={false} />
-                <Tooltip 
-                  content={({ active, payload }) => {
-                    if (!active || !payload?.length) return null;
-                    const { date, count } = (payload as unknown as TooltipPayloadItem[])[0].payload;
-                    return (
-                      <div className="bg-white border border-neutral-200 rounded-lg px-3 py-2 shadow-sm text-[13px]">
-                        <span className="text-neutral-500">
-                          {format(new Date(date), "MMM d, yyyy")}:
-                        </span>
-                        <span className="font-medium text-neutral-900 ms-1">
-                          {count} {count === 1 ? t("lead") : t("leads")}
-                        </span>
-                      </div>
-                    );
-                  }}
-                />
-                <Area type="monotone" dataKey="count" stroke="#378ADD" strokeWidth={2} fillOpacity={1} fill="url(#colorCount)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          {/* Leads Over Time by Status */}
+          <LeadsTrendChart data={analytics.leadsOverTime} />
 
           {/* Team Performance Chart */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -235,96 +175,7 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
         </div>
 
         {/* Team Performance Summary Table */}
-        <div className="mt-6 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-neutral-900">{t("memberBreakdown")}</h2>
-            <p className="text-sm text-neutral-500 mt-1">{t("memberBreakdownDescription")}</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-start border-collapse text-sm">
-              <thead>
-                <tr className="bg-neutral-50/75 border-b border-gray-100 text-neutral-500 font-medium text-xs uppercase tracking-wider">
-                  <th className="py-3.5 px-6">{t("member")}</th>
-                  <th className="py-3.5 px-4 text-center">{t("total")}</th>
-                  {SCHEMA_LEAD_STATUSES.map(st => (
-                    <th key={st} className="py-3.5 px-4 text-center whitespace-nowrap">
-                      <div className="inline-flex items-center gap-1.5 justify-center">
-                        <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ backgroundColor: STATUS_COLORS[st] }} />
-                        <span>{status.has(st) ? status(st) : st}</span>
-                      </div>
-                    </th>
-                  ))}
-                  <th className="py-3.5 px-4 text-center whitespace-nowrap">{t("leadsByStatus")}</th>
-                  <th className="py-3.5 px-6 text-end">{t("conversion")}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-neutral-700 font-medium">
-                {byMember.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="py-10 text-center text-neutral-400 text-sm">
-                      {t("noActiveMembers")}
-                    </td>
-                  </tr>
-                ) : (
-                  byMember.map(member => {
-                    const convColor = member.conversionRate > 30 
-                      ? "text-green-600 font-semibold" 
-                      : member.conversionRate < 10 
-                      ? "text-red-500 font-semibold" 
-                      : "text-neutral-700 font-medium";
-                    return (
-                      <tr key={member.memberId} className="hover:bg-neutral-50/50 transition-colors">
-                        <td className="py-4 px-6 flex items-center gap-3.5 font-semibold text-neutral-900">
-                          <div className="w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                            {member.avatarInitials || member.memberName[0]?.toUpperCase() || "?"}
-                          </div>
-                          {member.memberName}
-                        </td>
-                        <td className="py-4 px-4 text-center font-bold text-neutral-900">{member.total}</td>
-                        {SCHEMA_LEAD_STATUSES.map(st => {
-                          const count = member.statusCounts?.[st] ?? 0;
-                          return (
-                            <td key={st} className="py-4 px-4 text-center">
-                              <span className={count > 0 ? "font-semibold text-neutral-800" : "text-neutral-300"}>
-                                {count}
-                              </span>
-                            </td>
-                          );
-                        })}
-                        <td className="py-4 px-4 text-center">
-                          <div className="flex items-center justify-center">
-                            <div className="flex h-2 w-28 overflow-hidden rounded-full bg-neutral-100">
-                              {member.total === 0 ? (
-                                <div className="w-full bg-neutral-100" />
-                              ) : (
-                                SCHEMA_LEAD_STATUSES.map(st => {
-                                  const count = member.statusCounts?.[st] ?? 0;
-                                  if (count === 0) return null;
-                                  const widthPct = (count / member.total) * 100;
-                                  const stLabel = status.has(st) ? status(st) : st;
-                                  return (
-                                    <div
-                                      key={st}
-                                      style={{ width: `${widthPct}%`, backgroundColor: STATUS_COLORS[st] }}
-                                      title={`${stLabel}: ${count} (${widthPct.toFixed(0)}%)`}
-                                    />
-                                  );
-                                })
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className={`py-4 px-6 text-end ${convColor}`}>
-                          {member.conversionRate}%
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <MemberBreakdownTable byMember={byMember} />
       </div>
     </div>
   );
