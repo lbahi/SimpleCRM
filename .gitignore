@@ -48,8 +48,7 @@ next-env.d.ts
 /public/uploads/*
 !/public/uploads/.gitkeep
 
-# deployment files (use Nixpacks instead)
-Dockerfile
+# deployment files
 start.sh
 prisma.config.ts
 .npmrc
