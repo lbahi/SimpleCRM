@@ -54,7 +54,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         author: { select: { id: true, name: true, avatarInitials: true } },
       },
     });
-    return NextResponse.json(comments);
+    return NextResponse.json({ comments, currentUserId: session.userId });
   } catch {
     return NextResponse.json({ error: "Failed to fetch comments" }, { status: 500 });
   }
@@ -120,5 +120,66 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json(comment, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Failed to create comment" }, { status: 500 });
+  }
+}
+
+// PATCH /api/leads/[id]/notes/[noteId]/comments  — edit own comment
+const patchSchema = z.object({
+  commentId: z.string().min(1),
+  body: z
+    .string()
+    .min(1, "Comment cannot be empty")
+    .max(5000)
+    .refine((v) => v.trim().length > 0, "Comment cannot be whitespace only"),
+});
+
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id: leadId, noteId } = await params;
+  if (!(await assertLeadAccess(leadId, session))) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const rawBody = await req.json();
+  const parsed = patchSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+
+  try {
+    // Verify note belongs to the lead
+    const note = await prisma.note.findUnique({
+      where: { id: noteId },
+      select: { leadId: true },
+    });
+    if (!note || note.leadId !== leadId) {
+      return NextResponse.json({ error: "Note not found" }, { status: 404 });
+    }
+
+    // Verify comment exists and belongs to current user
+    const existing = await prisma.noteComment.findUnique({
+      where: { id: parsed.data.commentId },
+      select: { authorId: true, noteId: true },
+    });
+    if (!existing || existing.noteId !== noteId) {
+      return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+    }
+    if (existing.authorId !== session.userId) {
+      return NextResponse.json({ error: "You can only edit your own comments" }, { status: 403 });
+    }
+
+    const updated = await prisma.noteComment.update({
+      where: { id: parsed.data.commentId },
+      data: { body: parsed.data.body.trim() },
+      include: {
+        author: { select: { id: true, name: true, avatarInitials: true } },
+      },
+    });
+
+    return NextResponse.json(updated);
+  } catch {
+    return NextResponse.json({ error: "Failed to update comment" }, { status: 500 });
   }
 }
