@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { MoreHorizontal, Edit2, ShieldAlert, ShieldCheck } from "lucide-react";
+import { MoreHorizontal, Edit2, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DeleteMemberDialog } from "./dialogs/delete-member-dialog";
 
 interface MemberRowProps {
   member: MemberWithStats;
@@ -29,6 +30,7 @@ interface MemberRowProps {
 export function MemberRow({ member, onEdit, onDeactivate, onRefresh }: MemberRowProps) {
   const t = useTranslations("team");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const handleReactivate = async () => {
     setIsUpdating(true);
@@ -90,8 +92,8 @@ export function MemberRow({ member, onEdit, onDeactivate, onRefresh }: MemberRow
                   {t("editProfile")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => onDeactivate(member)} 
+                <DropdownMenuItem
+                  onClick={() => onDeactivate(member)}
                   className="gap-2 rounded-lg text-red-600 focus:text-red-600 focus:bg-red-50"
                 >
                   <ShieldAlert className="h-3.5 w-3.5" />
@@ -99,17 +101,33 @@ export function MemberRow({ member, onEdit, onDeactivate, onRefresh }: MemberRow
                 </DropdownMenuItem>
               </>
             ) : (
-              <DropdownMenuItem 
-                onClick={handleReactivate} 
-                disabled={isUpdating}
-                className="gap-2 rounded-lg text-green-600 focus:text-green-600 focus:bg-green-50"
-              >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                {t("reactivateMember")}
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem
+                  onClick={handleReactivate}
+                  disabled={isUpdating}
+                  className="gap-2 rounded-lg text-green-600 focus:text-green-600 focus:bg-green-50"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  {t("reactivateMember")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setDeleteOpen(true)}
+                  className="gap-2 rounded-lg text-red-700 focus:text-red-700 focus:bg-red-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete Permanently
+                </DropdownMenuItem>
+              </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        <DeleteMemberDialog
+          member={member}
+          open={deleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          onDeleted={onRefresh}
+        />
       </td>
     </tr>
   );

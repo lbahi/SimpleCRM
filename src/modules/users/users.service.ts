@@ -43,7 +43,7 @@ export async function getUserById(id: string): Promise<SafeUser | null> {
 
 export async function listMembers(): Promise<MemberWithStats[]> {
   const members = await prisma.user.findMany({
-    where: { role: Role.MEMBER },
+    where: { role: Role.MEMBER, deletedAt: null },
     orderBy: { createdAt: "asc" },
     include: {
       _count: { select: { assignedLeads: true } }
