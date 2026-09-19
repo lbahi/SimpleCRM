@@ -105,13 +105,13 @@ export function AnalyticsDateRangePicker() {
         aria-label="Filter analytics by date range"
       >
         <CalendarIcon className="h-4 w-4 text-neutral-500" />
-        <span>{currentLabel}</span>
+        <span className="max-w-[140px] truncate">{currentLabel}</span>
       </PopoverTrigger>
 
       <PopoverContent
         align="end"
         sideOffset={6}
-        className="w-auto p-4 bg-white border border-[#E2E8F0] rounded-xl shadow-xl z-50"
+        className="w-auto max-w-[calc(100vw-2rem)] overflow-x-hidden p-4 bg-white border border-[#E2E8F0] rounded-xl shadow-xl z-50"
       >
         <div className="flex gap-4">
           {/* Presets Column */}

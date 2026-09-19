@@ -131,13 +131,13 @@ export function TwoMonthCalendar({ range, onRangeChange }: TwoMonthCalendarProps
         </button>
       </div>
 
-      <div className="flex gap-6 items-start">
+      <div className="flex flex-col sm:flex-row gap-6 items-start">
         <MonthGrid
           month={baseMonth}
           range={range}
           onDayClick={handleDayClick}
         />
-        <div className="w-[1px] bg-neutral-200 self-stretch" />
+        <div className="h-[1px] w-full sm:h-auto sm:w-[1px] bg-neutral-200 self-stretch" />
         <MonthGrid
           month={nextMonth}
           range={range}

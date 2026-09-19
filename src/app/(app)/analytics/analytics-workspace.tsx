@@ -73,8 +73,8 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
 
   return (
     <div className="flex-1 overflow-auto bg-gray-50 -m-6 h-[calc(100vh-64px)]">
-      <div className="p-8 pb-16">
-        <div className="flex items-center justify-between mb-8">
+      <div className="p-4 sm:p-8 pb-16">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 sm:mb-8">
           <div>
             <h1 className="text-3xl mb-2 font-normal text-neutral-900">{t("title")}</h1>
             <p className="text-gray-600">{t("subtitle")}</p>
@@ -85,7 +85,7 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
           {/* Leads by Status */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h2 className="text-lg mb-4 font-semibold">{t("leadsByStatus")}</h2>
@@ -146,7 +146,7 @@ export function AnalyticsWorkspace({ analytics }: AnalyticsWorkspaceProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           {/* Leads Over Time by Status */}
           <LeadsTrendChart data={analytics.leadsOverTime} />
 
