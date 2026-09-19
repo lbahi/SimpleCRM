@@ -64,7 +64,10 @@ export function LeadDetailTabPanel({
                 : "text-neutral-400 hover:text-neutral-600"
             )}
           >
-            {tab.label}
+            <span className="sm:hidden">
+              {tab.id === "info" ? "Info" : tab.id === "activity" ? "Activity" : tab.id === "notes" ? "Notes" : "Reminders"}
+            </span>
+            <span className="hidden sm:inline">{tab.label}</span>
             {tab.id === "reminders" && pendingCount > 0 && (
               <span className="ml-1.5 inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-100 px-1 text-[10px] font-bold text-amber-700">
                 {pendingCount}
