@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ChevronDown, LogOut, User } from "lucide-react";
+import { ChevronDown, LogOut, User, Menu } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import {
@@ -20,9 +20,10 @@ interface AppHeaderProps {
     role: "ADMIN" | "MEMBER";
     avatarInitials: string;
   };
+  onMenuOpen?: () => void;
 }
 
-export function AppHeader({ user }: AppHeaderProps) {
+export function AppHeader({ user, onMenuOpen }: AppHeaderProps) {
   const router = useRouter();
   const t = useTranslations("auth");
   const [open, setOpen] = useState(false);
@@ -44,7 +45,13 @@ export function AppHeader({ user }: AppHeaderProps) {
 
   return (
     <header className="relative z-40 flex h-20 items-center justify-between border-b border-gray-100 bg-white px-8">
-      <div />
+      <button
+        onClick={onMenuOpen}
+        className="p-2 -ml-2 rounded-xl text-gray-600 hover:text-black hover:bg-gray-50 transition-all lg:hidden"
+        aria-label="Open menu"
+      >
+        <Menu className="h-6 w-6" />
+      </button>
 
       <div className="flex items-center gap-6">
         <LanguageSwitcher />

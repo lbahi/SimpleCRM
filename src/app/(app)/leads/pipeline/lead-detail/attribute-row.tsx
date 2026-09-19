@@ -126,8 +126,8 @@ function AttributeValue({
 
 export const AttributeRow = React.memo(function AttributeRow({ col, lead, onUpdate }: AttributeRowProps) {
   return (
-    <div className="flex items-center min-h-[44px] px-6 border-b border-neutral-50 group">
-      <span className="w-[160px] flex-shrink-0 text-[12px] font-medium text-neutral-400">
+    <div className="flex flex-col sm:flex-row sm:items-center min-h-[44px] px-6 border-b border-neutral-50 group">
+      <span className="w-full sm:w-[160px] sm:flex-shrink-0 mb-0.5 sm:mb-0 text-[12px] font-medium text-neutral-400">
         {col.label}
       </span>
       <div className="flex-1 flex items-center min-w-0">

@@ -15,14 +15,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { createLeadSchema, type CreateLeadInput } from "@/modules/leads/leads.schema";
 import { toast } from "sonner";
 import { createLead } from "@/app/actions/leads";
@@ -46,7 +38,6 @@ export function CreateLeadDialog({
     register,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors },
   } = useForm<CreateLeadInput>({
     resolver: zodResolver(createLeadSchema) as any,
@@ -63,12 +54,10 @@ export function CreateLeadDialog({
       reset({
         name: "",
         phone: "",
-        email: "",
         location: "",
         rating: 0,
         sources: [],
         source: "WEBSITE",
-        notes: "",
         tags: [],
         status: (defaultStatus as any) || "NEW",
       });
@@ -100,7 +89,7 @@ export function CreateLeadDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
               <Input
@@ -126,19 +115,6 @@ export function CreateLeadDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="john@example.com"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
             <Input
               id="location"
@@ -150,68 +126,6 @@ export function CreateLeadDialog({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="rating">Rating (0-5)</Label>
-              <Input
-                id="rating"
-                type="number"
-                min="0"
-                max="5"
-                placeholder="0"
-                {...register("rating", { valueAsNumber: true })}
-              />
-              {errors.rating && (
-                <p className="text-xs text-destructive">{errors.rating.message}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="source">Source</Label>
-              <Select
-                defaultValue="WEBSITE"
-                onValueChange={(val) => setValue("source", val as any)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select source" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="WEBSITE">Website</SelectItem>
-                  <SelectItem value="FACEBOOK_AD">Facebook Ad</SelectItem>
-                  <SelectItem value="INSTAGRAM">Instagram</SelectItem>
-                  <SelectItem value="REFERRAL">Referral</SelectItem>
-                  <SelectItem value="COLD_OUTREACH">Cold Outreach</SelectItem>
-                  <SelectItem value="WALK_IN">Walk In</SelectItem>
-                  <SelectItem value="OTHER">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="sources">Sources (comma-separated)</Label>
-            <Input
-              id="sources"
-              placeholder="Website, Referral, Social Media"
-              {...register("sources")}
-              onChange={(e) => {
-                const value = e.target.value;
-                const sourcesArray = value.split(',').map(s => s.trim()).filter(s => s.length > 0);
-                setValue("sources", sourcesArray as any);
-              }}
-            />
-            <p className="text-xs text-muted-foreground">Enter multiple sources separated by commas</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Initial Notes</Label>
-            <Textarea
-              id="notes"
-              placeholder="Any additional information..."
-              className="resize-none"
-              {...register("notes")}
-            />
-          </div>
-
           <DialogFooter>
             <Button
               type="button"
@@ -221,7 +135,11 @@ export function CreateLeadDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-black text-white hover:bg-neutral-800 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+            >
               {loading ? "Creating..." : "Create Lead"}
             </Button>
           </DialogFooter>

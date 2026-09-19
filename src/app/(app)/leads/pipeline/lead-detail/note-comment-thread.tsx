@@ -130,7 +130,7 @@ export function NoteCommentThread({ leadId, noteId, isSample }: NoteCommentThrea
                     {isOwn && !isEditing && (
                       <button
                         onClick={() => setEditingId(c.id)}
-                        className="ml-auto opacity-0 group-hover/comment:opacity-100 p-1 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-all"
+                        className="ml-auto p-1 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-all"
                         title="Edit comment"
                       >
                         <Pencil size={11} />

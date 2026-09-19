@@ -52,13 +52,13 @@ export function LeadDetailTabPanel({
   return (
     <>
       {/* ── Tab Bar ── */}
-      <div className="flex border-b border-neutral-200 px-6 shrink-0">
+      <div className="flex overflow-x-auto border-b border-neutral-200 px-6 shrink-0">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "px-4 py-3 text-[13px] font-medium transition-colors relative",
+              "px-4 py-3 text-[13px] font-medium transition-colors relative whitespace-nowrap",
               activeTab === tab.id
                 ? "text-neutral-900"
                 : "text-neutral-400 hover:text-neutral-600"

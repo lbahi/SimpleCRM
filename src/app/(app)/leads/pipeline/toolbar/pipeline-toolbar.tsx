@@ -1,7 +1,7 @@
 // SimpleCRM — pipeline-toolbar
 "use client";
 
-import { Search, Filter, Settings, RefreshCw, Sparkles } from 'lucide-react';
+import { Search, Filter, Settings, RefreshCw, Sparkles, Plus } from 'lucide-react';
 import { CustomDropdown } from '@/components/ui/custom-dropdown';
 import { useTranslations } from "next-intl";
 
@@ -87,6 +87,15 @@ export function PipelineToolbar({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Add Lead (Desktop) */}
+          <button
+            onClick={onShowCreate}
+            className="hidden lg:flex px-3 py-2 bg-black text-white rounded text-sm hover:bg-neutral-800 items-center gap-2 font-medium transition-colors"
+          >
+            <Plus size={16} />
+            <span>Add Lead</span>
+          </button>
+
           {/* Refresh */}
           <button
             onClick={onRefreshLeads}

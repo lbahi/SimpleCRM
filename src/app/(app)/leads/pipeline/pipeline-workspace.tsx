@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { DndContext, rectIntersection } from "@dnd-kit/core";
+import { Plus } from "lucide-react";
 import type { PaginatedLeads } from "@/modules/leads/leads.types";
 import { useColumnStateContext } from "./context/column-state-context";
 import { ColumnStateProvider } from "./context/column-state-context";
@@ -88,6 +89,16 @@ function PipelineWorkspaceInner({
             currentUserId={currentUserId}
           />
         </div>
+
+        {/* Mobile Floating Action Button (FAB) for Add Lead */}
+        <button
+          onClick={() => setShowCreate(true)}
+          className="lg:hidden fixed bottom-20 right-4 z-50 h-14 w-14 rounded-full bg-black text-white shadow-lg flex items-center justify-center hover:bg-neutral-800 active:scale-95 transition-all"
+          aria-label="Add lead"
+        >
+          <Plus size={24} />
+        </button>
+
         <WorkspaceModals
           modals={{ 
             showCreate, setShowCreate, 

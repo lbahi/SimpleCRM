@@ -106,7 +106,7 @@ export const LeadDetailReminders = React.memo(function LeadDetailReminders({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-8 px-3 text-[12px] font-semibold text-neutral-600 hover:text-green-600 hover:bg-green-50 rounded-lg gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-8 px-3 text-[12px] font-semibold text-neutral-600 hover:text-green-600 hover:bg-green-50 rounded-lg gap-1.5"
                     onClick={() => handleDismiss(reminder.id)}
                   >
                     <Check size={14} />

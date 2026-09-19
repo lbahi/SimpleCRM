@@ -33,7 +33,7 @@ export function LeadDetailHeader({ lead }: LeadDetailHeaderProps) {
             <h2 className="truncate text-xl font-bold text-neutral-900 tracking-tight">
               {lead.name}
             </h2>
-            <div className="mt-1 flex items-center gap-3">
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
               {lead.phone && (
                 <a
                   href={`tel:${lead.phone}`}
@@ -58,7 +58,7 @@ export function LeadDetailHeader({ lead }: LeadDetailHeaderProps) {
         </div>
       </div>
       
-      <div className="mt-6 flex items-center gap-8">
+      <div className="mt-6 flex flex-wrap items-center gap-x-8 gap-y-3">
         <div className="flex flex-col gap-0.5">
           <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Created</span>
           <div className="flex items-center gap-1.5">

@@ -6,19 +6,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
-import { 
-  LogOut, 
-  ChevronLeft,
-  LayoutDashboard,
-  Users,
-  Inbox,
-  Bell,
-  BarChart3,
-  FileText,
-  UserCog,
-  Settings,
-  Plug
-} from "lucide-react";
+import { LogOut, ChevronLeft, LayoutDashboard, Users, Inbox, Bell, BarChart3, FileText, UserCog, Settings, Plug } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
@@ -31,9 +19,10 @@ interface SidebarProps {
   };
   inboxCount?: number;
   reminderCount?: number;
+  className?: string;
 }
 
-export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProps) {
+export function Sidebar({ user, inboxCount = 0, reminderCount = 0, className }: SidebarProps) {
   const t = useTranslations("nav");
   const pathname = usePathname();
 
@@ -62,7 +51,6 @@ export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProp
     }
   };
 
-
   const menuItems = [
     { label: t("dashboard"), href: "/dashboard", icon: LayoutDashboard },
     ...(user.role === "ADMIN" ? [
@@ -83,7 +71,8 @@ export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProp
     <aside 
       className={cn(
         "flex h-screen flex-col bg-white text-black border-r border-gray-100 transition-all duration-300 ease-in-out z-50 shadow-sm",
-        isCollapsed ? "w-[80px]" : "w-[260px]"
+        isCollapsed ? "w-[80px]" : "w-[260px]",
+        className
       )}
     >
       {/* Brand Section */}
@@ -119,11 +108,6 @@ export function Sidebar({ user, inboxCount = 0, reminderCount = 0 }: SidebarProp
 
       {/* Navigation */}
       <div className="flex-1 px-4 space-y-1 py-2 overflow-y-auto custom-scrollbar">
-        {!isCollapsed && (
-          <div className="px-4 mb-4">
-          </div>
-        )}
-        
         {menuItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
