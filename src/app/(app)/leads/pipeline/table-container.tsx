@@ -148,7 +148,7 @@ export function TableContainer({
 
   return (
     <TooltipProvider delay={100}>
-      <div className="overflow-auto flex-1 bg-white rounded-lg border border-gray-100">
+      <div className="hidden lg:block overflow-auto flex-1 bg-white rounded-lg border border-gray-100">
         <table className="border-collapse" style={{ tableLayout: "fixed", width: "max-content", minWidth: "100%" }}>
           <TableHeader 
             orderedVisibleColumns={orderedVisibleColumns}

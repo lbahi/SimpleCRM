@@ -13,6 +13,7 @@ import { useInlineRow } from "./hooks/use-inline-row";
 import { useWorkspaceDnd } from "./hooks/use-workspace-dnd";
 import { PipelineToolbar } from "./toolbar/pipeline-toolbar";
 import { TableContainer } from "./table-container";
+import { LeadsCardList } from "./leads-card-list";
 import { WorkspaceModals } from "./workspace-modals";
 
 function PipelineWorkspaceInner({ 
@@ -87,6 +88,11 @@ function PipelineWorkspaceInner({
             onDelete={deleteLead}
             currentUserRole={currentUserRole}
             currentUserId={currentUserId}
+          />
+          <LeadsCardList
+            leads={sortedLeads}
+            onExpand={setSelectedDetailId}
+            currentUserRole={currentUserRole}
           />
         </div>
 
