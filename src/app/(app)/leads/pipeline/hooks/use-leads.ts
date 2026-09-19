@@ -7,11 +7,11 @@ import {
   checkResponse, 
   ColumnId,
   getFieldValue,
-  matchesText,
   compareValues
 } from "../model";
 import type { PaginatedLeads } from "@/modules/leads/leads.types";
 import { TableState } from "./use-table-state";
+import { filterLeads } from "./filter-leads";
 
 export function useLeads(initialData: PaginatedLeads, tableState: TableState) {
   const initialLeads = useMemo<PipelineLead[]>(() => {
@@ -73,55 +73,13 @@ export function useLeads(initialData: PaginatedLeads, tableState: TableState) {
 
   const filteredLeads = useMemo(() => {
     const { quickSearch, filters } = tableState;
-    return allLeads.filter((lead) => {
-      // Quick search
-      const searchBlob = [
-        lead.name,
-        lead.phone,
-        lead.location,
-        lead.assignedTo?.name,
-      ].join(" ").toLowerCase();
-
-      if (quickSearch.trim() && !searchBlob.includes(quickSearch.trim().toLowerCase())) {
-        return false;
-      }
-
-      // Advanced Filters
-      // Status (multi-select)
-      if (filters.status && filters.status.length > 0 && !filters.status.includes(lead.status)) {
-        return false;
-      }
-      
-      // Assigned To
-      if (filters.assignedTo) {
-        if (filters.assignedTo === "UNASSIGNED") {
-          if (lead.assignedToId) return false;
-        } else if (lead.assignedToId !== filters.assignedTo) {
-          return false;
-        }
-      }
-      
-      // Source (multi-select)
-      if (filters.sources && filters.sources.length > 0) {
-        const leadSources = lead.sources.map(s => s.source.toUpperCase());
-        const filterSources = filters.sources.map((s: string) => s.toUpperCase());
-        if (!filterSources.some(s => leadSources.includes(s))) {
-          return false;
-        }
-      }
-      
-      // Location (text input)
-      if (filters.location && !matchesText(lead.location, (filters.location as string))) {
-        return false;
-      }
-
-      // Rating (star rating)
-      if (filters.rating && filters.rating > 0 && (lead.rating ?? 0) < (filters.rating as number)) {
-        return false;
-      }
-
-      return true;
-    });
+    const q = quickSearch.trim().toLowerCase();
+    const quickFiltered = q
+      ? allLeads.filter((lead) =>
+          [lead.name, lead.phone, lead.location, lead.assignedTo?.name].join(" ").toLowerCase().includes(q)
+        )
+      : allLeads;
+    return filterLeads(quickFiltered, filters);
   }, [allLeads, tableState.quickSearch, tableState.filters]);
 
   const sortedLeads = useMemo(() => {

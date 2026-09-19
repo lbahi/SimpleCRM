@@ -2,13 +2,15 @@
 import { useState } from "react";
 import { GroupByField, ColumnId } from "../model";
 
-interface FilterState {
+export interface FilterState {
   status: string[];
   assignedTo: string;
   sources: string[];
   location: string;
   rating: number;
-  [key: string]: string | string[] | number | null;
+  lastContactedFrom?: string;
+  lastContactedTo?: string;
+  [key: string]: string | string[] | number | null | undefined;
 }
 
 const INITIAL_FILTERS: FilterState = {
@@ -17,6 +19,8 @@ const INITIAL_FILTERS: FilterState = {
   sources: [],
   location: "",
   rating: 0,
+  lastContactedFrom: undefined,
+  lastContactedTo: undefined,
 };
 
 export function useTableState() {

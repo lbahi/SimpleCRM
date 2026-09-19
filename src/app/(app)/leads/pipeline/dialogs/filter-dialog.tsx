@@ -63,9 +63,28 @@ export function FilterDialog({ open, onOpenChange, draftFilters, onDraftChange, 
               placeholder="Filter by city or region..."
             />
           </div>
+
+          <div className="space-y-3">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-400">Last Contacted</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="date"
+                value={draftFilters.lastContactedFrom || ""}
+                onChange={(e) => onDraftChange({ ...draftFilters, lastContactedFrom: e.target.value || undefined })}
+                className="w-full h-10 px-3 rounded-xl border border-neutral-200 bg-white text-[13px] text-neutral-700 outline-none focus:border-primary transition-all"
+              />
+              <span className="text-[13px] text-neutral-400 shrink-0">to</span>
+              <input
+                type="date"
+                value={draftFilters.lastContactedTo || ""}
+                onChange={(e) => onDraftChange({ ...draftFilters, lastContactedTo: e.target.value || undefined })}
+                className="w-full h-10 px-3 rounded-xl border border-neutral-200 bg-white text-[13px] text-neutral-700 outline-none focus:border-primary transition-all"
+              />
+            </div>
+          </div>
         </div>
 
-        <DialogFooter className="p-6 bg-neutral-50/50 border-t border-neutral-100 flex flex-row items-center justify-between gap-4">
+        <DialogFooter className="p-6 bg-neutral-50/50 border-t border-neutral-100 flex flex-row items-center justify-between gap-4 mx-0 mb-0">
           <button onClick={onClear} className="px-4 h-10 rounded-xl text-[13px] font-bold text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-all">Clear all</button>
           <button onClick={onApply} className="flex-1 h-10 bg-neutral-900 text-white rounded-xl text-[13px] font-bold hover:bg-neutral-800 shadow-md transition-all">Apply Filters</button>
         </DialogFooter>

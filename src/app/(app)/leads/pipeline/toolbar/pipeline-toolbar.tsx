@@ -29,28 +29,30 @@ export function PipelineToolbar({
     !!tableState.filters.assignedTo,
     !!tableState.filters.location,
     tableState.filters.rating > 0,
+    !!tableState.filters.lastContactedFrom,
+    !!tableState.filters.lastContactedTo,
   ].filter(Boolean).length;
 
   return (
-    <div className="border-b border-gray-200 bg-white px-4 py-3 -mx-6 -mt-6 mb-6">
-      <div className="flex items-center justify-between gap-4">
+    <div className="border-b border-gray-200 bg-white px-4 py-3 -mx-6 -mt-6 mb-6 overflow-x-auto">
+      <div className="flex items-center justify-between gap-4 min-w-max">
         <div className="flex items-center gap-3 flex-1">
           {/* Search */}
-          <div className="relative w-64">
+          <div className="relative w-64 shrink-0">
             <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={tableState.quickSearch}
               onChange={(e) => tableState.setQuickSearch(e.target.value)}
               placeholder={t("searchPlaceholder")}
-              className="w-full ps-9 pe-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              className="w-full ps-9 pe-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-black shrink-0"
             />
           </div>
 
           {/* Filters */}
           <button
             onClick={onShowFilter}
-            className="relative px-3 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 flex items-center gap-2"
+            className="relative px-3 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 flex items-center gap-2 shrink-0"
           >
             <Filter size={16} />
             {t("filters")} {activeFiltersCount > 0 && `(${activeFiltersCount})`}
@@ -73,13 +75,13 @@ export function PipelineToolbar({
               { value: 'sources', label: t("groupBySource") },
               { value: 'assignedTo', label: t("groupByAssignedTo") },
             ]}
-            className="w-48"
+            className="w-48 shrink-0"
           />
 
           {/* Customize */}
           <button
             onClick={onShowCustomize}
-            className="px-3 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 flex items-center gap-2"
+            className="px-3 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 flex items-center gap-2 shrink-0"
           >
             <Settings size={16} />
             {t("customize")}
@@ -90,7 +92,7 @@ export function PipelineToolbar({
           {/* Add Lead (Desktop) */}
           <button
             onClick={onShowCreate}
-            className="hidden lg:flex px-3 py-2 bg-black text-white rounded text-sm hover:bg-neutral-800 items-center gap-2 font-medium transition-colors"
+            className="hidden lg:flex px-3 py-2 bg-black text-white rounded text-sm hover:bg-neutral-800 items-center gap-2 font-medium transition-colors shrink-0"
           >
             <Plus size={16} />
             <span>Add Lead</span>
@@ -99,14 +101,14 @@ export function PipelineToolbar({
           {/* Refresh */}
           <button
             onClick={onRefreshLeads}
-            className="p-2 border border-gray-300 rounded text-sm hover:bg-gray-50"
+            className="p-2 border border-gray-300 rounded text-sm hover:bg-gray-50 shrink-0"
             title={t("refresh")}
           >
             <RefreshCw size={16} />
           </button>
 
           {/* AI Button */}
-          <button className="p-2 border border-gray-300 rounded text-sm hover:bg-gray-50" title={t("aiFeatures")}>
+          <button className="p-2 border border-gray-300 rounded text-sm hover:bg-gray-50 shrink-0" title={t("aiFeatures")}>
             <Sparkles size={16} />
           </button>
         </div>
