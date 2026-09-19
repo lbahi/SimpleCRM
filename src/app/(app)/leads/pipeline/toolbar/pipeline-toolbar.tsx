@@ -34,7 +34,7 @@ export function PipelineToolbar({
   ].filter(Boolean).length;
 
   return (
-    <div className="border-b border-gray-200 bg-white px-4 py-3 -mx-6 -mt-6 mb-6 overflow-x-auto">
+    <div className="border-b border-gray-200 bg-white px-4 py-3 -mx-6 -mt-6 mb-6 overflow-x-auto shrink-0">
       <div className="flex items-center justify-between gap-4 min-w-max">
         <div className="flex items-center gap-3 flex-1">
           {/* Search */}
