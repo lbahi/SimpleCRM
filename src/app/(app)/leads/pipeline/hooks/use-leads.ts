@@ -57,7 +57,7 @@ export function useLeads(initialData: PaginatedLeads, tableState: TableState) {
 
   const refreshLeads = async () => {
     try {
-      const res = await fetch("/api/leads?page=1&limit=100&sortBy=createdAt&sortDir=desc");
+      const res = await fetch("/api/leads?page=1&limit=1000&sortBy=createdAt&sortDir=desc");
       if (!res.ok) throw new Error("Failed to refresh leads");
       const payload: PaginatedLeads = await res.json();
       if (payload.leads.length === 0) {
