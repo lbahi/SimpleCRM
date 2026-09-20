@@ -69,6 +69,9 @@ export async function updateLead(
     ...(input.lastContacted !== undefined && { 
       lastContacted: input.lastContacted ? new Date(input.lastContacted) : null 
     }),
+    ...(input.status === "CONTACTED" && !input.lastContacted && {
+      lastContacted: new Date(),
+    }),
   };
 
   const lead = await prisma.$transaction(async (tx) => {
