@@ -15,6 +15,7 @@ import { ColumnId, PipelineLead, ColumnDef } from './model';
 import { getFieldValue, valueToString } from './model.utils';
 import { InlineRowState } from './hooks/use-inline-row';
 import { TableState } from './hooks/use-table-state';
+import { useGroupExpansion } from './hooks/use-group-expansion';
 import * as React from 'react';
 
 
@@ -64,7 +65,6 @@ export function TableContainer({
   currentUserRole,
   currentUserId,
 }: TableContainerProps) {
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [editingCell, setEditingCell] = useState<{ leadId: string; column: ColumnId } | null>(null);
   const [editingValue, setEditingValue] = useState("");
 
@@ -91,6 +91,8 @@ export function TableContainer({
     });
     return groups;
   }, [leads, tableState.groupBy]);
+
+  const { expandedGroups, setExpandedGroups } = useGroupExpansion(groupedLeads);
 
   const orderedVisibleColumns = useMemo(() => {
     return columnState.columnOrder

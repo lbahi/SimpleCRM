@@ -13,7 +13,7 @@ export default async function LeadsPage() {
     userId: session.userId,
     role: session.role,
     page: 1,
-    limit: 50,
+    limit: 100,
     sortBy: "createdAt",
     sortDir: "desc"
   });
