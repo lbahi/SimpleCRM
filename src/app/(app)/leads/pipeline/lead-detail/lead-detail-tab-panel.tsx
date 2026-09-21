@@ -33,6 +33,7 @@ interface LeadDetailTabPanelProps {
   reminders: ReminderItem[];
   onRefreshReminders: () => void;
   onAddNote: (body: string) => Promise<void>;
+  onEditNote: (noteId: string, body: string) => Promise<void>;
   isSample?: boolean;
 }
 
@@ -47,6 +48,7 @@ export function LeadDetailTabPanel({
   reminders,
   onRefreshReminders,
   onAddNote,
+  onEditNote,
   isSample,
 }: LeadDetailTabPanelProps) {
   return (
@@ -99,6 +101,7 @@ export function LeadDetailTabPanel({
             leadId={lead.id}
             notes={notes}
             onAddNote={onAddNote}
+            onEditNote={onEditNote}
             isSample={isSample}
           />
         )}

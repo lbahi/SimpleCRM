@@ -38,7 +38,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         },
       },
     });
-    return NextResponse.json(notes);
+    return NextResponse.json({ notes, currentUserId: session.userId });
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch notes" }, { status: 500 });
   }

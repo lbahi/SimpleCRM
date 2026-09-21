@@ -4,12 +4,14 @@ import { toast } from "sonner";
 import { PipelineLead, checkResponse } from "../../model";
 
 interface NoteAuthor {
+  id: string;
   avatarInitials: string;
   name: string;
 }
 
 export interface NoteItem {
   id: string;
+  authorId: string;
   author: NoteAuthor;
   createdAt: string | Date;
   body?: string;

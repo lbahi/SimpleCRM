@@ -40,7 +40,7 @@ export function LeadDetailModal({
   const { lead, notes, activityLogs, reminders, mutate } =
     useLeadDetail(initialLead?.id, isSample);
 
-  const { updateStatus, updateRating, addNote } =
+  const { updateStatus, updateRating, addNote, editNote } =
     useLeadMutations(initialLead?.id, mutate, isSample);
 
   if (!initialLead) return null;
@@ -171,6 +171,7 @@ export function LeadDetailModal({
             reminders={reminders || []}
             onRefreshReminders={mutate.refresh}
             onAddNote={addNote}
+            onEditNote={editNote}
             isSample={isSample}
           />
         </DialogContent>

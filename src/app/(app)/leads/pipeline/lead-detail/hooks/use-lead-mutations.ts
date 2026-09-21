@@ -83,5 +83,24 @@ export function useLeadMutations(leadId: string, mutate: MutateState, isSample?:
     }
   };
 
-  return { updateStatus, updateRating, logContact, addNote };
+  const editNote = async (noteId: string, body: string) => {
+    if (isSample) return;
+
+    try {
+      const res = await fetch(`/api/leads/${leadId}/notes/${noteId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body }),
+      });
+      if (!res.ok) throw new Error("Failed to update note");
+      const updated = await res.json();
+
+      mutate.setNotes(prev => prev.map(n => (n.id === updated.id ? updated : n)));
+      toast.success("Note updated");
+    } catch {
+      toast.error("Failed to update note");
+    }
+  };
+
+  return { updateStatus, updateRating, logContact, addNote, editNote };
 }

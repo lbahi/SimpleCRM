@@ -2,16 +2,19 @@ import React, { useState, useRef, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Send } from "lucide-react";
+import { MessageSquare, Pencil, Send } from "lucide-react";
 import { NoteCommentThread } from "./note-comment-thread";
+import { NoteCommentEditForm } from "./note-comment-edit-form";
 
 interface NoteAuthor {
+  id: string;
   avatarInitials: string;
   name: string;
 }
 
 interface NoteItem {
   id: string;
+  authorId: string;
   author: NoteAuthor;
   createdAt: string | Date;
   body?: string;
@@ -22,13 +25,28 @@ interface LeadNotesSectionProps {
   leadId: string;
   notes: NoteItem[];
   onAddNote: (body: string) => Promise<void>;
+  onEditNote: (noteId: string, body: string) => Promise<void>;
   isSample?: boolean;
 }
 
-export const LeadNotesSection = React.memo(function LeadNotesSection({ leadId, notes, onAddNote, isSample }: LeadNotesSectionProps) {
+export const LeadNotesSection = React.memo(function LeadNotesSection({ leadId, notes, onAddNote, onEditNote, isSample }: LeadNotesSectionProps) {
   const [body, setBody] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (isSample) return;
+    fetch(`/api/leads/${leadId}/notes`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && typeof data.currentUserId === "string") {
+          setCurrentUserId(data.currentUserId);
+        }
+      })
+      .catch(err => console.error(err));
+  }, [leadId, isSample]);
 
   const handleInput = () => {
     if (textareaRef.current) {
@@ -50,6 +68,11 @@ export const LeadNotesSection = React.memo(function LeadNotesSection({ leadId, n
     if (textareaRef.current) {
       textareaRef.current.style.height = "40px";
     }
+  };
+
+  const handleSaveEdit = async (noteId: string, newBody: string) => {
+    await onEditNote(noteId, newBody);
+    setEditingId(null);
   };
 
   return (
@@ -89,29 +112,50 @@ export const LeadNotesSection = React.memo(function LeadNotesSection({ leadId, n
             <span className="text-[13px] font-medium">No notes recorded for this lead</span>
           </div>
         ) : (
-          notes.map((note) => (
-            <div key={note.id} className="flex gap-4 group">
-              <div className="h-8 w-8 rounded-full bg-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-500 flex-shrink-0">
-                {note.author.avatarInitials}
-              </div>
-              <div className="flex flex-col gap-1.5 flex-1 pt-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-bold text-neutral-900">{note.author.name}</span>
-                  <span className="text-[11px] text-neutral-400">
-                    {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
-                  </span>
+          notes.map((note) => {
+            const isOwn = currentUserId === note.author.id;
+            const isEditing = editingId === note.id;
+            return (
+              <div key={note.id} className="flex gap-4 group">
+                <div className="h-8 w-8 rounded-full bg-neutral-100 flex items-center justify-center text-[10px] font-bold text-neutral-500 flex-shrink-0">
+                  {note.author.avatarInitials}
                 </div>
-                <div className="text-[13px] text-neutral-700 leading-relaxed bg-white border border-neutral-100 rounded-2xl px-4 py-3 shadow-sm group-hover:border-neutral-200 transition-colors">
-                  {note.body ?? note.content}
+                <div className="flex flex-col gap-1.5 flex-1 pt-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-bold text-neutral-900">{note.author.name}</span>
+                    <span className="text-[11px] text-neutral-400">
+                      {formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })}
+                    </span>
+                    {isOwn && !isEditing && (
+                      <button
+                        onClick={() => setEditingId(note.id)}
+                        className="ml-auto p-1 rounded-md text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-all"
+                        title="Edit note"
+                      >
+                        <Pencil size={11} />
+                      </button>
+                    )}
+                  </div>
+                  {isEditing ? (
+                    <NoteCommentEditForm
+                      comment={{ id: note.id, body: note.body ?? note.content ?? "" }}
+                      onSave={handleSaveEdit}
+                      onCancel={() => setEditingId(null)}
+                    />
+                  ) : (
+                    <div className="text-[13px] text-neutral-700 leading-relaxed bg-white border border-neutral-100 rounded-2xl px-4 py-3 shadow-sm group-hover:border-neutral-200 transition-colors">
+                      {note.body ?? note.content}
+                    </div>
+                  )}
+                  <NoteCommentThread
+                    leadId={leadId}
+                    noteId={note.id}
+                    isSample={isSample}
+                  />
                 </div>
-                <NoteCommentThread
-                  leadId={leadId}
-                  noteId={note.id}
-                  isSample={isSample}
-                />
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
