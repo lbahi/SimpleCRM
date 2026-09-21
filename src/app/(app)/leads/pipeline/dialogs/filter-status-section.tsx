@@ -3,14 +3,14 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { LeadStatus } from "@prisma/client";
 
-const STATUS_OPTIONS = [
-  { value: "NEW", label: "New" },
-  { value: "FRESH", label: "Fresh" },
-  { value: "CONTACTED", label: "Contacted" },
-  { value: "QUALIFIED", label: "Qualified" },
-  { value: "CONVERTED", label: "Converted" },
-  { value: "LOST", label: "Lost" },
+const STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
+  { value: LeadStatus.NEW, label: "New" },
+  { value: LeadStatus.NO_RESPOND, label: "No Respond" },
+  { value: LeadStatus.CONTACTED, label: "Contacted" },
+  { value: LeadStatus.CONVERTED, label: "Converted" },
+  { value: LeadStatus.LOST, label: "Lost" },
 ];
 
 interface FilterStatusSectionProps {

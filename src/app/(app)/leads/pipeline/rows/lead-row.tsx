@@ -34,6 +34,8 @@ interface LeadRowProps {
   onDelete?: (id: string) => void;
   currentUserRole: string;
   currentUserId: string;
+  isFirstInGroup?: boolean;
+  groupTopBorderColor?: string;
 }
 
 export function LeadRow({
@@ -57,9 +59,16 @@ export function LeadRow({
   onDelete,
   currentUserRole,
   currentUserId,
+  isFirstInGroup,
+  groupTopBorderColor,
 }: LeadRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: lead.id });
-  const style = { transform: CSS.Transform.toString(transform), transition, zIndex: isDragging ? 20 : undefined };
+  const style = { 
+    transform: CSS.Transform.toString(transform), 
+    transition, 
+    zIndex: isDragging ? 20 : undefined,
+    borderTop: isFirstInGroup && groupTopBorderColor ? `2px solid ${groupTopBorderColor}` : undefined 
+  };
   const selected = selectedDetailId === lead.id;
   const { allAvailableColumns } = useColumnStateContext();
 

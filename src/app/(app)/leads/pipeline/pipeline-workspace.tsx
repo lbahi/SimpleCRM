@@ -15,6 +15,7 @@ import { PipelineToolbar } from "./toolbar/pipeline-toolbar";
 import { TableContainer } from "./table-container";
 import { LeadsCardList } from "./leads-card-list";
 import { WorkspaceModals } from "./workspace-modals";
+import { MobileStatusChips } from "./mobile-status-chips";
 
 function PipelineWorkspaceInner({ 
   initialData, 
@@ -27,7 +28,7 @@ function PipelineWorkspaceInner({
 }) {
   const columnState = useColumnStateContext();
   const tableState = useTableState();
-  const { sortedLeads, persistFieldChange, refreshLeads, reorderLeads, clearManualOrder, duplicateLead, deleteLead } = useLeads(initialData, tableState);
+  const { sortedLeads, allLeads, persistFieldChange, refreshLeads, reorderLeads, clearManualOrder, duplicateLead, deleteLead } = useLeads(initialData, tableState);
   const inlineRow = useInlineRow(refreshLeads);
   const { sensors, handleDragEnd } = useWorkspaceDnd(sortedLeads, reorderLeads, columnState.columnOrder, columnState.reorderColumns);
 
@@ -72,6 +73,23 @@ function PipelineWorkspaceInner({
           onShowCustomize={() => setShowCustomize(true)}
           onRefreshLeads={refreshLeads}
         />
+        <MobileStatusChips
+          allLeads={allLeads}
+          selectedStatuses={tableState.filters.status}
+          onStatusToggle={(status) => {
+            const isCurrent = tableState.filters.status.length === 1 && tableState.filters.status[0] === status;
+            tableState.setFilters({
+              ...tableState.filters,
+              status: isCurrent ? [] : [status],
+            });
+          }}
+          onClearStatus={() => {
+            tableState.setFilters({
+              ...tableState.filters,
+              status: [],
+            });
+          }}
+        />
         <div className="flex-1 flex flex-col">
           <TableContainer
             leads={sortedLeads}
@@ -88,6 +106,7 @@ function PipelineWorkspaceInner({
             onDelete={deleteLead}
             currentUserRole={currentUserRole}
             currentUserId={currentUserId}
+            totalCount={initialData.total ?? (initialData as any).totalCount ?? sortedLeads.length}
           />
           <LeadsCardList
             leads={sortedLeads}

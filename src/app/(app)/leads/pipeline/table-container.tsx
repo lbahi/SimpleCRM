@@ -2,14 +2,11 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { TableHeader } from './table-header';
 import { LeadRow } from './rows/lead-row';
 import { GhostRow } from './rows/ghost-row';
+import { GroupHeaderRow } from './rows/group-header-row';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ColumnId, PipelineLead, ColumnDef } from './model';
 import { getFieldValue, valueToString } from './model.utils';
@@ -17,9 +14,9 @@ import { InlineRowState } from './hooks/use-inline-row';
 import { TableState } from './hooks/use-table-state';
 import { useGroupExpansion } from './hooks/use-group-expansion';
 import { useGroupedLeads } from './hooks/use-grouped-leads';
+import { STATUS_CONFIG } from './cells/status-cell';
+import { LeadStatus } from '@prisma/client';
 import * as React from 'react';
-
-
 
 interface TableContainerProps {
   leads: PipelineLead[];
@@ -48,23 +45,13 @@ interface TableContainerProps {
   onDelete: (id: string) => void;
   currentUserRole: string;
   currentUserId: string;
+  totalCount?: number;
 }
 
 export function TableContainer({
-  leads,
-  columnState,
-  tableState,
-  inlineRow,
-  onUpdateField,
-  onSortChange,
-  selectedIds,
-  onToggleSelection,
-  onToggleAll,
-  onExpand,
-  onDuplicate,
-  onDelete,
-  currentUserRole,
-  currentUserId,
+  leads, columnState, tableState, inlineRow, onUpdateField, onSortChange,
+  selectedIds, onToggleSelection, onToggleAll, onExpand, onDuplicate, onDelete,
+  currentUserRole, currentUserId, totalCount,
 }: TableContainerProps) {
   const [editingCell, setEditingCell] = useState<{ leadId: string; column: ColumnId } | null>(null);
   const [editingValue, setEditingValue] = useState("");
@@ -107,21 +94,11 @@ export function TableContainer({
     columns: orderedVisibleColumns.map((c: ColumnDef) => c.id),
     columnWidths: columnState.columnWidths,
     selectedDetailId: null,
-    onToggleSelection,
-    onExpand,
-    editingCell,
-    editingValue,
-    onStartEdit: handleStartEdit,
-    onChangeEditingValue: setEditingValue,
-    onSaveEdit: handleSaveEdit,
-    onCancelEdit: () => setEditingCell(null),
-    onUpdateField,
-    pinnedColumns: columnState.pinnedColumns,
-    pinnedOffsets,
-    onDuplicate,
-    onDelete,
-    currentUserRole,
-    currentUserId,
+    onToggleSelection, onExpand, editingCell, editingValue,
+    onStartEdit: handleStartEdit, onChangeEditingValue: setEditingValue,
+    onSaveEdit: handleSaveEdit, onCancelEdit: () => setEditingCell(null),
+    onUpdateField, pinnedColumns: columnState.pinnedColumns, pinnedOffsets,
+    onDuplicate, onDelete, currentUserRole, currentUserId,
   };
 
   const leadIds = useMemo(() => leads.map(l => l.id), [leads]);
@@ -139,52 +116,73 @@ export function TableContainer({
     }
   }
 
+  const isGrouped = Boolean(tableState.groupBy);
+  const filteredCount = leads.length;
+  const displayTotalCount = totalCount ?? leads.length;
+  const groupCount = Object.keys(groupedLeads).length;
+
   return (
     <TooltipProvider delay={100}>
-      <div className="hidden lg:block overflow-auto flex-1 bg-white rounded-lg border border-gray-100">
-        <table className="border-collapse" style={{ tableLayout: "fixed", width: "max-content", minWidth: "100%" }}>
-          <TableHeader 
-            orderedVisibleColumns={orderedVisibleColumns}
-            columnState={columnState}
-            tableState={tableState}
-            pinnedOffsets={pinnedOffsets}
-            onSortChange={onSortChange}
-            selectedIds={selectedIds}
-            leadsCount={leads.length}
-            onToggleAll={onToggleAll}
-          />
-          <tbody>
-            {Object.entries(groupedLeads).map(([groupKey, groupLeads]) => {
-              const groupItems = groupKey === 'ungrouped' ? leadIds : groupLeads.map(l => l.id);
-              return (
-                <React.Fragment key={groupKey}>
-                  {groupKey !== 'ungrouped' && (
-                    <tr className="bg-gray-50 border-b border-gray-100 cursor-pointer hover:bg-gray-100" onClick={() => {
+      <div className="hidden lg:flex flex-col flex-1 bg-white rounded-lg border border-gray-100 overflow-hidden">
+        <div className="overflow-auto flex-1">
+          <table className="border-collapse" style={{ tableLayout: "fixed", width: "max-content", minWidth: "100%" }}>
+            <TableHeader 
+              orderedVisibleColumns={orderedVisibleColumns}
+              columnState={columnState}
+              tableState={tableState}
+              pinnedOffsets={pinnedOffsets}
+              onSortChange={onSortChange}
+              selectedIds={selectedIds}
+              leadsCount={leads.length}
+              onToggleAll={onToggleAll}
+            />
+            <tbody>
+              {Object.entries(groupedLeads).map(([groupKey, groupLeads]) => {
+                const groupItems = groupKey === 'ungrouped' ? leadIds : groupLeads.map(l => l.id);
+                const isExpanded = groupKey === 'ungrouped' || expandedGroups.has(groupKey);
+                const statusConfig = STATUS_CONFIG[groupKey as LeadStatus];
+                const dotColor = statusConfig ? (statusConfig.dot === "#ffffffff" || statusConfig.dot === "#ffffff" ? "#646464" : statusConfig.dot) : "#9CA3AF";
+
+                return (
+                  <GroupHeaderRow
+                    key={groupKey}
+                    groupKey={groupKey}
+                    groupLeads={groupLeads}
+                    expandedGroups={expandedGroups}
+                    onToggle={() => {
                       const next = new Set(expandedGroups);
-                      if (next.has(groupKey)) next.delete(groupKey); else next.add(groupKey);
+                      if (next.has(groupKey)) next.delete(groupKey);
+                      else next.add(groupKey);
                       setExpandedGroups(next);
-                    }}>
-                      <td colSpan={orderedVisibleColumns.length + 3} className="px-4 py-2">
-                        <div className="flex items-center gap-2">
-                          {expandedGroups.has(groupKey) ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                          <span className="text-xs font-bold uppercase tracking-wider text-gray-600">{groupKey} ({groupLeads.length})</span>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                  {(groupKey === 'ungrouped' || expandedGroups.has(groupKey)) && (
-                    <SortableContext items={groupItems} strategy={verticalListSortingStrategy}>
-                      {groupLeads.map((lead, idx) => (
-                        <LeadRow key={lead.id} lead={lead} rowIndex={idx} isSelected={selectedIds.has(lead.id)} {...rowProps} />
-                      ))}
-                    </SortableContext>
-                  )}
-                </React.Fragment>
-              );
-            })}
-            <GhostRow columns={rowProps.columns} columnWidths={rowProps.columnWidths} state={inlineRow} pinnedColumns={rowProps.pinnedColumns} pinnedOffsets={rowProps.pinnedOffsets} isAdmin={currentUserRole === "ADMIN"} />
-          </tbody>
-        </table>
+                    }}
+                    inlineRow={inlineRow}
+                    colSpan={orderedVisibleColumns.length + 3}
+                  >
+                    {isExpanded && (
+                      <SortableContext items={groupItems} strategy={verticalListSortingStrategy}>
+                        {groupLeads.map((lead, idx) => (
+                          <LeadRow
+                            key={lead.id}
+                            lead={lead}
+                            rowIndex={idx}
+                            isSelected={selectedIds.has(lead.id)}
+                            isFirstInGroup={idx === 0 && groupKey !== 'ungrouped'}
+                            groupTopBorderColor={statusConfig ? `color-mix(in srgb, ${dotColor} 25%, transparent)` : undefined}
+                            {...rowProps}
+                          />
+                        ))}
+                      </SortableContext>
+                    )}
+                  </GroupHeaderRow>
+                );
+              })}
+              <GhostRow columns={rowProps.columns} columnWidths={rowProps.columnWidths} state={inlineRow} pinnedColumns={rowProps.pinnedColumns} pinnedOffsets={rowProps.pinnedOffsets} isAdmin={currentUserRole === "ADMIN"} />
+            </tbody>
+          </table>
+        </div>
+        <div className="flex items-center justify-end px-4 py-2 border-t border-gray-100 bg-gray-50/50 text-xs text-neutral-500 select-none shrink-0">
+          Showing {filteredCount} of {displayTotalCount} leads{isGrouped ? ` across ${groupCount} stages` : ""}
+        </div>
       </div>
     </TooltipProvider>
   );
