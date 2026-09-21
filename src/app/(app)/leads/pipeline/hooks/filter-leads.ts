@@ -39,12 +39,12 @@ export function filterLeads(leads: PipelineLead[], filters: FilterState): Pipeli
 
     // Last Contacted (date range)
     if (filters.lastContactedFrom && lead.lastContacted) {
-      if (new Date(lead.lastContacted) < new Date(filters.lastContactedFrom)) {
+      if (new Date(lead.lastContacted) < new Date(filters.lastContactedFrom + "T00:00:00.000Z")) {
         return false;
       }
     }
     if (filters.lastContactedTo && lead.lastContacted) {
-      if (new Date(lead.lastContacted) > new Date(filters.lastContactedTo)) {
+      if (new Date(lead.lastContacted) > new Date(filters.lastContactedTo + "T23:59:59.999Z")) {
         return false;
       }
     }
