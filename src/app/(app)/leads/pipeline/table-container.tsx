@@ -16,6 +16,7 @@ import { getFieldValue, valueToString } from './model.utils';
 import { InlineRowState } from './hooks/use-inline-row';
 import { TableState } from './hooks/use-table-state';
 import { useGroupExpansion } from './hooks/use-group-expansion';
+import { useGroupedLeads } from './hooks/use-grouped-leads';
 import * as React from 'react';
 
 
@@ -80,19 +81,9 @@ export function TableContainer({
     setEditingCell(null);
   };
 
-  const groupedLeads = useMemo(() => {
-    if (!tableState.groupBy) return { ungrouped: leads };
-    const groups: Record<string, PipelineLead[]> = {};
-    leads.forEach((lead: PipelineLead) => {
-      const val = getFieldValue(lead, tableState.groupBy as ColumnId);
-      const groupKey = valueToString(val) || 'Unassigned';
-      if (!groups[groupKey]) groups[groupKey] = [];
-      groups[groupKey].push(lead);
-    });
-    return groups;
-  }, [leads, tableState.groupBy]);
+  const { groupedLeads, groupSignature } = useGroupedLeads(leads, tableState.groupBy);
 
-  const { expandedGroups, setExpandedGroups } = useGroupExpansion(groupedLeads);
+  const { expandedGroups, setExpandedGroups } = useGroupExpansion(groupSignature);
 
   const orderedVisibleColumns = useMemo(() => {
     return columnState.columnOrder
