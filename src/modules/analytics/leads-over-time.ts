@@ -1,6 +1,7 @@
 // SimpleCRM — leads-over-time.ts
 import { prisma } from "@/lib/prisma";
 import { subDays, format, addDays } from "date-fns";
+import { ActivityAction } from "@prisma/client";
 import type { DateRange } from "./analytics.service";
 
 export type LeadOverTimeEntry = {
@@ -33,14 +34,17 @@ export async function getLeadsOverTime(
   const to = range?.to;
   const thirtyDaysAgo = subDays(now, 30);
 
-  const recentLeadsForTime = await prisma.lead.findMany({
+  const statusChanges = await prisma.activityLog.findMany({
     where: {
-      ...whereScope,
+      action: ActivityAction.STATUS_CHANGED,
       ...(from && to
         ? { createdAt: { gte: from, lte: to } }
         : { createdAt: { gte: thirtyDaysAgo } }),
+      ...(whereScope.assignedToId
+        ? { lead: { assignedToId: whereScope.assignedToId } }
+        : {}),
     },
-    select: { createdAt: true, status: true },
+    select: { createdAt: true, toValue: true },
     orderBy: { createdAt: "asc" },
   });
 
@@ -60,16 +64,17 @@ export async function getLeadsOverTime(
     }
   }
 
-  recentLeadsForTime.forEach((lead) => {
-    const date = format(new Date(lead.createdAt), "yyyy-MM-dd");
+  statusChanges.forEach((log) => {
+    const date = format(new Date(log.createdAt), "yyyy-MM-dd");
+    const status = log.toValue;
     let entry = countByDate.get(date);
     if (!entry) {
       entry = createZeroEntry();
       countByDate.set(date, entry);
     }
     entry.count += 1;
-    if (lead.status in entry) {
-      entry[lead.status as keyof Omit<StatusCountMap, "count">] += 1;
+    if (status && status in entry) {
+      entry[status as keyof Omit<StatusCountMap, "count">] += 1;
     }
   });
 
