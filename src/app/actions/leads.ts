@@ -3,8 +3,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
-import { LeadStatus, LeadSource, Prisma } from '@prisma/client'
+import { LeadStatus } from '@prisma/client'
 import { createLeadSchema, updateLeadSchema } from '@/modules/leads/leads.schema'
+import { createLead as createLeadService } from '@/modules/leads/leads.service'
+import { updateLead as updateLeadService } from '@/modules/leads/leads-mutations.service'
 import { z } from 'zod'
 import { getSession } from '@/lib/session'
 
@@ -19,44 +21,10 @@ export type LeadUpdateData = z.infer<typeof updateLeadSchema>
  */
 export async function createLead(data: LeadFormData) {
   const validated = createLeadSchema.parse(data)
-  
-  const lead = await prisma.lead.create({
-    data: {
-      name: validated.name,
-      phone: validated.phone,
-      email: validated.email || null,
-      location: validated.location || null,
-      rating: validated.rating || 0,
-      assignedToId: validated.assignedToId,
-      status: (validated.status as any) || 'NEW',
-      sources: validated.sources && validated.sources.length > 0
-        ? {
-            create: validated.sources.map(source => ({
-              source: source as any,
-              formId: validated.formId,
-            })),
-          }
-        : undefined,
-    },
-    select: {
-      id: true,
-      name: true,
-      phone: true,
-      email: true,
-      status: true,
-      location: true,
-      rating: true,
-      assignedTo: {
-        select: { id: true, name: true, avatarInitials: true },
-      },
-      sources: {
-        select: { source: true },
-      },
-      createdAt: true,
-      updatedAt: true,
-    },
-  })
-  
+  const session = await getSession()
+
+  const lead = await createLeadService(validated, session?.userId ?? '')
+
   revalidatePath('/leads')
   revalidatePath('/dashboard')
   return lead
@@ -70,74 +38,9 @@ export async function createLead(data: LeadFormData) {
  */
 export async function updateLead(id: string, data: LeadUpdateData) {
   const validated = updateLeadSchema.parse(data)
-  const session = await getSession()
-  
-  const oldLead = await prisma.lead.findUnique({
-    where: { id },
-    select: { status: true, rating: true },
-  })
-  
-  const lead = await prisma.lead.update({
-    where: { id },
-    data: {
-      ...(validated.name !== undefined && { name: validated.name }),
-      ...(validated.phone !== undefined && { phone: validated.phone }),
-      ...(validated.email !== undefined && { email: validated.email || null }),
-      ...(validated.location !== undefined && { location: validated.location }),
-      ...(validated.rating !== undefined && { rating: validated.rating }),
-      ...(validated.status !== undefined && { status: validated.status as any }),
-      ...(validated.customData !== undefined && {
-        customData:
-          validated.customData === null
-            ? Prisma.JsonNull
-            : (validated.customData as Prisma.InputJsonValue),
-      }),
-    },
-    select: {
-      id: true,
-      name: true,
-      phone: true,
-      email: true,
-      status: true,
-      location: true,
-      rating: true,
-      assignedTo: {
-        select: { id: true, name: true, avatarInitials: true },
-      },
-      sources: {
-        select: { source: true },
-      },
-      createdAt: true,
-      updatedAt: true,
-    },
-  })
-  
-  // Log status change activity
-  if (validated.status && oldLead?.status !== validated.status && session) {
-    await prisma.activityLog.create({
-      data: {
-        leadId: id,
-        action: 'STATUS_CHANGED',
-        actorId: session.userId,
-        fromValue: oldLead?.status,
-        toValue: validated.status,
-      },
-    })
-  }
-  
-  // Log rating change activity
-  if (validated.rating !== undefined && oldLead?.rating !== validated.rating && session) {
-    await prisma.activityLog.create({
-      data: {
-        leadId: id,
-        action: 'RATING_CHANGED',
-        actorId: session.userId,
-        fromValue: oldLead?.rating?.toString(),
-        toValue: validated.rating.toString(),
-      },
-    })
-  }
-  
+
+  const lead = await updateLeadService(id, validated)
+
   revalidatePath('/leads')
   revalidatePath(`/leads/${id}`)
   return lead
@@ -150,39 +53,11 @@ export async function updateLead(id: string, data: LeadUpdateData) {
  * @returns Updated lead
  */
 export async function updateLeadStatus(id: string, status: LeadStatus) {
-  const session = await getSession()
-  const oldLead = await prisma.lead.findUnique({
-    where: { id },
-    select: { status: true },
+  const lead = await updateLeadService(id, {
+    status,
+    lastContacted: new Date().toISOString(),
   })
-  
-  const lead = await prisma.lead.update({
-    where: { id },
-    data: {
-      status,
-      lastContacted: new Date(),
-    },
-    select: {
-      id: true,
-      name: true,
-      status: true,
-      updatedAt: true,
-    },
-  })
-  
-  // Create activity log
-  if (session) {
-    await prisma.activityLog.create({
-      data: {
-        leadId: id,
-        action: 'STATUS_CHANGED',
-        actorId: session.userId,
-        fromValue: oldLead?.status,
-        toValue: status,
-      },
-    })
-  }
-  
+
   revalidatePath('/leads')
   revalidatePath(`/leads/${id}`)
   return lead

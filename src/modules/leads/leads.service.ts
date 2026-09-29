@@ -1,7 +1,8 @@
-﻿// SimpleCRM — leads.service.ts
+// SimpleCRM — leads.service.ts
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { logActivity } from "../activity/activity.service";
+import { sendMetaCapiEvent } from "@/lib/meta-capi";
 import type { CreateLeadInput, ListLeadsInput } from "./leads.schema";
 import type { LeadListItem, LeadWithRelations, PaginatedLeads } from "./leads.types";
 
@@ -79,5 +80,7 @@ export async function createLead(input: CreateLeadInput, createdById: string): P
     select: detailSelect,
   });
   await logActivity({ leadId: lead.id, action: "CREATED", toValue: `Lead created via ${input.source?.toLowerCase() || "manual"}`, actorId: createdById });
+  // Fire-and-forget: CAPI failure must never block lead creation
+  void sendMetaCapiEvent({ email: lead.email, phone: lead.phone, name: lead.name }, "Lead");
   return lead as any;
 }

@@ -1,9 +1,19 @@
 // SimpleCRM — leads-mutations.service.ts
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, LeadStatus } from "@prisma/client";
 import { logActivity } from "../activity/activity.service";
+import { sendMetaCapiEvent } from "@/lib/meta-capi";
 import type { UpdateLeadInput, AssignLeadInput } from "./leads.schema";
 import type { LeadWithRelations } from "./leads.types";
+
+// Map CRM LeadStatus values to Meta CAPI event names
+const STATUS_TO_META_EVENT: Record<LeadStatus, string> = {
+  [LeadStatus.NEW]: "Lead",
+  [LeadStatus.CONTACTED]: "Contacted",
+  [LeadStatus.NO_RESPOND]: "NoRespond",
+  [LeadStatus.CONVERTED]: "Converted",
+  [LeadStatus.LOST]: "Lost",
+};
 
 const detailSelect = {
   id: true,
@@ -101,6 +111,15 @@ export async function updateLead(
       fromValue: oldLead?.status,
       toValue: input.status,
     });
+
+    // Fire-and-forget: CAPI failure must never block the CRM update
+    const metaEvent = STATUS_TO_META_EVENT[input.status as LeadStatus];
+    if (metaEvent) {
+      void sendMetaCapiEvent(
+        { email: lead.email, phone: lead.phone, name: lead.name },
+        metaEvent
+      );
+    }
   }
 
   if (input.rating !== undefined && oldLead?.rating !== input.rating) {

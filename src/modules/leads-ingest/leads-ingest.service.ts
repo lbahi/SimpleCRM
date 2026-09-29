@@ -1,5 +1,6 @@
 // SimpleCRM — leads-ingest.service.ts
 import { prisma } from "@/lib/prisma";
+import { sendMetaCapiEvent } from "@/lib/meta-capi";
 import { LeadStatus, Prisma, Lead } from "@prisma/client";
 import { IngestLeadInput } from "./leads-ingest.schema";
 
@@ -87,8 +88,9 @@ export async function ingestLead(data: IngestLeadInput): Promise<IngestResponse>
     return { ok: true, leadId: updatedLead.id, isNew: false };
   }
 
-  return prisma.$transaction(async (tx) => {
-    const newLead = await tx.lead.create({
+  let newLead: Lead | null = null;
+  const result = await prisma.$transaction(async (tx) => {
+    newLead = await tx.lead.create({
       data: {
         name,
         phone,
@@ -107,4 +109,12 @@ export async function ingestLead(data: IngestLeadInput): Promise<IngestResponse>
 
     return { ok: true, leadId: newLead.id, isNew: true };
   });
+
+  // Fire-and-forget: CAPI failure must never block lead creation
+  void sendMetaCapiEvent(
+    { email: newLead!.email, phone: newLead!.phone, name: newLead!.name },
+    "Lead"
+  );
+
+  return result;
 }
