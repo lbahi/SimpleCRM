@@ -1,5 +1,7 @@
+// SimpleCRM — forms.service.ts
 import { prisma } from "@/lib/prisma";
 import { CaptureForm, LeadStatus, ActivityAction, Prisma } from "@prisma/client";
+import { sendMetaCapiEvent } from "@/lib/meta-capi";
 import { CreateFormInput, UpdateFormInput, SubmitFormInput } from "./forms.schema";
 import { CaptureFormWithCount, SubmissionResponse } from "./forms.types";
 
@@ -185,5 +187,12 @@ export async function submitForm(slug: string, data: Record<string, any>): Promi
     }
 
     return { leadId: lead.id, isNew: true };
+  }).then((result) => {
+    // Fire-and-forget: CAPI failure must never block the form submission
+    void sendMetaCapiEvent(
+      { email: email ?? undefined, phone: phone as string, name: name as string },
+      "Lead"
+    );
+    return result;
   });
 }
