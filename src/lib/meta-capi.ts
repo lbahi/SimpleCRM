@@ -44,6 +44,8 @@ export async function sendMetaCapiEvent(
       return;
     }
 
+    const testEventCode = process.env.META_CAPI_TEST_CODE;
+
     const userData: Record<string, string[]> = {
       ph: [hashPhone(lead.phone)],
     };
@@ -62,6 +64,7 @@ export async function sendMetaCapiEvent(
             lead_event_source: "SimpleCRM",
           },
           user_data: userData,
+          ...(testEventCode && { test_event_code: testEventCode }),
         },
       ],
     };
